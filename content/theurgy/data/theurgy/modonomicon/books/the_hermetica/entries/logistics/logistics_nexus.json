@@ -1,0 +1,38 @@
+{
+  "type": "modonomicon:content",
+  "background": {
+    "height": 26,
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26
+  },
+  "category": "theurgy:logistics",
+  "condition": {
+    "type": "modonomicon:research_node_unlocked",
+    "node_id": "theurgy:generated/the_hermetica/nodes/entry_viewed_once/logistics_logistics_nexus",
+    "tooltip": {
+      "translate": "tooltip.modonomicon.condition.entry_unlocked",
+      "with": [
+        {
+          "translate": "book.theurgy.the_hermetica.logistics.logistics_nexus.name"
+        }
+      ]
+    }
+  },
+  "description": "book.theurgy.the_hermetica.logistics.logistics_nexus.description",
+  "icon": {
+    "id": "theurgy:logistics_nexus"
+  },
+  "id": "theurgy:logistics/logistics_nexus",
+  "marker_condition": {
+    "type": "modonomicon:none"
+  },
+  "name": "book.theurgy.the_hermetica.logistics.logistics_nexus.name",
+  "parents": [
+    {
+      "entry": "theurgy:logistics/connection_node"
+    }
+  ],
+  "sort_number": 10,
+  "x": 9,
+  "y": -5
+}

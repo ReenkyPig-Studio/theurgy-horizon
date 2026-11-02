@@ -1,0 +1,38 @@
+{
+  "type": "modonomicon:content",
+  "background": {
+    "height": 26,
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26
+  },
+  "category": "theurgy:logistics",
+  "condition": {
+    "type": "modonomicon:research_node_unlocked",
+    "node_id": "theurgy:generated/the_hermetica/nodes/entry_viewed_once/logistics_capability_proxy",
+    "tooltip": {
+      "translate": "tooltip.modonomicon.condition.entry_unlocked",
+      "with": [
+        {
+          "translate": "book.theurgy.the_hermetica.logistics.capability_proxy.name"
+        }
+      ]
+    }
+  },
+  "description": "book.theurgy.the_hermetica.logistics.capability_proxy.description",
+  "icon": {
+    "id": "theurgy:logistics_capability_proxy"
+  },
+  "id": "theurgy:logistics/capability_proxy",
+  "marker_condition": {
+    "type": "modonomicon:none"
+  },
+  "name": "book.theurgy.the_hermetica.logistics.capability_proxy.name",
+  "parents": [
+    {
+      "entry": "theurgy:logistics/capability_probe"
+    }
+  ],
+  "sort_number": 17,
+  "x": 13,
+  "y": 3
+}

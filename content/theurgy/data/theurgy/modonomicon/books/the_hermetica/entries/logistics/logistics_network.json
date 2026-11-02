@@ -1,0 +1,42 @@
+{
+  "type": "modonomicon:content",
+  "background": {
+    "height": 26,
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26
+  },
+  "category": "theurgy:logistics",
+  "condition": {
+    "type": "modonomicon:research_node_unlocked",
+    "node_id": "theurgy:generated/the_hermetica/nodes/entry_viewed_once/logistics_logistics_network",
+    "tooltip": {
+      "translate": "tooltip.modonomicon.condition.entry_unlocked",
+      "with": [
+        {
+          "translate": "book.theurgy.the_hermetica.logistics.logistics_network.name"
+        }
+      ]
+    }
+  },
+  "description": "book.theurgy.the_hermetica.logistics.logistics_network.description",
+  "icon": "theurgy:textures/gui/book/logistics_network.png",
+  "id": "theurgy:logistics/logistics_network",
+  "marker_condition": {
+    "type": "modonomicon:none"
+  },
+  "name": "book.theurgy.the_hermetica.logistics.logistics_network.name",
+  "parents": [
+    {
+      "entry": "theurgy:logistics/mercurial_wire"
+    },
+    {
+      "entry": "theurgy:logistics/item_extractor"
+    },
+    {
+      "entry": "theurgy:logistics/item_inserter"
+    }
+  ],
+  "sort_number": 8,
+  "x": 7,
+  "y": -1
+}

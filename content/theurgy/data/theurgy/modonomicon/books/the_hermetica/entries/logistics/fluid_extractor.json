@@ -1,0 +1,38 @@
+{
+  "type": "modonomicon:content",
+  "background": {
+    "height": 26,
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26
+  },
+  "category": "theurgy:logistics",
+  "condition": {
+    "type": "modonomicon:research_node_unlocked",
+    "node_id": "theurgy:generated/the_hermetica/nodes/entry_viewed_once/logistics_fluid_extractor",
+    "tooltip": {
+      "translate": "tooltip.modonomicon.condition.entry_unlocked",
+      "with": [
+        {
+          "translate": "book.theurgy.the_hermetica.logistics.fluid_extractor.name"
+        }
+      ]
+    }
+  },
+  "description": "book.theurgy.the_hermetica.logistics.fluid_extractor.description",
+  "icon": {
+    "id": "theurgy:logistics_fluid_extractor"
+  },
+  "id": "theurgy:logistics/fluid_extractor",
+  "marker_condition": {
+    "type": "modonomicon:none"
+  },
+  "name": "book.theurgy.the_hermetica.logistics.fluid_extractor.name",
+  "parents": [
+    {
+      "entry": "theurgy:logistics/item_extractor"
+    }
+  ],
+  "sort_number": 6,
+  "x": 3,
+  "y": 3
+}

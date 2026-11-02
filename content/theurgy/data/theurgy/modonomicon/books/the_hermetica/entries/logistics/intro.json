@@ -1,0 +1,24 @@
+{
+  "type": "modonomicon:content",
+  "background": {
+    "height": 26,
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/star_gold",
+    "width": 26
+  },
+  "category": "theurgy:logistics",
+  "condition": {
+    "type": "modonomicon:none"
+  },
+  "description": "book.theurgy.the_hermetica.logistics.intro.description",
+  "icon": {
+    "id": "theurgy:mercurial_wand"
+  },
+  "id": "theurgy:logistics/intro",
+  "marker_condition": {
+    "type": "modonomicon:none"
+  },
+  "name": "book.theurgy.the_hermetica.logistics.intro.name",
+  "sort_number": 0,
+  "x": -1,
+  "y": -1
+}
