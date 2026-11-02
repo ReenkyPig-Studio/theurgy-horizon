@@ -37,7 +37,8 @@ Proposal привязан к SHA256 target; отсутствующий target о
 
 Snapshot читается страницами; каждая запись содержит SHA256. Proposal immutable и хранит baseHash.
 Каждая завершённая роль сохраняется атомарно в runs/<campaign>/tasks/<id>.json,
-затем обновляется checkpoint.json. Manifest фиксирует selection, source pin, task graph и request quota.
+затем обновляется checkpoint.json; перед заменой сохраняется <file>.previous.
+При resume новые результаты используют тот же mutable ledger, а не его копию. Manifest фиксирует selection, source pin, task graph и request quota.
 После падения: npm run swarm -- --resume latest (или runs/<campaign>).
 Завершённые роли не повторяются; проверяются hash кода, ownership и target tester hash.
 Неоконченные роли повторяются: неизвестно, успел ли провайдер принять последний запрос при внезапном сбое.
