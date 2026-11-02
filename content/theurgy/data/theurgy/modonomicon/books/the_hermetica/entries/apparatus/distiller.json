@@ -1,0 +1,38 @@
+{
+  "type": "modonomicon:content",
+  "background": {
+    "height": 26,
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26
+  },
+  "category": "theurgy:apparatus",
+  "condition": {
+    "type": "modonomicon:research_node_unlocked",
+    "node_id": "theurgy:generated/the_hermetica/nodes/entry_viewed_once/apparatus_distiller",
+    "tooltip": {
+      "translate": "tooltip.modonomicon.condition.entry_unlocked",
+      "with": [
+        {
+          "translate": "book.theurgy.the_hermetica.apparatus.distiller.name"
+        }
+      ]
+    }
+  },
+  "description": "book.theurgy.the_hermetica.apparatus.distiller.description",
+  "icon": {
+    "id": "theurgy:distiller"
+  },
+  "id": "theurgy:apparatus/distiller",
+  "marker_condition": {
+    "type": "modonomicon:none"
+  },
+  "name": "book.theurgy.the_hermetica.apparatus.distiller.name",
+  "parents": [
+    {
+      "entry": "theurgy:apparatus/spagyrics"
+    }
+  ],
+  "sort_number": 9,
+  "x": 1,
+  "y": -5
+}

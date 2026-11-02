@@ -1,0 +1,38 @@
+{
+  "type": "modonomicon:content",
+  "background": {
+    "height": 26,
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26
+  },
+  "category": "theurgy:apparatus",
+  "condition": {
+    "type": "modonomicon:research_node_unlocked",
+    "node_id": "theurgy:generated/the_hermetica/nodes/entry_viewed_once/apparatus_caloric_flux_emitter",
+    "tooltip": {
+      "translate": "tooltip.modonomicon.condition.entry_unlocked",
+      "with": [
+        {
+          "translate": "book.theurgy.the_hermetica.apparatus.caloric_flux_emitter.name"
+        }
+      ]
+    }
+  },
+  "description": "book.theurgy.the_hermetica.apparatus.caloric_flux_emitter.description",
+  "icon": {
+    "id": "theurgy:caloric_flux_emitter"
+  },
+  "id": "theurgy:apparatus/caloric_flux_emitter",
+  "marker_condition": {
+    "type": "modonomicon:none"
+  },
+  "name": "book.theurgy.the_hermetica.apparatus.caloric_flux_emitter.name",
+  "parents": [
+    {
+      "entry": "theurgy:apparatus/mercury_flux"
+    }
+  ],
+  "sort_number": 15,
+  "x": -5,
+  "y": -3
+}

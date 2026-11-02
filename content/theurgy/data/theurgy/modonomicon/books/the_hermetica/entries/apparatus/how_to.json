@@ -1,0 +1,40 @@
+{
+  "type": "modonomicon:content",
+  "background": {
+    "height": 26,
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26
+  },
+  "category": "theurgy:apparatus",
+  "condition": {
+    "type": "modonomicon:research_node_unlocked",
+    "node_id": "theurgy:generated/the_hermetica/nodes/entry_viewed_once/apparatus_how_to",
+    "tooltip": {
+      "translate": "tooltip.modonomicon.condition.entry_unlocked",
+      "with": [
+        {
+          "translate": "book.theurgy.the_hermetica.apparatus.how_to.name"
+        }
+      ]
+    }
+  },
+  "description": "book.theurgy.the_hermetica.apparatus.how_to.description",
+  "icon": {
+    "height": 64,
+    "texture": "theurgy:textures/gui/book/apparatus_howto.png",
+    "width": 64
+  },
+  "id": "theurgy:apparatus/how_to",
+  "marker_condition": {
+    "type": "modonomicon:none"
+  },
+  "name": "book.theurgy.the_hermetica.apparatus.how_to.name",
+  "parents": [
+    {
+      "entry": "theurgy:apparatus/intro"
+    }
+  ],
+  "sort_number": 1,
+  "x": -1,
+  "y": 1
+}

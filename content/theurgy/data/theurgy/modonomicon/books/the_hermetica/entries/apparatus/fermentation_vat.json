@@ -1,0 +1,38 @@
+{
+  "type": "modonomicon:content",
+  "background": {
+    "height": 26,
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26
+  },
+  "category": "theurgy:apparatus",
+  "condition": {
+    "type": "modonomicon:research_node_unlocked",
+    "node_id": "theurgy:generated/the_hermetica/nodes/entry_viewed_once/apparatus_fermentation_vat",
+    "tooltip": {
+      "translate": "tooltip.modonomicon.condition.entry_unlocked",
+      "with": [
+        {
+          "translate": "book.theurgy.the_hermetica.apparatus.fermentation_vat.name"
+        }
+      ]
+    }
+  },
+  "description": "book.theurgy.the_hermetica.apparatus.fermentation_vat.description",
+  "icon": {
+    "id": "theurgy:fermentation_vat"
+  },
+  "id": "theurgy:apparatus/fermentation_vat",
+  "marker_condition": {
+    "type": "modonomicon:none"
+  },
+  "name": "book.theurgy.the_hermetica.apparatus.fermentation_vat.name",
+  "parents": [
+    {
+      "entry": "theurgy:apparatus/transmutation_and_exaltation"
+    }
+  ],
+  "sort_number": 23,
+  "x": 3,
+  "y": 3
+}

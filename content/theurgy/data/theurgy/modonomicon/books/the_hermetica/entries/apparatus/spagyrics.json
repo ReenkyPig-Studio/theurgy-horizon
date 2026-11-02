@@ -1,0 +1,29 @@
+{
+  "type": "modonomicon:content",
+  "background": {
+    "height": 26,
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/circle_gray",
+    "width": 26
+  },
+  "category": "theurgy:apparatus",
+  "condition": {
+    "type": "modonomicon:true"
+  },
+  "description": "book.theurgy.the_hermetica.apparatus.spagyrics.description",
+  "icon": {
+    "id": "theurgy:liquefaction_cauldron"
+  },
+  "id": "theurgy:apparatus/spagyrics",
+  "marker_condition": {
+    "type": "modonomicon:none"
+  },
+  "name": "book.theurgy.the_hermetica.apparatus.spagyrics.name",
+  "parents": [
+    {
+      "entry": "theurgy:apparatus/intro"
+    }
+  ],
+  "sort_number": 3,
+  "x": -1,
+  "y": -5
+}
