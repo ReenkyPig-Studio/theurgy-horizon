@@ -1,0 +1,16 @@
+# Bootstrap hook only. Does not register machines or recipes yet.
+[mod]
+id = "theurgy"
+version = "0.1.0"
+
+[[crate]]
+id = "engine"
+path = "engine"
+
+[[injection]]
+id = "bootstrap"
+hook = "frame"
+hook_version = 1
+kind = "HEAD"
+helper = "bootstrap.rs"
+bindings = [{ name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" }]
