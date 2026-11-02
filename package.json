@@ -1,0 +1,21 @@
+{
+  "name": "theurgy-horizon-matrix",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "doctor": "node tools/dev.mjs doctor",
+    "inventory": "node tools/inventory.mjs",
+    "fast": "node tools/dev.mjs fast",
+    "check": "node tools/dev.mjs check",
+    "plan": "node matrix/swarm.mjs",
+    "swarm": "node matrix/swarm.mjs --live",
+    "game": "node tools/game.mjs smoke",
+    "game:theurgy": "node tools/game.mjs theurgy",
+    "watch": "node tools/watch.mjs",
+    "native:plan": "node tools/native.mjs plan",
+    "native:check": "node tools/native.mjs check",
+    "native:build": "node tools/native.mjs build",
+    "game:chaos": "node tools/game.mjs chaos"
+  }
+}

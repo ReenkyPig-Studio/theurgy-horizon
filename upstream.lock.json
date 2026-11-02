@@ -1,0 +1,13 @@
+{
+  "repository": "https://github.com/klikli-dev/theurgy.git",
+  "branch": "version/26.3",
+  "tag": "release/v26.3-1.120.1",
+  "revision": "33b959c9ed0da1de2aff649e9728c1a03470b1bd",
+  "minecraft": "26.3",
+  "neoforge": "26.3.0.76",
+  "release": "1.120.1",
+  "gradleModVersion": "1.120.0",
+  "releaseUrl": "https://github.com/klikli-dev/theurgy/releases/tag/release/v26.3-1.120.1",
+  "asset": "theurgy-26.3-neoforge-1.120.1.jar",
+  "note": "Release tag and JAR are 1.120.1; gradle.properties in that exact tag still says mod_version=1.120.0. Do not silently rewrite upstream."
+}

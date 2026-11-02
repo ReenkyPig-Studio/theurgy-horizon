@@ -1,0 +1,6 @@
+/upstream/
+/target/
+/runs/
+/.local/
+.env
+*.key
