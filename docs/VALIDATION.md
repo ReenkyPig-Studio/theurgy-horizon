@@ -1,5 +1,21 @@
 # Проверки
 
+## Основная кампания переноса: runs/port-26.3-main
+- Все 56 ролей завершены и имеют per-role journal: 24 builders, 24 chaos-testers, 8 reviewers.
+- Сохранены 48 предложений Rust (24 реализации + 24 adversarial test modules).
+- Это НЕ 48 принятых модулей: candidate code не компилировался, не исполнялся и не подключался к игре.
+- Реальный pinned Java source: release/v26.3-1.120.1 @ 33b959c9ed0da1de2aff649e9728c1a03470b1bd.
+- Повторное resume восстановило 56 ролей и сделало 0 API requests; см. runs/port-26.3-main/resume-noop.log.
+- При разработке resume были найдены и исправлены ошибки порядка skip и ссылки на ledger.
+  Добавлены проверка готовой роли ДО running, общий mutable ledger при resume, .previous snapshots,
+  история retry и recovery evidence. Первые отладочные resume журналы/stdout сохранены в run;
+  recovery/controller-bug.json документирует ограничение старого учёта стоимости.
+- Текущие 19/19 инфраструктурных тестов и 6/6 принятых Rust unit tests passed.
+- Машинный manifest: artifacts/port-campaign.json. Его статус GENERATED_AND_SAVED_ONLY.
+- Следующий этап: ревью/сборка candidates, differential Java 26.3 tests, native build, отдельный игровой мир.
+  Текущая полная волна сама по себе не доказывает gameplay parity.
+
+
 ## Обновление: исходник 26.3, chaos-тестеры, 32 одновременно
 - Подтверждены remote-ветка version/26.3 и GitHub release/v26.3-1.120.1 с настоящим JAR.
 - upstream/theurgy закреплён на 33b959c9ed0da1de2aff649e9728c1a03470b1bd.
