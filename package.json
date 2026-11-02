@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test test/*.test.mjs",
+    "test": "node --check matrix/swarm.mjs && node --test test/*.test.mjs",
     "doctor": "node tools/dev.mjs doctor",
     "inventory": "node tools/inventory.mjs",
     "fast": "node tools/dev.mjs fast",
