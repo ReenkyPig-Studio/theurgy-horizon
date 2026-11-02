@@ -1,0 +1,6 @@
+{
+  "template": "minecraft:water_bucket",
+  "components": {},
+  "max_stack_size": 1,
+  "crafting_remainder": "minecraft:bucket"
+}

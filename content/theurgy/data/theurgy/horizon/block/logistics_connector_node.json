@@ -1,0 +1,30 @@
+{
+  "template": "minecraft:stone",
+  "item": true,
+  "properties": {
+    "hardness": 1,
+    "explosion_resistance": 1,
+    "requires_tool": false
+  },
+  "state_properties": {
+    "up": {
+      "type": "boolean"
+    },
+    "down": {
+      "type": "boolean"
+    },
+    "north": {
+      "type": "boolean"
+    },
+    "south": {
+      "type": "boolean"
+    },
+    "east": {
+      "type": "boolean"
+    },
+    "west": {
+      "type": "boolean"
+    }
+  },
+  "default_state": {}
+}

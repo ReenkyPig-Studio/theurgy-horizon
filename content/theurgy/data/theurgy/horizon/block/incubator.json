@@ -1,0 +1,31 @@
+{
+  "template": "minecraft:chest",
+  "item": true,
+  "properties": {
+    "hardness": 1,
+    "explosion_resistance": 1,
+    "requires_tool": false
+  },
+  "state_properties": {
+    "north": {
+      "type": "boolean"
+    },
+    "east": {
+      "type": "boolean"
+    },
+    "south": {
+      "type": "boolean"
+    },
+    "west": {
+      "type": "boolean"
+    },
+    "half": {
+      "type": "enum",
+      "values": [
+        "lower",
+        "upper"
+      ]
+    }
+  },
+  "default_state": {}
+}

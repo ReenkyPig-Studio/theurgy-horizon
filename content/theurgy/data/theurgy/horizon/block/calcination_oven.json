@@ -1,0 +1,19 @@
+{
+  "template": "minecraft:furnace",
+  "item": true,
+  "properties": {
+    "hardness": 1,
+    "explosion_resistance": 1,
+    "requires_tool": false
+  },
+  "state_properties": {
+    "half": {
+      "type": "enum",
+      "values": [
+        "lower",
+        "upper"
+      ]
+    }
+  },
+  "default_state": {}
+}
