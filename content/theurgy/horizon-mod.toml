@@ -1,0 +1,8 @@
+id = "theurgy"
+name = "Theurgy"
+version = "1.120.1"
+description = "Classical alchemy: replicate and transmute matter. Rust/Horizon port."
+authors = ["Kli Kli (original)", "Theurgy Horizon contributors"]
+api = "0.2"
+side = "both"
+capabilities = ["registries"]
