@@ -1,9 +1,0 @@
-{
-  "model": {
-    "type": "minecraft:special",
-    "base": "theurgy:item/incubator_mercury_vessel",
-    "model": {
-      "type": "geckolib:geckolib"
-    }
-  }
-}

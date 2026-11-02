@@ -1,9 +1,0 @@
-{
-  "model": {
-    "type": "minecraft:special",
-    "base": "theurgy:item/sal_ammoniac_accumulator",
-    "model": {
-      "type": "geckolib:geckolib"
-    }
-  }
-}
