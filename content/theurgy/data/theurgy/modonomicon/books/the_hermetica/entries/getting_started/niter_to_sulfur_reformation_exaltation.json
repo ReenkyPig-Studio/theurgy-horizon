@@ -1,0 +1,38 @@
+{
+  "type": "modonomicon:content",
+  "background": {
+    "height": 26,
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26
+  },
+  "category": "theurgy:getting_started",
+  "condition": {
+    "type": "modonomicon:research_node_unlocked",
+    "node_id": "theurgy:generated/the_hermetica/nodes/entry_viewed_once/getting_started_niter_to_sulfur_reformation_exaltation",
+    "tooltip": {
+      "translate": "tooltip.modonomicon.condition.entry_unlocked",
+      "with": [
+        {
+          "translate": "book.theurgy.the_hermetica.getting_started.niter_to_sulfur_reformation_exaltation.name"
+        }
+      ]
+    }
+  },
+  "description": "book.theurgy.the_hermetica.getting_started.niter_to_sulfur_reformation_exaltation.description",
+  "icon": {
+    "id": "theurgy:alchemical_sulfur_gold"
+  },
+  "id": "theurgy:getting_started/niter_to_sulfur_reformation_exaltation",
+  "marker_condition": {
+    "type": "modonomicon:none"
+  },
+  "name": "book.theurgy.the_hermetica.getting_started.niter_to_sulfur_reformation_exaltation.name",
+  "parents": [
+    {
+      "entry": "theurgy:getting_started/digestion_exaltation"
+    }
+  ],
+  "sort_number": 48,
+  "x": 15,
+  "y": 8
+}

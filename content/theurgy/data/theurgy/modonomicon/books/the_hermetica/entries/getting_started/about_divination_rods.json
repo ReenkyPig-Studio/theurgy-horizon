@@ -1,0 +1,38 @@
+{
+  "type": "modonomicon:content",
+  "background": {
+    "height": 26,
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26
+  },
+  "category": "theurgy:getting_started",
+  "condition": {
+    "type": "modonomicon:research_node_unlocked",
+    "node_id": "theurgy:generated/the_hermetica/nodes/entry_viewed_once/getting_started_about_divination_rods",
+    "tooltip": {
+      "translate": "tooltip.modonomicon.condition.entry_unlocked",
+      "with": [
+        {
+          "translate": "book.theurgy.the_hermetica.getting_started.about_divination_rods.name"
+        }
+      ]
+    }
+  },
+  "description": "book.theurgy.the_hermetica.getting_started.about_divination_rods.description",
+  "icon": {
+    "id": "theurgy:divination_rod_t1"
+  },
+  "id": "theurgy:getting_started/about_divination_rods",
+  "marker_condition": {
+    "type": "modonomicon:none"
+  },
+  "name": "book.theurgy.the_hermetica.getting_started.about_divination_rods.name",
+  "parents": [
+    {
+      "entry": "theurgy:getting_started/about_mod"
+    }
+  ],
+  "sort_number": 3,
+  "x": -1,
+  "y": -8
+}

@@ -1,0 +1,38 @@
+{
+  "type": "modonomicon:content",
+  "background": {
+    "height": 26,
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26
+  },
+  "category": "theurgy:getting_started",
+  "condition": {
+    "type": "modonomicon:research_node_unlocked",
+    "node_id": "theurgy:generated/the_hermetica/nodes/entry_viewed_once/getting_started_create_salt",
+    "tooltip": {
+      "translate": "tooltip.modonomicon.condition.entry_unlocked",
+      "with": [
+        {
+          "translate": "book.theurgy.the_hermetica.getting_started.create_salt.name"
+        }
+      ]
+    }
+  },
+  "description": "book.theurgy.the_hermetica.getting_started.create_salt.description",
+  "icon": {
+    "id": "theurgy:alchemical_salt_mineral"
+  },
+  "id": "theurgy:getting_started/create_salt",
+  "marker_condition": {
+    "type": "modonomicon:none"
+  },
+  "name": "book.theurgy.the_hermetica.getting_started.create_salt.name",
+  "parents": [
+    {
+      "entry": "theurgy:getting_started/needed_apparatus_spagyrics"
+    }
+  ],
+  "sort_number": 17,
+  "x": -1,
+  "y": 6
+}

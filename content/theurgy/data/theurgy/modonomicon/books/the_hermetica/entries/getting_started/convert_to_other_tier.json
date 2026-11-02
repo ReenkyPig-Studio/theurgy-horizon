@@ -1,0 +1,37 @@
+{
+  "type": "modonomicon:content",
+  "background": {
+    "height": 26,
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/circle_gray",
+    "width": 26
+  },
+  "category": "theurgy:getting_started",
+  "condition": {
+    "type": "modonomicon:research_node_unlocked",
+    "node_id": "theurgy:research/entry_viewed/getting_started/incubation_after_transmutation",
+    "tooltip": {
+      "translate": "tooltip.modonomicon.condition.entry_unlocked",
+      "with": [
+        {
+          "translate": "book.theurgy.the_hermetica.getting_started.incubation_after_transmutation.name"
+        }
+      ]
+    }
+  },
+  "description": "book.theurgy.the_hermetica.getting_started.convert_to_other_tier.description",
+  "hide_while_locked": true,
+  "icon": "theurgy:textures/gui/book/convert_tiers.png",
+  "id": "theurgy:getting_started/convert_to_other_tier",
+  "marker_condition": {
+    "type": "modonomicon:none"
+  },
+  "name": "book.theurgy.the_hermetica.getting_started.convert_to_other_tier.name",
+  "parents": [
+    {
+      "entry": "theurgy:getting_started/convert_to_other_type"
+    }
+  ],
+  "sort_number": 42,
+  "x": 7,
+  "y": 8
+}

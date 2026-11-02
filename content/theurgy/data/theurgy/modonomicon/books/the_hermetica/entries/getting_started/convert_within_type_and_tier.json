@@ -1,0 +1,36 @@
+{
+  "type": "modonomicon:content",
+  "background": {
+    "height": 26,
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/circle_gray",
+    "width": 26
+  },
+  "category": "theurgy:getting_started",
+  "condition": {
+    "type": "modonomicon:research_node_unlocked",
+    "node_id": "theurgy:generated/the_hermetica/nodes/entry_viewed_once/getting_started_convert_within_type_and_tier",
+    "tooltip": {
+      "translate": "tooltip.modonomicon.condition.entry_unlocked",
+      "with": [
+        {
+          "translate": "book.theurgy.the_hermetica.getting_started.convert_within_type_and_tier.name"
+        }
+      ]
+    }
+  },
+  "description": "book.theurgy.the_hermetica.getting_started.convert_within_type_and_tier.description",
+  "icon": "theurgy:textures/gui/book/convert_items_rare.png",
+  "id": "theurgy:getting_started/convert_within_type_and_tier",
+  "marker_condition": {
+    "type": "modonomicon:none"
+  },
+  "name": "book.theurgy.the_hermetica.getting_started.convert_within_type_and_tier.name",
+  "parents": [
+    {
+      "entry": "theurgy:getting_started/alchemical_niter"
+    }
+  ],
+  "sort_number": 26,
+  "x": 7,
+  "y": -2
+}

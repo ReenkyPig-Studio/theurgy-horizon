@@ -1,0 +1,40 @@
+{
+  "type": "modonomicon:content",
+  "background": {
+    "height": 26,
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/star_gold",
+    "width": 26
+  },
+  "category": "theurgy:getting_started",
+  "condition": {
+    "type": "modonomicon:research_node_unlocked",
+    "node_id": "theurgy:research/entry_viewed/getting_started/incubation",
+    "tooltip": {
+      "translate": "tooltip.modonomicon.condition.entry_unlocked",
+      "with": [
+        {
+          "translate": "book.theurgy.the_hermetica.getting_started.incubation.name"
+        }
+      ]
+    }
+  },
+  "description": "book.theurgy.the_hermetica.getting_started.replication.description",
+  "icon": "theurgy:textures/gui/book/conversion.png",
+  "id": "theurgy:getting_started/replication",
+  "marker_condition": {
+    "type": "modonomicon:none"
+  },
+  "name": "book.theurgy.the_hermetica.getting_started.replication.name",
+  "parents": [
+    {
+      "entry": "theurgy:getting_started/spagyrics"
+    },
+    {
+      "entry": "theurgy:getting_started/incubation"
+    }
+  ],
+  "show_when_any_parent_unlocked": true,
+  "sort_number": 23,
+  "x": 3,
+  "y": -2
+}

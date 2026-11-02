@@ -1,0 +1,24 @@
+{
+  "type": "modonomicon:content",
+  "background": {
+    "height": 26,
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/star_gold",
+    "width": 26
+  },
+  "category": "theurgy:getting_started",
+  "condition": {
+    "type": "modonomicon:none"
+  },
+  "description": "book.theurgy.the_hermetica.getting_started.intro.description",
+  "icon": {
+    "id": "theurgy:the_hermetica_icon"
+  },
+  "id": "theurgy:getting_started/intro",
+  "marker_condition": {
+    "type": "modonomicon:none"
+  },
+  "name": "book.theurgy.the_hermetica.getting_started.intro.name",
+  "sort_number": 0,
+  "x": -7,
+  "y": -4
+}

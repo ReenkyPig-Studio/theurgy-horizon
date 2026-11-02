@@ -1,0 +1,38 @@
+{
+  "type": "modonomicon:content",
+  "background": {
+    "height": 26,
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26
+  },
+  "category": "theurgy:getting_started",
+  "condition": {
+    "type": "modonomicon:research_node_unlocked",
+    "node_id": "theurgy:generated/the_hermetica/nodes/entry_viewed_once/getting_started_required_items_exaltation",
+    "tooltip": {
+      "translate": "tooltip.modonomicon.condition.entry_unlocked",
+      "with": [
+        {
+          "translate": "book.theurgy.the_hermetica.getting_started.required_items_exaltation.name"
+        }
+      ]
+    }
+  },
+  "description": "book.theurgy.the_hermetica.getting_started.required_items_exaltation.description",
+  "icon": {
+    "id": "minecraft:iron_ingot"
+  },
+  "id": "theurgy:getting_started/required_items_exaltation",
+  "marker_condition": {
+    "type": "modonomicon:none"
+  },
+  "name": "book.theurgy.the_hermetica.getting_started.required_items_exaltation.name",
+  "parents": [
+    {
+      "entry": "theurgy:getting_started/digestion_vat"
+    }
+  ],
+  "sort_number": 44,
+  "x": 9,
+  "y": 6
+}

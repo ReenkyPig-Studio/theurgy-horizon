@@ -1,0 +1,38 @@
+{
+  "type": "modonomicon:content",
+  "background": {
+    "height": 26,
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26
+  },
+  "category": "theurgy:getting_started",
+  "condition": {
+    "type": "modonomicon:research_node_unlocked",
+    "node_id": "theurgy:generated/the_hermetica/nodes/entry_viewed_once/getting_started_fermentation_starter",
+    "tooltip": {
+      "translate": "tooltip.modonomicon.condition.entry_unlocked",
+      "with": [
+        {
+          "translate": "book.theurgy.the_hermetica.getting_started.fermentation_starter.name"
+        }
+      ]
+    }
+  },
+  "description": "book.theurgy.the_hermetica.getting_started.fermentation_starter.description",
+  "icon": {
+    "id": "theurgy:fermentation_starter"
+  },
+  "id": "theurgy:getting_started/fermentation_starter",
+  "marker_condition": {
+    "type": "modonomicon:none"
+  },
+  "name": "book.theurgy.the_hermetica.getting_started.fermentation_starter.name",
+  "parents": [
+    {
+      "entry": "theurgy:getting_started/fermentation_transmutation"
+    }
+  ],
+  "sort_number": 38,
+  "x": 11,
+  "y": 2
+}

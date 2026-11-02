@@ -1,0 +1,38 @@
+{
+  "type": "modonomicon:content",
+  "background": {
+    "height": 26,
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26
+  },
+  "category": "theurgy:getting_started",
+  "condition": {
+    "type": "modonomicon:research_node_unlocked",
+    "node_id": "theurgy:generated/the_hermetica/nodes/entry_viewed_once/getting_started_target_pedestal",
+    "tooltip": {
+      "translate": "tooltip.modonomicon.condition.entry_unlocked",
+      "with": [
+        {
+          "translate": "book.theurgy.the_hermetica.getting_started.target_pedestal.name"
+        }
+      ]
+    }
+  },
+  "description": "book.theurgy.the_hermetica.getting_started.target_pedestal.description",
+  "icon": {
+    "id": "theurgy:alchemical_sulfur_quartz"
+  },
+  "id": "theurgy:getting_started/target_pedestal",
+  "marker_condition": {
+    "type": "modonomicon:none"
+  },
+  "name": "book.theurgy.the_hermetica.getting_started.target_pedestal.name",
+  "parents": [
+    {
+      "entry": "theurgy:getting_started/reformation_array"
+    }
+  ],
+  "sort_number": 30,
+  "x": 11,
+  "y": 0
+}

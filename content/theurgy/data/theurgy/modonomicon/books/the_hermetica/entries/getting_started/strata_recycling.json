@@ -1,0 +1,36 @@
+{
+  "type": "modonomicon:content",
+  "background": {
+    "height": 26,
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26
+  },
+  "category": "theurgy:getting_started",
+  "condition": {
+    "type": "modonomicon:research_node_unlocked",
+    "node_id": "theurgy:generated/the_hermetica/nodes/entry_viewed_once/getting_started_strata_recycling",
+    "tooltip": {
+      "translate": "tooltip.modonomicon.condition.entry_unlocked",
+      "with": [
+        {
+          "translate": "book.theurgy.the_hermetica.getting_started.strata_recycling.name"
+        }
+      ]
+    }
+  },
+  "description": "book.theurgy.the_hermetica.getting_started.strata_recycling.description",
+  "icon": "theurgy:textures/gui/book/cobble_to_salt.png",
+  "id": "theurgy:getting_started/strata_recycling",
+  "marker_condition": {
+    "type": "modonomicon:none"
+  },
+  "name": "book.theurgy.the_hermetica.getting_started.strata_recycling.name",
+  "parents": [
+    {
+      "entry": "theurgy:getting_started/create_salt"
+    }
+  ],
+  "sort_number": 18,
+  "x": 1,
+  "y": 6
+}

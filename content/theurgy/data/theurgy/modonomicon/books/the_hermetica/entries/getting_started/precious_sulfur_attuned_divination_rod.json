@@ -1,0 +1,38 @@
+{
+  "type": "modonomicon:content",
+  "background": {
+    "height": 26,
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26
+  },
+  "category": "theurgy:getting_started",
+  "condition": {
+    "type": "modonomicon:research_node_unlocked",
+    "node_id": "theurgy:generated/the_hermetica/nodes/entry_viewed_once/getting_started_precious_sulfur_attuned_divination_rod",
+    "tooltip": {
+      "translate": "tooltip.modonomicon.condition.entry_unlocked",
+      "with": [
+        {
+          "translate": "book.theurgy.the_hermetica.getting_started.precious_sulfur_attuned_divination_rod.name"
+        }
+      ]
+    }
+  },
+  "description": "book.theurgy.the_hermetica.getting_started.precious_sulfur_attuned_divination_rod.description",
+  "icon": {
+    "id": "theurgy:sulfur_attuned_divination_rod_precious"
+  },
+  "id": "theurgy:getting_started/precious_sulfur_attuned_divination_rod",
+  "marker_condition": {
+    "type": "modonomicon:none"
+  },
+  "name": "book.theurgy.the_hermetica.getting_started.precious_sulfur_attuned_divination_rod.name",
+  "parents": [
+    {
+      "entry": "theurgy:getting_started/rare_sulfur_attuned_divination_rod"
+    }
+  ],
+  "sort_number": 11,
+  "x": 7,
+  "y": -6
+}

@@ -1,0 +1,38 @@
+{
+  "type": "modonomicon:content",
+  "background": {
+    "height": 26,
+    "sprite": "modonomicon:modonomicon/themes/default/node/entry_backgrounds/square_gold",
+    "width": 26
+  },
+  "category": "theurgy:getting_started",
+  "condition": {
+    "type": "modonomicon:research_node_unlocked",
+    "node_id": "theurgy:generated/the_hermetica/nodes/entry_viewed_once/getting_started_fermentation_transmutation",
+    "tooltip": {
+      "translate": "tooltip.modonomicon.condition.entry_unlocked",
+      "with": [
+        {
+          "translate": "book.theurgy.the_hermetica.getting_started.fermentation_transmutation.name"
+        }
+      ]
+    }
+  },
+  "description": "book.theurgy.the_hermetica.getting_started.fermentation_transmutation.description",
+  "icon": {
+    "id": "theurgy:alchemical_niter_gems_common"
+  },
+  "id": "theurgy:getting_started/fermentation_transmutation",
+  "marker_condition": {
+    "type": "modonomicon:none"
+  },
+  "name": "book.theurgy.the_hermetica.getting_started.fermentation_transmutation.name",
+  "parents": [
+    {
+      "entry": "theurgy:getting_started/fermentation_vat"
+    }
+  ],
+  "sort_number": 37,
+  "x": 11,
+  "y": 4
+}
