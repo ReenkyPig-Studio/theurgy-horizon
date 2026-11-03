@@ -6,3 +6,4 @@
 /.local/
 .env
 *.key
+PORT_NOTES.md
