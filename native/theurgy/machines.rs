@@ -345,7 +345,6 @@ pub fn tick(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut ModBlo
             time: recipe_time(&r.json),
         })
         .collect();
-
     // Pre-select the first recipe satisfied by the current item/fluid slots.
     let tank_for_match = tanks.first().cloned();
     let mut selected: Option<usize> = None;

@@ -99,7 +99,8 @@ fn layout(block: &str) -> Option<Layout> {
         | "theurgy:incubator_sulfur_vessel"
         | "theurgy:reformation_source_pedestal"
         | "theurgy:reformation_target_pedestal"
-        | "theurgy:mercury_catalyst" => Layout::Split {
+        | "theurgy:mercury_catalyst"
+        | "theurgy:sal_ammoniac_accumulator" => Layout::Split {
             slots: 1,
             inputs: vec![0],
             outputs: vec![],

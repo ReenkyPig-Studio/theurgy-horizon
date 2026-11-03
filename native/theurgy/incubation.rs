@@ -299,22 +299,9 @@ fn vessel_input(game: &mut crate::game::Game<'_>, at: [i32; 3]) -> Option<ItemSt
 }
 
 /// Whether the incubator is currently heated (`HeatConsumerBehaviour.isHeated`).
-///
-/// The heat subsystem tracks a consumer whose crafting heat receiver was fed this
-/// tick; the original incubator carries exactly such a `CraftingHeatReceiver`.
-/// If the heat module doesn't expose that query (older/newer shape), this falls
-/// back to treating the incubator as unheated, so a build never breaks here.
-#[cfg(feature = "heat_crafting_receiver")]
+/// The brazier below and caloric-flux `hotUntil` state are both authoritative.
 fn is_heated(game: &crate::game::Game<'_>, pos: [i32; 3]) -> bool {
-    crate::game::theurgy_heat::is_crafting_receiver_heated(game, pos)
-}
-
-#[cfg(not(feature = "heat_crafting_receiver"))]
-fn is_heated(_game: &crate::game::Game<'_>, _pos: [i32; 3]) -> bool {
-    // Heat is supplied by the heat subsystem, which forwards the incubator's
-    // `CraftingHeatReceiver` state via its own module. When that query isn't
-    // available the incubator runs with the default (unheated) semantics.
-    false
+    crate::game::theurgy_heat::heated(game, pos)
 }
 
 /// `Ingredient.test` against `native_recipe_ingredient`.
@@ -376,7 +363,7 @@ fn perform_craft(
             if let Some(Some(slot)) = be.items.first_mut() {
                 slot.count = slot.count.saturating_sub(1);
                 if slot.count == 0 {
-                    slot.item = std::sync::Arc::from("");
+                    be.items[0] = None;
                 }
             }
         });

@@ -343,6 +343,7 @@ pub fn native_screen(block: &str) -> Option<super::native_hooks::NativeScreen> {
         inventory_y: 84.0,
         inventory_x: 8.0,
         own_labels: true,
+        own_background: false,
     })
 }
 
