@@ -129,7 +129,7 @@ hook = "use_item"
 hook_version = 1
 kind = "HEAD"
 helper = "hooks/use_item.rs"
-bindings = [{ name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" }, { name = "stack", ty = "&horizon_client::items::ItemStack", value = "stack" }, { name = "claimed", ty = "&mut bool", value = "claimed" }]
+bindings = []
 
 [[injection]]
 id = "use_on"
@@ -137,7 +137,7 @@ hook = "use_item_on"
 hook_version = 1
 kind = "HEAD"
 helper = "hooks/use_on.rs"
-bindings = [{ name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" }, { name = "stack", ty = "&horizon_client::items::ItemStack", value = "stack" }, { name = "pos", ty = "[i32; 3]", value = "pos" }, { name = "face", ty = "[i32; 3]", value = "face" }, { name = "claimed", ty = "&mut bool", value = "claimed" }]
+bindings = []
 
 [[injection]]
 id = "place"
@@ -153,4 +153,26 @@ hook = "destroy_block"
 hook_version = 1
 kind = "HEAD"
 helper = "hooks/destroy.rs"
-bindings = [{ name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" }, { name = "pos", ty = "[i32; 3]", value = "pos" }, { name = "state", ty = "horizon_world::registry::BlockStateId", value = "state" }, { name = "canceled", ty = "&mut bool", value = "canceled" }]
+bindings = []
+
+[[module]]
+id = "screens"
+file = "crates/horizon-client/src/game.rs"
+name = "theurgy_screens"
+source = "screens.rs"
+
+[[injection]]
+id = "screen"
+hook = "screen"
+hook_version = 1
+kind = "HEAD"
+helper = "hooks/screen.rs"
+bindings = [{ name = "game", ty = "&crate::game::Game<'_>", value = "&*self" }, { name = "block", ty = "&str", value = "block" }, { name = "screen", ty = "&mut Option<NativeScreen>", value = "screen" }]
+
+[[injection]]
+id = "screen_draw"
+hook = "screen_draw"
+hook_version = 1
+kind = "HEAD"
+helper = "hooks/screen_draw.rs"
+bindings = [{ name = "game", ty = "&crate::game::Game<'_>", value = "&*self" }, { name = "block", ty = "&str", value = "block" }, { name = "data", ty = "&[i32]", value = "data" }, { name = "batch", ty = "&mut HudBatch", value = "batch" }, { name = "origin", ty = "[f32; 2]", value = "origin" }]
