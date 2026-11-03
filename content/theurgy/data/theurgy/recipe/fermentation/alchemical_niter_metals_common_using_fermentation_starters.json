@@ -1,20 +1,4 @@
 {
-  "neoforge:conditions": [
-    {
-      "type": "neoforge:not",
-      "value": {
-        "type": "neoforge:tag_empty",
-        "tag": "theurgy:alchemical_sulfurs/metals/common"
-      }
-    },
-    {
-      "type": "neoforge:not",
-      "value": {
-        "type": "neoforge:tag_empty",
-        "tag": "theurgy:fermentation_starters"
-      }
-    }
-  ],
   "type": "theurgy:fermentation",
   "category": "misc",
   "fluid": {
