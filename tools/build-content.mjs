@@ -48,7 +48,8 @@ const props={
  fermentation_vat:[['facing',{type:'enum',values:['north','south','east','west']}],bool('open'),bool('has_output')],
  digestion_vat:[bool('open')],
  logistics_item_inserter:[bool('has_filter')],logistics_item_extractor:[bool('has_filter')],
- logistics_fluid_inserter:[bool('has_filter'),bool('waterlogged')],logistics_fluid_extractor:[bool('has_filter'),bool('waterlogged')]
+ logistics_fluid_inserter:[bool('has_filter'),bool('waterlogged')],logistics_fluid_extractor:[bool('has_filter'),bool('waterlogged')],
+ logistics_mercury_flux_connector:[bool('has_filter')]
 };
 const defaults={lit:'false',half:'lower',open:'false',has_output:'false',enabled:'true',has_filter:'false',
  waterlogged:'false',north:'false',south:'false',east:'false',west:'false',up:'false',down:'false',facing:'north'};
@@ -56,6 +57,7 @@ const templateFor=id=>{
  if(id==='sal_ammoniac_ore')return 'minecraft:iron_ore';
  if(id==='deepslate_sal_ammoniac_ore')return 'minecraft:deepslate_iron_ore';
  if(id==='sal_ammoniac')return 'minecraft:water';
+ if(id.startsWith('logistics_')&&id!=='logistics_nexus')return 'minecraft:barrel';
  if(!be.has(id))return 'minecraft:stone';
  if(['fermentation_vat','digestion_vat','caloric_flux_emitter','sulfuric_flux_emitter','mercury_flux_emitter'].includes(id))return 'minecraft:barrel';
  if(['calcination_oven','liquefaction_cauldron','distiller'].includes(id))return 'minecraft:furnace';
@@ -114,6 +116,18 @@ for(const file of await files(path.join(dest,'data/theurgy/recipe'))) {
    j.type='minecraft:crafting_shaped';
    await fs.writeFile(file,JSON.stringify(j,null,2)+'\n');
  }
+}
+// Horizon resolves NeoForge load conditions before a content mod's tags are
+// in its item table, so conditions on mod tags (theurgy:...) would silently
+// drop every conditioned recipe. The recipes themselves stay unchanged; a
+// missing optional ingredient simply never matches.
+for(const file of await files(path.join(dest,'data'))) {
+ const normalized=file.split(path.sep).join('/');
+ if(!normalized.endsWith('.json') || !normalized.includes('/recipe/'))continue;
+ const j=JSON.parse(await fs.readFile(file,'utf8'));
+ if(!('neoforge:conditions' in j))continue;
+ delete j['neoforge:conditions'];
+ await fs.writeFile(file,JSON.stringify(j,null,2)+'\n');
 }
 await fs.mkdir(path.join(dest,'data/theurgy/horizon/creative_tab'),{recursive:true});
 await fs.writeFile(path.join(dest,'data/theurgy/horizon/creative_tab/theurgy.json'),JSON.stringify({

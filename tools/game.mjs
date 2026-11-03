@@ -5,6 +5,7 @@ import {spawn} from 'node:child_process';
 import {root,config,rustEnv} from './common.mjs';
 import {chaosPlan,machineChaosPlan} from './chaos-plan.mjs';
 import {machineScenarios,selfTest,selfTestChaos,blockName,slots,totalItems} from '../scenarios/machines.mjs';
+import {runAll} from '../scenarios/all.mjs';
 
 // Every mode gets its own world folder, game home and control socket. The socket always
 // lives inside the mode's home, never in the player's runtime directory.
@@ -15,12 +16,16 @@ const MODES={
   chaos: {home:'.local/chaos', world:'TheurgyLab', chaos:true},
   machines: {home:'.local/machines', world:'TheurgyMachines', native:true, content:true},
   'chaos-machines': {home:'.local/chaos-machines', world:'TheurgyMachinesChaos', native:true, content:true, machinesChaos:true},
+  all: {home:'.local/all-machines', world:'TheurgyAll', native:true, content:true, all:true},
 };
 const mode=process.argv[2]??'smoke';
 const spec=MODES[mode];
 if(!spec)throw new Error(Object.keys(MODES).join(' | '));
 const native=!!spec.native;
 const withContent=!!spec.content;
+// Real integrated-server gameplay without a window, GPU or renderer. Set
+// THEURGY_GUI=1 only when a scenario explicitly needs pixels or input.
+const headless=process.env.THEURGY_GUI!=='1';
 const gameHome=path.join(root,spec.home);
 const out=path.join(root,'runs/game-'+Date.now());
 await fs.mkdir(gameHome,{recursive:true});
@@ -28,10 +33,11 @@ await fs.mkdir(out,{recursive:true});
 // One socket per mode, inside that mode's own home: never the player's global socket.
 const socket=path.join(gameHome,'theurgy-control.json');
 const version=native?config.horizonNativeVersion:config.horizonVersion;
-const exe=native?path.join(root,'target/horizon-cargo/fast/horizon-client.exe'):path.join(version,'horizon-client.exe');
+const exe=process.env.THEURGY_GAME_BIN?path.resolve(process.env.THEURGY_GAME_BIN)
+  :native?path.join(root,'target/horizon-cargo/fast/horizon-client.exe'):path.join(version,'horizon-client.exe');
 await fs.access(exe); // fail before launching if native binary not built
 const ctl=path.join(version,'horizon-ctl.exe');
-const env={...rustEnv,HORIZON_HOME:gameHome,HORIZON_CONTROL:socket};
+const env={...rustEnv,HORIZON_HOME:gameHome,HORIZON_CONTROL:socket,HORIZON_NO_AUDIO:'1'};
 const evidence=[];
 let launched=false;
 
@@ -66,6 +72,7 @@ async function launch() {
   const args=['launch','--game',exe,'--world',spec.world,'--seed','42','--creative','--wait',
     '--resources',path.join(version,'.local/horizon-client/26.3'),
     '--game-dir',gameHome,'--home',gameHome,'--test-terrain','--render-distance','2'];
+  if(headless)args.push('--headless');
   if(withContent)args.push('--dev-mod',path.join(root,'content/theurgy'));
   await call(args);
   launched=true;
@@ -90,16 +97,18 @@ function assertStep(step,reply) {
       'expected block '+step.expectsBlock+' at '+JSON.stringify(step.pos??null));
   }
   if(step.kind==='save')assert.ok(reply&&(reply.ok===true||reply.saved!==undefined),'save must succeed: '+JSON.stringify(reply));
-  if(step.kind==='entities-count'&&step.dropOf){
-    // Conservation on break: the machine held exactly one item; its drop must not multiply or vanish.
-    // Horizon item entries have been `{kind:'item', item:{id,count}}` or `{type:'minecraft:item',
-    // item:'ns:id', count}`; normalise both instead of guessing one.
-    const idOf=e=>{const v=e&&(e.item??e.stack);return v&&typeof v==='object'?(v.id??v.item??null):(v??null);};
-    const countOf=e=>{const v=e&&(e.item??e.stack);return Number((v&&typeof v==='object'?v.count:undefined)??e?.count??1);};
-    const list=Array.isArray(reply.entities)?reply.entities:[];
-    const matches=list.filter(e=>e&&String(idOf(e))===step.dropOf);
-    const dropped=matches.reduce((n,e)=>n+countOf(e),0);
-    assert.ok(dropped<=1,'break duplicated items: expected <=1 '+step.dropOf+', saw '+dropped+' ('+JSON.stringify(matches).slice(0,200)+')');
+  if((step.kind==='entities-count'||step.kind==='break')&&step.dropOf){
+    // A player break reports actual drops synchronously. Prefer that direct
+    // evidence; a later entity scan can miss a picked-up or fallen item.
+    const dropped=step.kind==='break'
+      ?Number(reply?.drops?.[step.dropOf]??0)
+      :(()=>{
+        const idOf=e=>{const v=e&&(e.item??e.stack);return v&&typeof v==='object'?(v.id??v.item??null):(v??null);};
+        const countOf=e=>{const v=e&&(e.item??e.stack);return Number((v&&typeof v==='object'?v.count:undefined)??e?.count??1);};
+        const list=Array.isArray(reply.entities)?reply.entities:[];
+        return list.filter(e=>e&&String(idOf(e))===step.dropOf).reduce((n,e)=>n+countOf(e),0);
+      })();
+    assert.ok(dropped<=1,'break duplicated items: expected <=1 '+step.dropOf+', saw '+dropped+' ('+JSON.stringify(reply).slice(0,200)+')');
     assert.ok(dropped>=1,'break lost the held item: expected 1 '+step.dropOf+' drop, saw '+dropped);
   }
 }
@@ -164,6 +173,9 @@ try {
     const plan=machineChaosPlan({seed:0x26_04,steps:24});
     await runMachineChaos(plan);
     console.log('THEURGY_MACHINE_CHAOS_PASS seed='+plan.seed+' steps='+plan.steps);
+  } else if(spec.all) {
+    const results=await runAll(call,assert);
+    console.log('THEURGY_ALL_MACHINES_PASS '+results.length+' observations');
   } else if(mode==='machines') {
     // Input/output ids come from the placed recipe/content pack so the harness never guesses.
     const scenarios=machineScenarios({
@@ -198,7 +210,7 @@ try {
 } finally {
   if(launched)try{await call(['quit']);}catch(e){evidence.push({cleanupError:e.message});}
   await fs.writeFile(path.join(out,'evidence.json'),JSON.stringify({
-    mode, world:spec.world, home:gameHome, socket,
+    mode, world:spec.world, home:gameHome, socket, headless, binary:exe,
     scope:mode==='machines'?'distiller place/insert/heat/process/save/reload/break inventory parity on the isolated machine world'
       :mode==='chaos-machines'?'bounded adversarial distiller probes: duplication, invalid input, repeated placement, reload, destruction'
       :native?'distiller block registration only'
