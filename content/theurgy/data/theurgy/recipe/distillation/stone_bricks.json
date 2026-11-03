@@ -1,13 +1,4 @@
 {
-  "neoforge:conditions": [
-    {
-      "type": "neoforge:not",
-      "value": {
-        "type": "neoforge:tag_empty",
-        "tag": "minecraft:stone_bricks"
-      }
-    }
-  ],
   "type": "theurgy:distillation",
   "category": "misc",
   "ingredient": {

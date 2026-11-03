@@ -1,13 +1,4 @@
 {
-  "neoforge:conditions": [
-    {
-      "type": "neoforge:not",
-      "value": {
-        "type": "neoforge:tag_empty",
-        "tag": "c:ingots/azure_silver"
-      }
-    }
-  ],
   "type": "theurgy:incubation",
   "category": "misc",
   "mercury": "theurgy:mercury_shard",

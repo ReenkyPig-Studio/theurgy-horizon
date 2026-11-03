@@ -1,5 +1,5 @@
 {
-  "type": "theurgy:logistics_nexus",
+  "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
     "b": "#c:bricks/normal",
