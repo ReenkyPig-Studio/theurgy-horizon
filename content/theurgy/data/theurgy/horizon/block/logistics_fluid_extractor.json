@@ -1,5 +1,5 @@
 {
-  "template": "minecraft:chest",
+  "template": "minecraft:barrel",
   "item": true,
   "properties": {
     "hardness": 1,
@@ -8,6 +8,9 @@
   },
   "state_properties": {
     "has_filter": {
+      "type": "boolean"
+    },
+    "waterlogged": {
       "type": "boolean"
     }
   },
