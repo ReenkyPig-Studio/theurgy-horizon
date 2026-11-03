@@ -1,13 +1,4 @@
 {
-  "neoforge:conditions": [
-    {
-      "type": "neoforge:not",
-      "value": {
-        "type": "neoforge:tag_empty",
-        "tag": "c:ores/uraninite_regular"
-      }
-    }
-  ],
   "type": "theurgy:liquefaction",
   "category": "misc",
   "ingredient": "#c:ores/uraninite_regular",
