@@ -47,6 +47,72 @@ pub fn placed(
     game.native_set_block(dimension, [pos[0], pos[1] + 1, pos[2]], upper, 3);
 }
 
+/// `getStateForPlacement`: a double-high apparatus is only placeable when the
+/// block above can be replaced. Claim a prohibited click before the lower half
+/// and its item are committed.
+pub fn use_on(
+    game: &mut crate::game::Game<'_>,
+    stack: &ItemStack,
+    pos: [i32; 3],
+    face: [i32; 3],
+    claimed: &mut bool,
+) {
+    if *claimed || !is_double_high(&stack.item) {
+        return;
+    }
+    let clicked = game.world.block(pos[0], pos[1], pos[2]);
+    let clicked_replaceable = game.with_level(|b, _level, _ticks| b.is_replaceable(clicked));
+    let placement = if clicked_replaceable {
+        pos
+    } else {
+        [pos[0] + face[0], pos[1] + face[1], pos[2] + face[2]]
+    };
+    let above = [placement[0], placement[1] + 1, placement[2]];
+    let state = game.world.block(above[0], above[1], above[2]);
+    let replaceable = game.with_level(|b, _level, _ticks| b.is_replaceable(state));
+    if !replaceable {
+        *claimed = true;
+    }
+}
+
+/// The two halves are one apparatus. Horizon's vanilla template does not know
+/// Theurgy's `updateShape` rule, so a player breaking either half removes the
+/// matching other half through the normal level path (including BE spill).
+pub fn destroyed(
+    game: &mut crate::game::Game<'_>,
+    pos: [i32; 3],
+    state: horizon_world::registry::BlockStateId,
+    canceled: &mut bool,
+) {
+    if *canceled {
+        return;
+    }
+    let Some(descriptor) = game.pack.assets.registry.state(state).cloned() else {
+        return;
+    };
+    if !is_double_high(&descriptor.name) {
+        return;
+    }
+    let Some(half) = descriptor.properties.get("half") else {
+        return;
+    };
+    let (other, expected) = match half.as_str() {
+        "lower" => ([pos[0], pos[1] + 1, pos[2]], "upper"),
+        "upper" => ([pos[0], pos[1] - 1, pos[2]], "lower"),
+        _ => return,
+    };
+    if game.native_block(other) != descriptor.name
+        || game.native_block_property(other, "half").as_deref() != Some(expected)
+    {
+        return;
+    }
+    let Some(air) = game.pack.assets.registry.default_state("minecraft:air") else {
+        return;
+    };
+    let dimension = game.dim.id();
+    game.native_set_block(dimension, other, air, 3);
+}
+
 /// `playerWillDestroy`: return true when this is the lower half of a double
 /// block broken in creative, where Java suppresses the duplicate drop. The
 /// caller decides how to suppress it; this function never cancels the break.
