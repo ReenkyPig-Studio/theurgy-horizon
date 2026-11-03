@@ -137,7 +137,7 @@ hook = "use_item_on"
 hook_version = 1
 kind = "HEAD"
 helper = "hooks/use_on.rs"
-bindings = []
+bindings = [{ name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" }, { name = "stack", ty = "&horizon_client::items::ItemStack", value = "stack" }, { name = "pos", ty = "[i32; 3]", value = "pos" }, { name = "face", ty = "[i32; 3]", value = "face" }, { name = "claimed", ty = "&mut bool", value = "claimed" }]
 
 [[injection]]
 id = "place"
@@ -153,7 +153,7 @@ hook = "destroy_block"
 hook_version = 1
 kind = "HEAD"
 helper = "hooks/destroy.rs"
-bindings = []
+bindings = [{ name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" }, { name = "pos", ty = "[i32; 3]", value = "pos" }, { name = "state", ty = "horizon_world::registry::BlockStateId", value = "state" }, { name = "canceled", ty = "&mut bool", value = "canceled" }]
 
 [[module]]
 id = "screens"
