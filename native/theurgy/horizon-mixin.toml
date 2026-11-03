@@ -1,16 +1,156 @@
-# Bootstrap hook only. Does not register machines or recipes yet.
 [mod]
 id = "theurgy"
-version = "0.1.0"
+version = "1.120.1"
+
+[compatibility]
+horizon_revision = "c9d474dd9116e84c243f8992d75c11314df56f06"
 
 [[crate]]
 id = "engine"
 path = "engine"
 
+[[module]]
+id = "host"
+file = "crates/horizon-client/src/game.rs"
+name = "theurgy_host"
+source = "host.rs"
+
+[[module]]
+id = "registry"
+file = "crates/horizon-client/src/game.rs"
+name = "theurgy_registry"
+source = "registry.rs"
+
+[[module]]
+id = "machines"
+file = "crates/horizon-client/src/game.rs"
+name = "theurgy_machines"
+source = "machines.rs"
+
+[[module]]
+id = "heat"
+file = "crates/horizon-client/src/game.rs"
+name = "theurgy_heat"
+source = "heat.rs"
+
+[[module]]
+id = "flux"
+file = "crates/horizon-client/src/game.rs"
+name = "theurgy_flux"
+source = "flux.rs"
+
+[[module]]
+id = "incubation"
+file = "crates/horizon-client/src/game.rs"
+name = "theurgy_incubation"
+source = "incubation.rs"
+
+[[module]]
+id = "fluids"
+file = "crates/horizon-client/src/game.rs"
+name = "theurgy_fluids"
+source = "fluids.rs"
+
+[[module]]
+id = "reformation"
+file = "crates/horizon-client/src/game.rs"
+name = "theurgy_reformation"
+source = "reformation.rs"
+
+[[module]]
+id = "logistics"
+file = "crates/horizon-client/src/game.rs"
+name = "theurgy_logistics"
+source = "logistics.rs"
+
+[[module]]
+id = "items"
+file = "crates/horizon-client/src/game.rs"
+name = "theurgy_items"
+source = "items.rs"
+
+[[module]]
+id = "render"
+file = "crates/horizon-client/src/game.rs"
+name = "theurgy_render"
+source = "render.rs"
+
 [[injection]]
-id = "bootstrap"
-hook = "frame"
+id = "be_create"
+hook = "block_entity"
 hook_version = 1
 kind = "HEAD"
-helper = "bootstrap.rs"
-bindings = [{ name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" }]
+helper = "hooks/be_create.rs"
+bindings = [{ name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" }, { name = "block", ty = "&str", value = "block" }, { name = "entity", ty = "&mut Option<(String, horizon_world::nbt::Compound)>", value = "entity" }]
+
+[[injection]]
+id = "be_ticks"
+hook = "block_entity_ticks"
+hook_version = 1
+kind = "HEAD"
+helper = "hooks/be_ticks.rs"
+bindings = [{ name = "game", ty = "&crate::game::Game<'_>", value = "&*self" }, { name = "block", ty = "&str", value = "block" }, { name = "ticks", ty = "&mut bool", value = "ticks" }]
+
+[[injection]]
+id = "be_container"
+hook = "block_entity_container"
+hook_version = 1
+kind = "HEAD"
+helper = "hooks/be_container.rs"
+bindings = [{ name = "game", ty = "&crate::game::Game<'_>", value = "&*self" }, { name = "block", ty = "&str", value = "block" }, { name = "container", ty = "&mut Option<horizon_client::containers::ModContainer>", value = "container" }]
+
+[[injection]]
+id = "be_fluids"
+hook = "block_entity_fluids"
+hook_version = 1
+kind = "HEAD"
+helper = "hooks/be_fluids.rs"
+bindings = [{ name = "game", ty = "&crate::game::Game<'_>", value = "&*self" }, { name = "block", ty = "&str", value = "block" }, { name = "fluids", ty = "&mut Option<horizon_client::containers::ModFluidTanks>", value = "fluids" }]
+
+[[injection]]
+id = "be_tick"
+hook = "block_entity_tick"
+hook_version = 1
+kind = "HEAD"
+helper = "hooks/be_tick.rs"
+bindings = [{ name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" }, { name = "pos", ty = "[i32; 3]", value = "pos" }, { name = "entity", ty = "&mut horizon_client::containers::ModBlockEntity", value = "entity" }]
+
+[[injection]]
+id = "components"
+hook = "component_types"
+hook_version = 1
+kind = "HEAD"
+helper = "hooks/components.rs"
+bindings = [{ name = "types", ty = "&mut Vec<String>", value = "types" }]
+
+[[injection]]
+id = "use_item"
+hook = "use_item"
+hook_version = 1
+kind = "HEAD"
+helper = "hooks/use_item.rs"
+bindings = [{ name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" }, { name = "stack", ty = "&horizon_client::items::ItemStack", value = "stack" }, { name = "claimed", ty = "&mut bool", value = "claimed" }]
+
+[[injection]]
+id = "use_on"
+hook = "use_item_on"
+hook_version = 1
+kind = "HEAD"
+helper = "hooks/use_on.rs"
+bindings = [{ name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" }, { name = "stack", ty = "&horizon_client::items::ItemStack", value = "stack" }, { name = "pos", ty = "[i32; 3]", value = "pos" }, { name = "face", ty = "[i32; 3]", value = "face" }, { name = "claimed", ty = "&mut bool", value = "claimed" }]
+
+[[injection]]
+id = "place"
+hook = "place_block"
+hook_version = 1
+kind = "HEAD"
+helper = "hooks/place.rs"
+bindings = [{ name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" }, { name = "stack", ty = "&horizon_client::items::ItemStack", value = "stack" }, { name = "pos", ty = "[i32; 3]", value = "pos" }, { name = "state", ty = "horizon_world::registry::BlockStateId", value = "state" }]
+
+[[injection]]
+id = "destroy"
+hook = "destroy_block"
+hook_version = 1
+kind = "HEAD"
+helper = "hooks/destroy.rs"
+bindings = [{ name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" }, { name = "pos", ty = "[i32; 3]", value = "pos" }, { name = "state", ty = "horizon_world::registry::BlockStateId", value = "state" }, { name = "canceled", ty = "&mut bool", value = "canceled" }]
