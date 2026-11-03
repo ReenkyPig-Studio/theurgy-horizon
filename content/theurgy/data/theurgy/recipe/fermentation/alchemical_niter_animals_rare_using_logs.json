@@ -1,20 +1,4 @@
 {
-  "neoforge:conditions": [
-    {
-      "type": "neoforge:not",
-      "value": {
-        "type": "neoforge:tag_empty",
-        "tag": "theurgy:alchemical_sulfurs/animals/rare"
-      }
-    },
-    {
-      "type": "neoforge:not",
-      "value": {
-        "type": "neoforge:tag_empty",
-        "tag": "minecraft:logs"
-      }
-    }
-  ],
   "type": "theurgy:fermentation",
   "category": "misc",
   "fluid": {

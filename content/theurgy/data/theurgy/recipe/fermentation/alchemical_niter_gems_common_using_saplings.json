@@ -1,20 +1,4 @@
 {
-  "neoforge:conditions": [
-    {
-      "type": "neoforge:not",
-      "value": {
-        "type": "neoforge:tag_empty",
-        "tag": "theurgy:alchemical_sulfurs/gems/common"
-      }
-    },
-    {
-      "type": "neoforge:not",
-      "value": {
-        "type": "neoforge:tag_empty",
-        "tag": "minecraft:saplings"
-      }
-    }
-  ],
   "type": "theurgy:fermentation",
   "category": "misc",
   "fluid": {

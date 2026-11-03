@@ -1,20 +1,4 @@
 {
-  "neoforge:conditions": [
-    {
-      "type": "neoforge:not",
-      "value": {
-        "type": "neoforge:tag_empty",
-        "tag": "theurgy:alchemical_sulfurs/animals/abundant"
-      }
-    },
-    {
-      "type": "neoforge:not",
-      "value": {
-        "type": "neoforge:tag_empty",
-        "tag": "c:eggs"
-      }
-    }
-  ],
   "type": "theurgy:fermentation",
   "category": "misc",
   "fluid": {
