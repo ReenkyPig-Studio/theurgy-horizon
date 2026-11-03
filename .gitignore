@@ -1,5 +1,7 @@
 /upstream/
 /target/
+/content/**/target/
+/.agents/
 /runs/
 /.local/
 .env

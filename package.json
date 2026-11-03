@@ -18,6 +18,7 @@
     "native:build": "node tools/native.mjs build",
     "game:chaos": "node tools/game.mjs chaos",
     "game:content": "node tools/game.mjs content",
+    "coding:swarm": "node matrix/coding-swarm.mjs",
     "content": "node tools/build-content.mjs && node tools/content-check.mjs"
   }
 }

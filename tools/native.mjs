@@ -10,10 +10,11 @@ if(cmd==='plan') {
     '--out',path.join(root,'target/native-plan.json')]);
 } else {
   // Mixins writes its own stage, never the launcher's source/build or user instance.
+  await fs.rm(stage,{recursive:true,force:true}); // Windows mixins requires a fresh output directory
   await run(config.mixins,['apply','--workspace',config.horizonSource,'--mods',path.join(root,'native'),'--out',stage]);
   if(cmd!=='stage')await run(path.join(config.rust,'bin/cargo.exe'),[
     cmd==='check'?'check':'build','--locked','--offline','--manifest-path',path.join(stage,'Cargo.toml'),
-    '--target-dir',path.join(root,'target/horizon-cargo'),
+    '--target-dir',process.env.THEURGY_CARGO_TARGET??path.join(root,'target/horizon-cargo'),
     '-p','horizon-client','--bin','horizon-client','--profile','fast']);
   console.log('Isolated stage:',stage);
 }
