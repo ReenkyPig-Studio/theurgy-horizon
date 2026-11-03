@@ -1,13 +1,4 @@
 {
-  "neoforge:conditions": [
-    {
-      "type": "neoforge:not",
-      "value": {
-        "type": "neoforge:tag_empty",
-        "tag": "minecraft:oak_logs"
-      }
-    }
-  ],
   "type": "theurgy:liquefaction",
   "category": "misc",
   "ingredient": "#minecraft:oak_logs",
