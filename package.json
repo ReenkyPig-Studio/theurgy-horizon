@@ -16,6 +16,8 @@
     "native:plan": "node tools/native.mjs plan",
     "native:check": "node tools/native.mjs check",
     "native:build": "node tools/native.mjs build",
-    "game:chaos": "node tools/game.mjs chaos"
+    "game:chaos": "node tools/game.mjs chaos",
+    "game:content": "node tools/game.mjs content",
+    "content": "node tools/build-content.mjs && node tools/content-check.mjs"
   }
 }

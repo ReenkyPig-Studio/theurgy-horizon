@@ -5,9 +5,9 @@ import {spawn} from 'node:child_process';
 import {root,config,rustEnv} from './common.mjs';
 import {chaosPlan} from './chaos-plan.mjs';
 const mode=process.argv[2]??'smoke';
-if(!['smoke','theurgy','chaos'].includes(mode))throw new Error('smoke | theurgy | chaos');
+if(!['smoke','theurgy','chaos','content'].includes(mode))throw new Error('smoke | theurgy | chaos | content');
 const chaos=mode==='chaos'?chaosPlan():null;
-const gameHome=path.join(root,chaos?'.local/chaos':'.local/game');
+const gameHome=path.join(root,chaos?'.local/chaos':mode==='content'?'.local/content':'.local/game');
 const out=path.join(root,'runs/game-'+Date.now());
 await fs.mkdir(gameHome,{recursive:true});
 await fs.mkdir(out,{recursive:true});
@@ -46,12 +46,12 @@ try {
   catch(e){if(e.code!=='ENOENT')throw e;}
   await call(['launch','--game',exe,'--world','TheurgyLab','--seed','42','--creative','--wait',
     '--resources',path.join(version,'.local/horizon-client/26.3'),
-    '--game-dir',gameHome,'--home',gameHome,'--test-terrain','--render-distance','2']);
+    '--game-dir',gameHome,'--home',gameHome,'--test-terrain','--render-distance','2',...(mode==='content'?['--dev-mod',path.join(root,'content/theurgy')]:[])]);
   started=true;
   await call(['state']);
-  await call(['setblock','0','80','0',native?'theurgy:distiller':'minecraft:stone']);
+  await call(['setblock','0','80','0',native||mode==='content'?'theurgy:distiller':'minecraft:stone']);
   const block=await call(['block','0','80','0']);
-  const id=native?'theurgy:distiller':'minecraft:stone';
+  const id=native||mode==='content'?'theurgy:distiller':'minecraft:stone';
   assert.ok(JSON.stringify(block).includes(id),'expected block identity '+id);
   if(chaos) {
     for(const action of chaos.actions) {
