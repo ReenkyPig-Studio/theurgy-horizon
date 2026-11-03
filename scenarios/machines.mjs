@@ -113,6 +113,9 @@ export function machineScenarios(opts = {}) {
       expectsBlock: MACHINE_BLOCK,
       check: reply => expect(`place ${key}`, blockName(reply) === MACHINE_BLOCK, blockName(reply)),
     });
+    // `setblock` executes on the integrated server; a headless client needs a
+    // tick to receive the chunk change before its `block` readback is valid.
+    step({name: `sync ${key}`, kind: 'wait', args: ['wait', '2']});
     step({
       name: `readback ${key}`,
       kind: 'block',
@@ -209,8 +212,10 @@ export function machineScenarios(opts = {}) {
     kind: 'block',
     pos: [POS.main[0], POS.main[1] - 1, POS.main[2]],
     args: ['block', String(POS.main[0]), String(POS.main[1] - 1), String(POS.main[2])],
-    check: reply => expect('brazier is lit', /\blit=(true|1)\b/.test(reply && reply.block ? reply.block : ''),
-      reply && reply.block),
+    check: reply => {
+      const state = String(reply?.state ?? reply?.block ?? '');
+      return expect('brazier is lit', /\blit=(true|1)\b/.test(state), state);
+    },
   });
   // Bread distils in 100 ticks; the wait budget must cover recipe time plus the heat polling
   // interval (HeatConsumerBehaviour re-checks every 20 game ticks). Guard it here.
@@ -295,21 +300,21 @@ export function machineScenarios(opts = {}) {
     args: ['tp', String(POS.breaker[0] + 0.5), String(POS.breaker[1] + 1), String(POS.breaker[2] + 2.5)],
     check: null,
   });
-  step({name: 'breaker settle', kind: 'wait', args: ['wait', '20']});
+  // Break immediately after teleporting: a headless creative player still has
+  // gravity, and settling first can put it below the test-terrain platform.
   step({
-    name: 'breaker setblock air',
-    kind: 'setblock',
+    name: 'breaker mine',
+    kind: 'break',
     pos: POS.breaker,
-    args: ['setblock', ...posArgs(POS.breaker), 'minecraft:air'],
-    check: reply => expect('breaker setblock air', blockName(reply) === 'minecraft:air', blockName(reply)),
+    args: ['break', ...posArgs(POS.breaker)],
+    dropOf: input,
+    check: reply => expect('breaker mine', reply && reply.ok === true, JSON.stringify(reply).slice(0, 200)),
   });
+  step({name: 'breaker settle', kind: 'wait', args: ['wait', '20']});
   step({
     name: 'breaker drops counted',
     kind: 'entities-count',
     args: ['entities', '8', 'minecraft:item'],
-    // Real drop evidence: item entities near the player. Total dropped items from this machine
-    // must not exceed what was inserted (1 bread); tools/game.mjs enforces the count and type.
-    dropOf: input,
     check: reply => {
       const list = Array.isArray(reply.entities) ? reply.entities : null;
       return expect('breaker drops counted', list !== null, JSON.stringify(reply).slice(0, 200));
