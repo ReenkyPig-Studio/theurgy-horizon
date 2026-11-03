@@ -1,6 +1,25 @@
 # Проверки
 
-## Основная кампания переноса: runs/port-26.3-main
+## Актуальный native/headless прогон (Horizon 2944480)
+- Native source/executable/content используют один pin `294448014fba585f8d5d09dd8886f482493b6417`.
+- `node tools/native.mjs build-headless`: реальный fast build с `--no-default-features`, без запуска GUI.
+- Все `tools/game.mjs` режимы по умолчанию добавляют `--headless`: нет окна/GPU/renderer,
+  но выполняются настоящий integrated server, isolated world, content registry и native hooks.
+- `node tools/headless.mjs all --no-build`: `THEURGY_ALL_MACHINES_PASS`, 63 observations
+  (calcination, liquefaction, fermentation, digestion, accumulation, reformation, incubation),
+  evidence `runs/game-1793753955065/evidence.json`; resource warnings после исправления templates: 0.
+- `node tools/headless.mjs machines --no-build`: `THEURGY_MACHINE_SCENARIOS_PASS`, 49 steps,
+  включая heat/cold/invalid input/output/save/reload/break conservation,
+  evidence `runs/game-1793753303519/evidence.json` (до последующего harness-only улучшения break evidence).
+- `node tools/headless.mjs chaos-machines --no-build`: `THEURGY_MACHINE_CHAOS_PASS`, seed 9732, 24 steps,
+  evidence `runs/game-1793752886632/evidence.json`.
+- `npm test`: 19/19; `npm run fast`: 28/28 Rust tests + doc-tests.
+- Ранее recipes с `neoforge:conditions` молча отбрасывались Horizon до загрузки mod tags;
+  `tools/build-content.mjs` теперь удаляет только conditions, сохраняя ingredients/results/times.
+- Это подтверждённый игровой vertical slice всех основных аппаратов, но не автоматическое
+  доказательство 100% parity всех item interactions, logistics, rendering и Java GameTests.
+
+## История matrix-кампании
 - Все 56 ролей завершены и имеют per-role journal: 24 builders, 24 chaos-testers, 8 reviewers.
 - Сохранены 48 предложений Rust (24 реализации + 24 adversarial test modules).
 - Это НЕ 48 принятых модулей: candidate code не компилировался, не исполнялся и не подключался к игре.

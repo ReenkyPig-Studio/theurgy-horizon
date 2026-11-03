@@ -8,9 +8,9 @@ commit 33b959c9ed0da1de2aff649e9728c1a03470b1bd; NeoForge 26.3.0.76 / Minecraft 
 См. upstream.lock.json: doctor и live runner проверяют commit, clean source и версии до API.
 Ранее ошибочно использовалась default-ветка 26.1.2; старые checkpoints не evidence нового source pin.
 Цель: Horizon / Minecraft 26.3. Rust — установленный launcher toolchain 1.99.1 GNU.
-Pristine Horizon для native stage: c9d474dd9116e84c243f8992d75c11314df56f06 (уже есть локально).
-Vanilla игровой smoke использует установленный Nightly 2026-11-03, native — ресурсы 2026-11-01,
-соответствующие исходникам. Не смешивать latest executable с другим source pin.
+Pristine Horizon для native stage и game: `294448014fba585f8d5d09dd8886f482493b6417`
+(nightly-2026-11-03-2944480). Исходник, executable и prepared resources должны совпадать;
+старый c9d474d вызывал mismatch registry state order и больше не используется для игры.
 Mixins: ddd9700b21997c95d95ac6ee5ecafe3830cf622a, CLI schema 6.
 config.json — локальные пути, без секретов.
 
@@ -91,7 +91,7 @@ node tools/proposal.mjs runs/<run>/checkpoint.json crafting --approve-reviewed-c
 - Внешние GeckoLib/Modonomicon/JEI API не существуют автоматически в Horizon. Нужна замена/явный gap.
 
 ## Текущая граница
-Реализован небольшой state-machine slice CraftingBehaviour.tickServer/stopProcessing/progressPercent;
-craft effect — запрос host adapter, не готовая атомарная inventory операция.
-Native bootstrap — одноразовый log + ссылка на engine, не игровой мод.
-Нет готовых .hmod/.hnmod, перенесённых registries/machines/GUI/Java oracle.
+Интегрированы native block entities, контейнеры/танки, рецепты и основные аппараты;
+есть реальные headless PASS всех аппаратов, distiller persistence/break и bounded chaos.
+Это уже не bootstrap-only, но полный parity ещё не объявляется: item modes/wires, вся logistics,
+GUI/renderer и Java differential traces требуют отдельных проверок. См. актуальный раздел VALIDATION.md.
