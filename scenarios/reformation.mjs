@@ -204,8 +204,13 @@ export function reformationPlan() {
   const cmd = (name, args, pos = null) => step({name, args, pos});
   const container = (name, pos, check = null) => step({name, args: ['container', ...S(pos)], pos, check});
   const block = (name, pos) => step({name, args: ['block', ...S(pos)], pos});
+  const expectAir = (name, pos) => step({name, args: ['block', ...S(pos)], pos,
+    check: (r, assert) => assert.equal(blockId(r), 'minecraft:air', name)});
   const data = (name, pos, check = null) => step({name, args: ['data', 'get', 'block', ...S(pos)], pos, check});
   const put = (name, pos, item, count) => step({name, args: ['container', ...S(pos), full(item), String(count)], pos});
+  const setSlot = (name, pos, item, count) => cmd(name,
+    ['data', 'merge', 'block', ...S(pos),
+      `{Items:[{Slot:0b,id:"${full(item)}",count:${count}}]}`], pos);
   const settle = (name, ticks = SETTLE) => cmd(name, ['wait', String(ticks)]);
   const setFlux = (name, amount) =>
     cmd(name, ['data', 'merge', 'block', ...S(LAYOUT.emitter), `{mercuryFluxHandler:{energy:${amount}}}`],
@@ -256,9 +261,9 @@ export function reformationPlan() {
   expectFlux('fresh emitter holds no flux', 0);
 
   // --- 1. exact success ---------------------------------------------------
-  put('target plaza holds the target item', P.target, RECIPE.target, 1);
-  put('source A holds one source item', P.sourceA, RECIPE.source, RECIPE.sources[0]);
-  put('source B holds one source item', P.sourceB, RECIPE.source, RECIPE.sources[1]);
+  setSlot('target plaza holds the target item', P.target, RECIPE.target, 1);
+  setSlot('source A holds one source item', P.sourceA, RECIPE.source, RECIPE.sources[0]);
+  setSlot('source B holds one source item', P.sourceB, RECIPE.source, RECIPE.sources[1]);
   setFlux('flux is set above the recipe cost', RECIPE.flux + 7);
   cmd('craft window', ['wait', String(CRAFT_WINDOW)]);
   expectPedestal('success crafts exactly once', P.result, RECIPE.result, RECIPE.resultCount);
@@ -270,8 +275,8 @@ export function reformationPlan() {
 
   // --- 2. flux gate -------------------------------------------------------
   clearResult('flux gate');
-  put('flux gate: source A refilled', P.sourceA, RECIPE.source, RECIPE.sources[0]);
-  put('flux gate: source B refilled', P.sourceB, RECIPE.source, RECIPE.sources[1]);
+  setSlot('flux gate: source A refilled', P.sourceA, RECIPE.source, RECIPE.sources[0]);
+  setSlot('flux gate: source B refilled', P.sourceB, RECIPE.source, RECIPE.sources[1]);
   setFlux('flux is one unit short', RECIPE.flux - 1);
   cmd('flux gate window', ['wait', String(CRAFT_WINDOW)]);
   expectPedestal('insufficient flux does not craft', P.result, null, 0);
@@ -283,7 +288,7 @@ export function reformationPlan() {
   // --- 3. one pedestal cannot satisfy two source entries ------------------
   cmd('duplicate: remove source B', ['setblock', ...S(P.sourceB), 'minecraft:air'], P.sourceB);
   settle('duplicate: let the array rebuild');
-  put('duplicate: source A holds two items', P.sourceA, RECIPE.source, 2);
+  setSlot('duplicate: source A holds two items', P.sourceA, RECIPE.source, 2);
   setFlux('duplicate: plenty of flux', RECIPE.flux * 2);
   cmd('duplicate window', ['wait', String(CRAFT_WINDOW)]);
   expectPedestal('duplicate source pedestal does not craft', P.result, null, 0);
@@ -292,8 +297,10 @@ export function reformationPlan() {
 
   // --- 4. exact multiset: nested SizedIngredient count is not ignored -----
   clearResult('exact');
-  put('exact: target plaza refilled', P.target, RECIPE.target, 1);
+  setSlot('exact: target plaza refilled', P.target, RECIPE.target, 1);
+  setSlot('exact: source A holds exactly one item', P.sourceA, RECIPE.source, RECIPE.sources[0]);
   cmd('exact: restore source B', ['setblock', ...S(P.sourceB), SOURCE], P.sourceB);
+  setSlot('exact: source B holds one item', P.sourceB, RECIPE.source, RECIPE.sources[1]);
   settle('exact: let the array rebuild');
   // Two entries, two pedestals, one item each => the recipe matches and must
   // consume exactly one item from each. (A single item in each pedestal is the
@@ -307,10 +314,10 @@ export function reformationPlan() {
 
   // --- 5. a pedestal holding too few items rolls back ---------------------
   clearResult('short');
-  put('short: source A holds only one item', P.sourceA, RECIPE.source, 1);
+  setSlot('short: source A holds only one item', P.sourceA, RECIPE.source, 1);
   cmd('short: remove source B', ['setblock', ...S(P.sourceB), 'minecraft:air'], P.sourceB);
   settle('short: let the array rebuild');
-  // Source B is gone, so no second pedestal can contribute: the craft must fail
+  setFlux('short: known flux before refusal', RECIPE.flux * 2);
   // validation and leave source A untouched (Java never empties a pedestal it
   // could not fully extract from).
   cmd('short window', ['wait', String(CRAFT_WINDOW)]);
@@ -322,8 +329,8 @@ export function reformationPlan() {
   cmd('missing target: restore source B', ['setblock', ...S(P.sourceB), SOURCE], P.sourceB);
   cmd('missing target: break target pedestal', ['setblock', ...S(P.target), 'minecraft:air'], P.target);
   settle('missing target: let the array rebuild');
-  put('missing target: source A refilled', P.sourceA, RECIPE.source, RECIPE.sources[0]);
-  put('missing target: source B refilled', P.sourceB, RECIPE.source, RECIPE.sources[1]);
+  setSlot('missing target: source A refilled', P.sourceA, RECIPE.source, RECIPE.sources[0]);
+  setSlot('missing target: source B refilled', P.sourceB, RECIPE.source, RECIPE.sources[1]);
   cmd('missing target window', ['wait', String(CRAFT_WINDOW)]);
   expectPedestal('missing target pedestal', P.result, null, 0);
   expectPedestal('missing target keeps source A', P.sourceA, RECIPE.source, RECIPE.sources[0]);
@@ -339,11 +346,11 @@ export function reformationPlan() {
   expectFlux('empty target consumes no flux', RECIPE.flux * 2);
 
   // --- 8. missing result pedestal -----------------------------------------
-  put('missing result: target plaza refilled', P.target, RECIPE.target, 1);
+  setSlot('missing result: target plaza refilled', P.target, RECIPE.target, 1);
   cmd('missing result: break result pedestal', ['setblock', ...S(P.result), 'minecraft:air'], P.result);
   settle('missing result: let the array rebuild');
   cmd('missing result window', ['wait', String(CRAFT_WINDOW)]);
-  expectPedestal('missing result pedestal', P.result, null, 0);
+  expectAir('missing result pedestal', P.result);
   expectPedestal('missing result keeps source A', P.sourceA, RECIPE.source, RECIPE.sources[0]);
   expectPedestal('missing result keeps source B', P.sourceB, RECIPE.source, RECIPE.sources[1]);
   expectFlux('missing result consumes no flux', RECIPE.flux * 2);
@@ -351,7 +358,7 @@ export function reformationPlan() {
   // --- 9. output full rolls everything back -------------------------------
   cmd('output full: replace result pedestal', ['setblock', ...S(P.result), RESULT], P.result);
   settle('output full: let the array rebuild');
-  put('output full: result pedestal filled to the limit', P.result, 'minecraft:cobblestone', 64);
+  setSlot('output full: result pedestal filled to the limit', P.result, 'minecraft:cobblestone', 64);
   cmd('output full window', ['wait', String(CRAFT_WINDOW)]);
   expectPedestal('output full rolls back', P.result, 'minecraft:cobblestone', 64);
   expectFlux('output full consumes no flux', RECIPE.flux * 2);
@@ -366,7 +373,7 @@ export function reformationPlan() {
 
   // --- 10. an output that still fits is topped up -------------------------
   clearResult('fit');
-  put('fit: result pedestal has room for one more', P.result, RECIPE.result, 63);
+  setSlot('fit: result pedestal has room for one more', P.result, RECIPE.result, 63);
   setFlux('fit: exactly enough flux', RECIPE.flux);
   cmd('fit window', ['wait', String(CRAFT_WINDOW)]);
   expectPedestal('a partial output stack is topped up', P.result, RECIPE.result, 64);
@@ -376,9 +383,9 @@ export function reformationPlan() {
 
   // --- 11. a foreign stack in the output never merges ---------------------
   clearResult('foreign');
-  put('foreign: source A refilled', P.sourceA, RECIPE.source, RECIPE.sources[0]);
-  put('foreign: source B refilled', P.sourceB, RECIPE.source, RECIPE.sources[1]);
-  put('foreign: result pedestal holds one cobblestone', P.result, 'minecraft:cobblestone', 1);
+  setSlot('foreign: source A refilled', P.sourceA, RECIPE.source, RECIPE.sources[0]);
+  setSlot('foreign: source B refilled', P.sourceB, RECIPE.source, RECIPE.sources[1]);
+  setSlot('foreign: result pedestal holds one cobblestone', P.result, 'minecraft:cobblestone', 1);
   setFlux('foreign: flux available', RECIPE.flux * 2);
   cmd('foreign window', ['wait', String(CRAFT_WINDOW)]);
   expectPedestal('a foreign output stack is not merged into', P.result, 'minecraft:cobblestone', 1);
