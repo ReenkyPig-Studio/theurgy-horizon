@@ -13,6 +13,8 @@
 // conversion state lives here. Item extraction, recipes and networking are host
 // work and are kept behind explicit, checked helpers.
 
+use std::sync::Arc;
+
 use horizon_client::containers::ModBlockEntity;
 use horizon_client::items::ItemStack;
 use horizon_world::nbt::{Compound, JavaString, Tag};
@@ -398,6 +400,44 @@ fn stack_present(stack: &ItemStack) -> bool {
     stack.count > 0
 }
 
+/// Java's `enabled` block property is true unless explicitly 0.
+fn enabled(nbt: &Compound) -> bool {
+    nbt.get(&JavaString::from("enabled")).is_none() || theurgy_host::bool(nbt, "enabled")
+}
+
+// ---------------------------------------------------------------------------
+// Recipe JSON helpers (real distribution: read from recipe.json)
+// ---------------------------------------------------------------------------
+
+fn json_int(value: &serde_json::Value, key: &str) -> Option<i32> {
+    value.get(key).and_then(|v| v.as_i64()).map(|v| v as i32)
+}
+
+/// Reads the flux budget of a catalysation recipe from its JSON.
+fn recipe_flux_budget(json: &serde_json::Value) -> Option<(i32, i32)> {
+    let total = json_int(json, "mercuryFlux")?;
+    let per_tick = json_int(json, "mercuryFluxPerTick").unwrap_or(total);
+    Some((total, per_tick))
+}
+
+/// Finds the first catalysation recipe whose ingredient matches `stack`.
+fn find_catalysation_recipe(
+    game: &crate::game::Game<'_>,
+    stack: &ItemStack,
+) -> Option<(Arc<str>, i32, i32)> {
+    let recipes = game.native_recipes_of_type("theurgy:catalysation");
+    for recipe in recipes {
+        let Some(ingredient) = game.native_recipe_ingredient(&recipe.json) else {
+            continue;
+        };
+        if ingredient.test(stack) {
+            let (total, per_tick) = recipe_flux_budget(&recipe.json)?;
+            return Some((recipe.id.clone().into(), total, per_tick));
+        }
+    }
+    None
+}
+
 // ---------------------------------------------------------------------------
 // Catalyst
 // ---------------------------------------------------------------------------
@@ -424,7 +464,7 @@ fn save_catalyst_conversion(nbt: &mut Compound, state: &CatalystConversion) {
     );
 }
 
-fn tick_catalyst(game: &mut crate::game::Game<'_>, _pos: [i32; 3], entity: &mut ModBlockEntity) {
+fn tick_catalyst(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut ModBlockEntity) {
     let mut conversion = load_catalyst_conversion(&entity.nbt);
     let stored_energy = tank_energy(&entity.nbt, "mercuryFluxHandler");
     // Non-receiving: only internal generation can fill this buffer.
@@ -444,16 +484,97 @@ fn tick_catalyst(game: &mut crate::game::Game<'_>, _pos: [i32; 3], entity: &mut 
     if conversion.mercury_flux_to_convert > 0 {
         let _ = conversion.convert_tick(&mut buffer);
     } else if has_input {
-        // Recipe lookup + input consumption are host work. A catalysation
-        // recipe start installs the conversion budget; nothing else to do.
-        let _ = game;
+        let input = entity
+            .items
+            .first()
+            .and_then(Option::as_ref)
+            .cloned();
+        if let Some(stack) = input {
+            if let Some((_recipe_id, total, per_tick)) = find_catalysation_recipe(game, &stack) {
+                let space = (CATALYST_CAPACITY - buffer.energy).max(0);
+                if CatalystConversion::can_craft(space, true) {
+                    conversion.begin(total, per_tick);
+                    // Consume exactly one input item.
+                    if let Some(slot) = entity.items.first_mut() {
+                        if let Some(item) = slot.as_mut() {
+                            item.count -= 1;
+                            if item.count <= 0 {
+                                *slot = None;
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     save_catalyst_conversion(&mut entity.nbt, &conversion);
     store_energy_child_or_discard(&mut entity.nbt, "mercuryFluxHandler", buffer.energy);
 
-    // The Java block pushes flux out every PUSH_TICK_INTERVAL ticks when
-    // enabled; distribution is driven by the host's capability network.
+    // Push flux out every PUSH_TICK_INTERVAL ticks when enabled.
+    let game_time = game.world.game_time;
+    if game_time % i64::from(PUSH_TICK_INTERVAL) == 0 {
+        let enabled = enabled(&entity.nbt);
+        if enabled {
+            push_flux(game, pos, entity, &mut buffer, &Direction::ALL);
+            store_energy_child_or_discard(&mut entity.nbt, "mercuryFluxHandler", buffer.energy);
+        }
+    }
+}
+
+/// Pushes flux from `buffer` into adjacent flux handlers, conserving energy.
+fn push_flux(
+    game: &mut crate::game::Game<'_>,
+    pos: [i32; 3],
+    entity: &mut ModBlockEntity,
+    buffer: &mut SimpleMercuryFluxHandler,
+    dirs: &[Direction],
+) {
+    let mut targets: Vec<[i32; 3]> = Vec::new();
+    for dir in dirs.iter().copied() {
+        let neighbor = dir.offset(pos);
+        if game.native_with_mod_block_entity(neighbor, |neighbor_entity| {
+            matches!(neighbor_entity.id.as_str(), "theurgy:mercury_catalyst" | "theurgy:mercury_capacitor" | "theurgy:mercury_flux_emitter" | "theurgy:caloric_flux_emitter")
+        }).unwrap_or(false) {
+            targets.push(neighbor);
+        }
+    }
+    if targets.is_empty() {
+        return;
+    }
+    let total = total_to_push(buffer.energy, targets.len());
+    if total <= 0 {
+        return;
+    }
+    let shares = split_evenly(total, targets.len());
+    for (neighbor, share) in targets.iter().zip(shares.iter()) {
+        if *share <= 0 {
+            continue;
+        }
+        let accepted = game.native_with_mod_block_entity(*neighbor, |neighbor_entity| {
+            let mut neighbor_buffer = SimpleMercuryFluxHandler::with_energy(
+                CAPACITOR_CAPACITY,
+                CAPACITOR_CAPACITY,
+                CAPACITOR_CAPACITY,
+                tank_energy(&neighbor_entity.nbt, "mercuryFluxHandler")
+                    .clamp(0, CAPACITOR_CAPACITY),
+            );
+            let accepted = neighbor_buffer.insert(*share);
+            if accepted > 0 {
+                store_energy_child_or_discard(
+                    &mut neighbor_entity.nbt,
+                    "mercuryFluxHandler",
+                    neighbor_buffer.energy,
+                );
+            }
+            accepted
+        }).unwrap_or(0);
+        if accepted > 0 {
+            let extracted = buffer.extract(accepted);
+            debug_assert_eq!(extracted, accepted);
+        }
+    }
+    let _ = entity;
 }
 
 // ---------------------------------------------------------------------------
@@ -480,29 +601,50 @@ fn save_side_modes(nbt: &mut Compound, modes: &[(Direction, SideMode); 6]) {
     set_child_compound(nbt, "sideModes", child);
 }
 
-fn tick_capacitor(entity: &mut ModBlockEntity) {
+fn tick_capacitor(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut ModBlockEntity) {
     let energy = tank_energy(&entity.nbt, "mercuryFluxHandler").clamp(0, CAPACITOR_CAPACITY);
     store_energy_child_or_discard(&mut entity.nbt, "mercuryFluxHandler", energy);
-    // Side modes are rewritten in a canonical shape; the network push on the
-    // OUTPUT/BOTH sides is host work.
     let modes = load_side_modes(&entity.nbt);
     save_side_modes(&mut entity.nbt, &modes);
+
+    let game_time = game.world.game_time;
+    if game_time % i64::from(PUSH_TICK_INTERVAL) == 0 {
+        let mut buffer = SimpleMercuryFluxHandler::with_energy(
+            CAPACITOR_CAPACITY,
+            CAPACITOR_CAPACITY,
+            CAPACITOR_CAPACITY,
+            energy,
+        );
+        push_flux(game, pos, entity, &mut buffer, &[Direction::Up, Direction::Down]);
+        store_energy_child_or_discard(&mut entity.nbt, "mercuryFluxHandler", buffer.energy);
+    }
 }
 
 // ---------------------------------------------------------------------------
 // Mercury flux emitter
 // ---------------------------------------------------------------------------
 
-fn tick_mercury_emitter(entity: &mut ModBlockEntity) {
+fn tick_mercury_emitter(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut ModBlockEntity) {
     let energy = tank_energy(&entity.nbt, "mercuryFluxHandler").clamp(0, MERCURY_EMITTER_CAPACITY);
     store_energy_child_or_discard(&mut entity.nbt, "mercuryFluxHandler", energy);
 
-    // The energy storage sits beside it in the Java entity.
     if let Some(child) = compound_child(&entity.nbt, "energyStorage") {
         let amount = theurgy_host::int(child, "energy", 0).clamp(0, MERCURY_EMITTER_CAPACITY);
         let mut storage = Compound::new();
         theurgy_host::set_int(&mut storage, "energy", amount);
         set_child_compound(&mut entity.nbt, "energyStorage", storage);
+    }
+
+    let game_time = game.world.game_time;
+    if game_time % i64::from(MERCURY_EMITTER_TICK_INTERVAL) == 0 {
+        let mut buffer = SimpleMercuryFluxHandler::with_energy(
+            MERCURY_EMITTER_CAPACITY,
+            MERCURY_EMITTER_CAPACITY,
+            MERCURY_EMITTER_CAPACITY,
+            energy,
+        );
+        push_flux(game, pos, entity, &mut buffer, &Direction::ALL);
+        store_energy_child_or_discard(&mut entity.nbt, "mercuryFluxHandler", buffer.energy);
     }
 }
 
@@ -510,9 +652,57 @@ fn tick_mercury_emitter(entity: &mut ModBlockEntity) {
 // Caloric flux emitter
 // ---------------------------------------------------------------------------
 
-fn tick_caloric_emitter(entity: &mut ModBlockEntity) {
+fn selected_target(nbt: &Compound) -> Option<[i32; 3]> {
+    let points = match nbt.get(&JavaString::from("selectedPoints")) {
+        Some(Tag::List(list)) => list,
+        _ => return None,
+    };
+    let first = points.first()?;
+    let compound = match first {
+        Tag::Compound(c) => c,
+        _ => return None,
+    };
+    let x = theurgy_host::int(compound, "x", 0);
+    let y = theurgy_host::int(compound, "y", 0);
+    let z = theurgy_host::int(compound, "z", 0);
+    Some([x, y, z])
+}
+
+fn tick_caloric_emitter(game: &mut crate::game::Game<'_>, _pos: [i32; 3], entity: &mut ModBlockEntity) {
     let energy = tank_energy(&entity.nbt, "mercuryFluxHandler").clamp(0, CALORIC_CAPACITY);
     store_energy_child_or_discard(&mut entity.nbt, "mercuryFluxHandler", energy);
+
+    let game_time = game.world.game_time;
+    if game_time % i64::from(CALORIC_TICK_INTERVAL) != 0 {
+        return;
+    }
+    let enabled = enabled(&entity.nbt);
+    if !enabled {
+        return;
+    }
+    let Some(target) = selected_target(&entity.nbt) else {
+        return;
+    };
+    if energy < CALORIC_FLUX_PER_HEAT {
+        return;
+    }
+
+    let hot_until = game.native_with_mod_block_entity(target, |target_entity| {
+        theurgy_host::int(&target_entity.nbt, "hotUntil", 0)
+    });
+    if hot_until.unwrap_or(0) > game_time as i32 + CALORIC_TICK_INTERVAL {
+        return;
+    }
+
+    let new_hot_until = game_time as i32 + CALORIC_HEAT_TARGET_FOR_TICKS;
+    let applied = game.native_with_mod_block_entity(target, |target_entity| {
+        theurgy_host::set_int(&mut target_entity.nbt, "hotUntil", new_hot_until);
+        true
+    });
+    if applied.unwrap_or(false) {
+        let remaining = (energy - CALORIC_FLUX_PER_HEAT).max(0);
+        store_energy_child_or_discard(&mut entity.nbt, "mercuryFluxHandler", remaining);
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -526,9 +716,9 @@ pub fn tick(
 ) {
     match entity.id.as_str() {
         "theurgy:mercury_catalyst" => tick_catalyst(game, pos, entity),
-        "theurgy:mercury_capacitor" => tick_capacitor(entity),
-        "theurgy:mercury_flux_emitter" => tick_mercury_emitter(entity),
-        "theurgy:caloric_flux_emitter" => tick_caloric_emitter(entity),
+        "theurgy:mercury_capacitor" => tick_capacitor(game, pos, entity),
+        "theurgy:mercury_flux_emitter" => tick_mercury_emitter(game, pos, entity),
+        "theurgy:caloric_flux_emitter" => tick_caloric_emitter(game, pos, entity),
         _ => {}
     }
 }
@@ -726,5 +916,23 @@ mod tests {
         assert!(!stack_present(&empty));
         let one = ItemStack::new("minecraft:stone", 1);
         assert!(stack_present(&one));
+    }
+
+    #[test]
+    fn recipe_flux_budget_reads_json_fields() {
+        let json = serde_json::json!({
+            "mercuryFlux": 800,
+            "mercuryFluxPerTick": 20
+        });
+        assert_eq!(recipe_flux_budget(&json), Some((800, 20)));
+
+        let crystal = serde_json::json!({
+            "mercuryFlux": 3200,
+            "mercuryFluxPerTick": 20
+        });
+        assert_eq!(recipe_flux_budget(&crystal), Some((3200, 20)));
+
+        let missing = serde_json::json!({});
+        assert_eq!(recipe_flux_budget(&missing), None);
     }
 }
