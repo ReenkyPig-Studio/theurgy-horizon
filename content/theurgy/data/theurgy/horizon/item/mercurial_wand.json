@@ -1,7 +1,7 @@
 {
   "template": "minecraft:stick",
   "components": {
-    "theurgy:mercurial_wand_item_mode": 0,
+    "theurgy:mercurial_wand_item_mode": "cycle_direction",
     "theurgy:selected_frequency": 0
   },
   "max_stack_size": 1
