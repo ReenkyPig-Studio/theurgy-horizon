@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 use crate::game::theurgy_host::{bool, int, set_int};
-use horizon_client::containers::ModBlockEntity;
+use horizon_client::containers::{BlockEntity, ModBlockEntity};
+use horizon_core::geometry::Direction;
 
 // ---------------------------------------------------------------------------
 // Pure logic: logistics network model
@@ -43,13 +44,6 @@ pub struct LeafNode {
 }
 
 /// The in-memory record of a block entity's logistics connector/nexus.
-///
-/// Java's `Logistics` singleton is a global registry keyed by `GlobalPos`;
-/// here the state is persisted in each block entity's NBT under
-/// `LogisticsState`, and the network is resolved per-tick by scanning the
-/// loaded block entities that share a nexus id. This keeps state close to the
-/// block entity that owns it (matching what `saveAdditional` writes) while
-/// preserving the observable connector behaviour.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct LogisticsState {
     /// Whether this connector is enabled. Disabled == absent from network.
@@ -115,10 +109,6 @@ pub fn write_state(nbt: &mut horizon_world::nbt::Compound, state: &LogisticsStat
 // Network assembly (pure)
 // ---------------------------------------------------------------------------
 
-/// Collects the leaf nodes reachable from a nexus given the positions of
-/// connector block entities that are adjacent to the nexus and registered on
-/// it. Kept as a small pure function so the network composition can be tested
-/// without a world.
 pub fn leaf_nodes_of(
     nexus_id: &str,
     candidates: &[(Pos, &str, LeafNodeMode, CapabilityKind)],
@@ -134,8 +124,6 @@ pub fn leaf_nodes_of(
         .collect()
 }
 
-/// The leaf nodes an extractor may deliver to: insert-mode nodes of the same
-/// capability kind, excluding the extractor itself.
 pub fn insert_targets<'a>(
     nodes: &'a [LeafNode],
     extractor: Pos,
@@ -160,7 +148,6 @@ pub const FLUX_BUFFER_CAPACITY: i32 = 1000;
 pub const FLUX_DEFAULT_TRANSFER_RATE: i32 = 100;
 pub const FLUX_TRANSFER_RATE: i32 = FLUX_DEFAULT_TRANSFER_RATE;
 
-/// Java's `(slowTickRandomOffset + gameTime) % period == 0` gating.
 pub fn on_slow_tick(offset: i32, game_time: i64, period: i32) -> bool {
     if period <= 0 {
         return false;
@@ -169,9 +156,6 @@ pub fn on_slow_tick(offset: i32, game_time: i64, period: i32) -> bool {
     (offset + shifted).rem_euclid(period) == 0
 }
 
-/// Java's stable per-position slow-tick offset. Java uses `Math.random()` in
-/// the constructor (unseeded), but a deterministic offset from position keeps
-/// save/reloads stable and satisfies "one extraction per second per connector".
 pub fn slow_tick_offset(pos: Pos, period: i32) -> i32 {
     if period <= 0 {
         return 0;
@@ -182,8 +166,6 @@ pub fn slow_tick_offset(pos: Pos, period: i32) -> i32 {
     (h.rem_euclid(i64::from(period))) as i32
 }
 
-/// Splits `total` evenly over `sink_count` sinks, giving the remainder to the
-/// first sinks (Java's `total / N` + `total % N` distribution).
 pub fn distribute_evenly(total: i32, sink_count: usize) -> Vec<i32> {
     if sink_count == 0 || total <= 0 {
         return Vec::new();
@@ -196,7 +178,6 @@ pub fn distribute_evenly(total: i32, sink_count: usize) -> Vec<i32> {
         .collect()
 }
 
-/// How much of the buffer may be pushed this transfer tick across all sinks.
 pub fn flux_pushes_for(buffer: i32, sink_count: usize) -> i32 {
     if buffer <= 0 || sink_count == 0 {
         return 0;
@@ -205,7 +186,6 @@ pub fn flux_pushes_for(buffer: i32, sink_count: usize) -> i32 {
     buffer.min(budget)
 }
 
-/// The direction a connector targets: override else the block's FACING.
 pub fn connector_direction(override_dir: Option<u8>, facing: u8) -> u8 {
     override_dir.unwrap_or(facing)
 }
@@ -239,8 +219,6 @@ fn java_nexus_id(nbt: &horizon_world::nbt::Compound) -> Option<String> {
 }
 
 fn nexus_id_for(entity: &ModBlockEntity) -> Option<String> {
-    // The nexus stores its own uuid; connectors reference the nexus by uuid
-    // under `nexusId` (written by the connect tool / capability proxy).
     java_nexus_id(&entity.nbt)
 }
 
@@ -252,7 +230,6 @@ fn set_nexus_id(nbt: &mut horizon_world::nbt::Compound, id: &str) {
     );
 }
 
-/// A connector's block identity (`block:id`) decoded from `entity.id`.
 fn block_kind(block: &str) -> Option<(LeafNodeMode, CapabilityKind)> {
     match block {
         "theurgy:logistics_item_inserter" => Some((LeafNodeMode::Insert, CapabilityKind::Item)),
@@ -266,8 +243,6 @@ fn block_kind(block: &str) -> Option<(LeafNodeMode, CapabilityKind)> {
     }
 }
 
-/// Maps a `facing` block-state direction name to the `Direction` id used by
-/// the NBT `directionOverride` field (0 = down … 5 = east).
 pub fn facing_name_to_dir(value: &str) -> Option<u8> {
     match value {
         "down" => Some(0),
@@ -280,13 +255,39 @@ pub fn facing_name_to_dir(value: &str) -> Option<u8> {
     }
 }
 
-/// Reads the block's current `facing` direction at `pos` via the host API.
-/// Falls back to `0` (down) when the block has no such property.
 fn facing_of(game: &crate::game::Game<'_>, pos: Pos) -> u8 {
     let state = game.world.block(pos[0], pos[1], pos[2]);
     game.native_block_state_property(state, "facing")
         .and_then(|value| facing_name_to_dir(&value))
         .unwrap_or(0)
+}
+
+/// Direction id -> offset vector (0 = down … 5 = east).
+fn dir_offset(dir: u8) -> Pos {
+    match dir {
+        0 => [0, -1, 0],
+        1 => [0, 1, 0],
+        2 => [0, 0, -1],
+        3 => [0, 0, 1],
+        4 => [-1, 0, 0],
+        5 => [1, 0, 0],
+        _ => [0, -1, 0],
+    }
+}
+
+fn direction_from_index(value: u8) -> Direction {
+    match value {
+        0 => Direction::Down,
+        1 => Direction::Up,
+        2 => Direction::North,
+        3 => Direction::South,
+        4 => Direction::West,
+        _ => Direction::East,
+    }
+}
+
+fn add(a: Pos, b: Pos) -> Pos {
+    [a[0] + b[0], a[1] + b[1], a[2] + b[2]]
 }
 
 pub fn tick(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut ModBlockEntity) {
@@ -299,26 +300,53 @@ pub fn tick(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut ModBlo
 }
 
 fn tick_nexus(pos: [i32; 3], entity: &mut ModBlockEntity) {
-    // Ensure a nexus id exists on the server; new connectors pair by uuid.
     if nexus_id_for(entity).is_none() {
         let id = fresh_nexus_id(pos, entity);
         set_nexus_id(&mut entity.nbt, &id);
     }
 }
 
-/// Generates a deterministic uuid for a newly placed nexus. Java's
-/// `UUID.randomUUID()` is fine but we avoid non-determinism here: a uuid is
-/// derived from the block entity's position (persisted on first tick).
 fn fresh_nexus_id(pos: Pos, entity: &ModBlockEntity) -> String {
     let mut hasher = 0u64;
     for b in entity.id.bytes() {
         hasher = hasher.wrapping_mul(1_000_003).wrapping_add(u64::from(b));
     }
-    // Fold in the position so two newly placed nexuses differ.
     hasher ^= (pos[0] as i64 as u64).rotate_left(11);
     hasher ^= (pos[1] as i64 as u64).rotate_left(27);
     hasher ^= (pos[2] as i64 as u64).rotate_left(43);
     format!("{hasher:016x}")
+}
+
+/// Scans loaded block entities for connectors sharing `nexus_id`.
+fn collect_network(
+    game: &crate::game::Game<'_>,
+    nexus_id: &str,
+    self_pos: Pos,
+) -> Vec<(Pos, LeafNodeMode, CapabilityKind, u8)> {
+    let mut out = Vec::new();
+    for (&(x, y, z), block_entity) in game.world.block_entities.iter() {
+        let p = [x, y, z];
+        if p == self_pos {
+            continue;
+        }
+        let BlockEntity::Mod(ent) = block_entity else {
+            continue;
+        };
+        let Some((mode, kind)) = block_kind(&ent.id) else {
+            continue;
+        };
+        if java_nexus_id(&ent.nbt).as_deref() != Some(nexus_id) {
+            continue;
+        }
+        let state = read_state(&ent.nbt);
+        if !state.enabled {
+            continue;
+        }
+        let facing = facing_of(game, p);
+        let dir = connector_direction(state.direction_override, facing);
+        out.push((p, mode, kind, dir));
+    }
+    out
 }
 
 fn tick_connector(
@@ -327,7 +355,7 @@ fn tick_connector(
     entity: &mut ModBlockEntity,
     block: &str,
 ) {
-    let Some((_mode, kind)) = block_kind(block) else {
+    let Some((mode, kind)) = block_kind(block) else {
         return;
     };
     let mut state = read_state(&entity.nbt);
@@ -353,9 +381,8 @@ fn tick_connector(
         state_changed = true;
     }
 
-    // Resolve the connector's target direction from block state.
     let facing = facing_of(game, pos);
-    let _target_dir = connector_direction(state.direction_override, facing);
+    let target_dir = connector_direction(state.direction_override, facing);
 
     if !state.enabled {
         if state_changed {
@@ -371,21 +398,57 @@ fn tick_connector(
         CapabilityKind::MercuryFlux => FLUX_TRANSFER_EVERY_N_TICKS,
     };
     let offset = slow_tick_offset(pos, period);
-    if on_slow_tick(offset, now, period) {
-        match kind {
-            CapabilityKind::MercuryFlux => {
-                // Pulse the buffer by draining it; the actual push is
-                // performed by the flux host helper on the network tick.
-                if state.flux_buffer > 0 {
-                    let drain = state.flux_buffer.min(FLUX_TRANSFER_RATE);
-                    state.flux_buffer = state.flux_buffer.saturating_sub(drain);
-                    state_changed = true;
-                }
-            }
-            CapabilityKind::Item | CapabilityKind::Fluid => {
-                // Extraction is handled by the host's network/push scan.
+    if !on_slow_tick(offset, now, period) {
+        if state_changed {
+            write_state(&mut entity.nbt, &state);
+        }
+        return;
+    }
+
+    let Some(nexus_id) = java_nexus_id(&entity.nbt) else {
+        if state_changed {
+            write_state(&mut entity.nbt, &state);
+        }
+        return;
+    };
+
+    let network = collect_network(game, &nexus_id, pos);
+
+    match (mode, kind) {
+        (LeafNodeMode::Extract, CapabilityKind::Item) => {
+            let source = add(pos, dir_offset(target_dir));
+            let sinks: Vec<Pos> = network
+                .iter()
+                .filter(|(_, m, k, _)| *m == LeafNodeMode::Insert && *k == CapabilityKind::Item)
+                .map(|(p, _, _, d)| add(*p, dir_offset(*d)))
+                .collect();
+            let amount = state.extraction_amount.clamp(1, MAX_ITEM_EXTRACTION_AMOUNT) as u32;
+            let from_face = direction_from_index(target_dir).opposite();
+            for (sink, dir) in network.iter().filter(|(_, m, k, _)| *m == LeafNodeMode::Insert && *k == CapabilityKind::Item)
+                .map(|(p, _, _, d)| (add(*p, dir_offset(*d)), *d)) {
+                let to_face = direction_from_index(dir).opposite();
+                let moved = game.native_move_items(game.dim.id(), source, from_face, sink, to_face, None, amount);
+                if moved > 0 { state_changed = true; }
             }
         }
+        (LeafNodeMode::Extract, CapabilityKind::Fluid) => {
+            let source = add(pos, dir_offset(target_dir));
+            let sinks: Vec<Pos> = network
+                .iter()
+                .filter(|(_, m, k, _)| *m == LeafNodeMode::Insert && *k == CapabilityKind::Fluid)
+                .map(|(p, _, _, d)| add(*p, dir_offset(*d)))
+                .collect();
+            let amount = state.extraction_amount.clamp(1, MAX_FLUID_EXTRACTION_AMOUNT);
+            let from_face = direction_from_index(target_dir).opposite();
+            for (sink, dir) in network.iter().filter(|(_, m, k, _)| *m == LeafNodeMode::Insert && *k == CapabilityKind::Fluid)
+                .map(|(p, _, _, d)| (add(*p, dir_offset(*d)), *d)) {
+                let to_face = direction_from_index(dir).opposite();
+                if let Some((_, moved)) = game.native_move_fluids(game.dim.id(), source, from_face, sink, to_face, amount) {
+                    if moved > 0 { state_changed = true; }
+                }
+            }
+        }
+        _ => {}
     }
 
     if state_changed {
@@ -412,7 +475,6 @@ mod tests {
 
     #[test]
     fn slow_tick_handles_negative_time() {
-        // Vanilla game times are non-negative, but the helper must be total.
         assert!(on_slow_tick(0, -20, 20));
         assert!(!on_slow_tick(0, -19, 20));
     }
