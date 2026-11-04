@@ -9,6 +9,7 @@
 // result pedestal and any number of source pedestals.
 use horizon_client::containers::{BlockEntity, ModBlockEntity};
 use horizon_client::items::ItemStack;
+use horizon_world::nbt::{Compound, JavaString, Tag};
 use serde_json::Value;
 
 use crate::game::theurgy_host as host;
@@ -20,6 +21,8 @@ const TARGET: &str = "theurgy:reformation_target_pedestal";
 const RESULT: &str = "theurgy:reformation_result_pedestal";
 const RANGE: i32 = 16;
 const FLUX_CAPACITY: i32 = 1_000;
+const DEFAULT_TIME: i32 = 100;
+const MAX_STACK: u32 = 64;
 
 fn key(pos: [i32; 3]) -> (i32, i32, i32) {
     (pos[0], pos[1], pos[2])
@@ -32,12 +35,33 @@ fn close(origin: [i32; 3], pos: (i32, i32, i32)) -> bool {
     dx <= RANGE && dy <= RANGE && dz <= RANGE
 }
 
-fn flux(entity: &ModBlockEntity) -> i32 {
-    host::int(&entity.nbt, "mercuryFlux", 0).clamp(0, FLUX_CAPACITY)
+fn handler_key() -> JavaString {
+    JavaString::from("mercuryFluxHandler")
 }
 
+fn energy_key() -> JavaString {
+    JavaString::from("energy")
+}
+
+/// Read the Java `mercuryFluxHandler` child compound's `energy` int. An absent
+/// child (or absent/malformed energy tag) means zero.
+fn flux(entity: &ModBlockEntity) -> i32 {
+    let Some(Tag::Compound(handler)) = entity.nbt.get(&handler_key()) else {
+        return 0;
+    };
+    host::int(handler, "energy", 0).clamp(0, FLUX_CAPACITY)
+}
+
+/// Write the Java `mercuryFluxHandler` child compound with an `energy` int,
+/// preserving any other children of the handler.
 fn set_flux(entity: &mut ModBlockEntity, value: i32) {
-    host::set_int(&mut entity.nbt, "mercuryFlux", value.clamp(0, FLUX_CAPACITY));
+    let clamped = value.clamp(0, FLUX_CAPACITY);
+    let mut handler = match entity.nbt.get(&handler_key()) {
+        Some(Tag::Compound(existing)) => existing.clone(),
+        _ => Compound::new(),
+    };
+    host::set_int(&mut handler, "energy", clamped);
+    entity.nbt.insert(handler_key(), Tag::Compound(handler));
 }
 
 fn item(entity: &ModBlockEntity) -> Option<ItemStack> {
@@ -54,6 +78,20 @@ fn match_ingredient(
         && game
             .native_recipe_ingredient(ingredient)
             .is_some_and(|parsed| parsed.test(stack))
+}
+
+fn as_i32(value: Option<&Value>, fallback: i32) -> i32 {
+    value
+        .and_then(Value::as_i64)
+        .unwrap_or(fallback as i64)
+        .clamp(0, i32::MAX as i64) as i32
+}
+
+fn as_u32(value: Option<&Value>, fallback: u32) -> u32 {
+    value
+        .and_then(Value::as_u64)
+        .unwrap_or(fallback as u64)
+        .min(u32::MAX as u64) as u32
 }
 
 /// Emitter tick: find the array, select a recipe, advance progress and commit
@@ -96,42 +134,42 @@ pub fn tick(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut ModBlo
     for (id, json) in &snapshot {
         let Some(target_id) = json.get("target").and_then(Value::as_str) else { continue };
         if target_stack.item.as_ref() != target_id { continue; }
-        let cost = json.get("mercuryFlux").and_then(Value::as_i64).unwrap_or(0).clamp(0, i32::MAX as i64) as i32;
+        let cost = as_i32(json.get("mercuryFlux"), 0);
         if available_flux < cost { continue; }
         let needed = json.get("sources").and_then(Value::as_array).cloned().unwrap_or_default();
-        let mut used = Vec::new();
+        let mut used: Vec<(usize, u32)> = Vec::new();
         let mut ok = true;
         for entry in &needed {
             let ingredient = entry.get("ingredient").unwrap_or(entry);
-            let count = entry.get("count").and_then(Value::as_u64).unwrap_or(1) as u32;
+            let count = as_u32(entry.get("count"), 1);
             let found = sources.iter().enumerate().find(|(i, at)| {
-                if used.contains(i) { return false; }
-                let Some(BlockEntity::Mod(pedestal)) = game.world.block_entities.get(at) else { return false };
-                let Some(stack) = item(pedestal) else { return false };
+                if used.iter().any(|(u, _)| u == i) { return false; }
+                let Some(BlockEntity::Mod(pedestal)) = game.world.block_entities.get(at) else { return false; };
+                let Some(stack) = item(pedestal) else { return false; };
                 match_ingredient(game, ingredient, &stack, count)
             }).map(|(i, _)| i);
-            if let Some(i) = found { used.push(i); } else { ok = false; break; }
+            if let Some(i) = found { used.push((i, count)); } else { ok = false; break; }
         }
         if !ok { continue; }
         let Some(res_json) = json.get("result") else { continue };
         let Some(res_id) = res_json.get("id").and_then(Value::as_str) else { continue };
-        let res_count = res_json.get("count").and_then(Value::as_u64).unwrap_or(1) as u32;
+        let res_count = as_u32(res_json.get("count"), 1);
         let Some(BlockEntity::Mod(result_entity)) = game.world.block_entities.get(&result) else { continue };
         let fits = match item(result_entity) {
             None => true,
             Some(existing) => existing.item.as_ref() == res_id
-                && existing.count.saturating_add(res_count) <= 64,
+                && existing.count.saturating_add(res_count) <= MAX_STACK,
         };
         if !fits { continue; }
-        chosen = Some((id.clone(), cost, used.iter().map(|&i| (i, needed.get(i).and_then(|e| e.get("count")).and_then(Value::as_u64).unwrap_or(1) as u32)).collect(), res_id.to_owned(), res_count));
+        chosen = Some((id.clone(), cost, used, res_id.to_owned(), res_count));
         break;
     }
 
     let mut state = host::crafting(entity);
-    let total = chosen.as_ref().map_or(0, |_| {
-        snapshot.iter().find(|(id, _)| Some(id) == chosen.as_ref().map(|c| &c.0))
-            .and_then(|(_, json)| json.get("time")).and_then(Value::as_i64).unwrap_or(100)
-            .clamp(0, i32::MAX as i64) as i32
+    let total = chosen.as_ref().map_or(DEFAULT_TIME, |c| {
+        snapshot.iter().find(|(id, _)| *id == c.0)
+            .map(|(_, json)| as_i32(json.get("time"), DEFAULT_TIME))
+            .unwrap_or(DEFAULT_TIME)
     });
     if state.total_time != total {
         state.input_changed(total);
@@ -190,5 +228,18 @@ mod tests {
         assert_eq!(flux(&e), 0);
         set_flux(&mut e, 5_000);
         assert_eq!(flux(&e), FLUX_CAPACITY);
+    }
+    #[test]
+    fn absent_handler_means_zero_flux() {
+        let e = ModBlockEntity::default();
+        assert_eq!(flux(&e), 0);
+    }
+    #[test]
+    fn malformed_handler_is_safe() {
+        let mut e = ModBlockEntity::default();
+        e.nbt.insert(handler_key(), Tag::Int(7));
+        assert_eq!(flux(&e), 0);
+        set_flux(&mut e, 42);
+        assert_eq!(flux(&e), 42);
     }
 }
