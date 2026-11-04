@@ -20,6 +20,13 @@ const WIRE_ITEM: &str = "theurgy:copper_wire";
 const WIRE_END_POINT: &str = "theurgy:wire_end_point";
 const WIRE_MAX_RANGE: i64 = 32;
 
+const DIVINATION_LINKED_BLOCK: &str = "theurgy:divination_linked_block";
+const DIVINATION_LINKED_TAG: &str = "theurgy:divination_linked_tag";
+const DIVINATION_POS: &str = "theurgy:divination_pos";
+const DIVINATION_DISTANCE: &str = "theurgy:divination_distance";
+const DIVINATION_RANGE: &str = "theurgy:divination_settings_range";
+const DIVINATION_MAX_RANGE: i32 = 32;
+
 const WIRE_ENDPOINTS: [&str; 8] = [
     "theurgy:logistics_connector_node",
     "theurgy:logistics_item_inserter",
@@ -86,6 +93,16 @@ fn component_bool(game: &crate::game::Game<'_>, stack: &ItemStack, id: &str) -> 
     }
 }
 
+/// Read a registered native component as an integer.
+fn component_i32(game: &crate::game::Game<'_>, stack: &ItemStack, id: &str) -> Option<i32> {
+    match game.native_component(stack, id).ok().flatten()? {
+        Tag::Int(value) => Some(*value),
+        Tag::Short(value) => Some(*value as i32),
+        Tag::Byte(value) => Some(*value as i32),
+        _ => None,
+    }
+}
+
 /// Write a component on the acting player's held stack. The hook's `stack` is
 /// immutable, so the authoritative carried stack is updated by value.
 fn set_held_component(game: &mut crate::game::Game<'_>, id: &str, value: Tag) {
@@ -128,6 +145,28 @@ fn is_wire_endpoint(block: &str) -> bool {
 
 fn is_sneaking(game: &crate::game::Game<'_>) -> bool {
     game.has_shift_down() || game.keys.contains(&winit::keyboard::KeyCode::ShiftLeft)
+}
+
+fn is_air(block: &str) -> bool {
+    matches!(block, "minecraft:air" | "minecraft:cave_air" | "minecraft:void_air")
+}
+
+fn distance_bucket(distance: f32) -> f32 {
+    if distance < 6.0 {
+        0.0
+    } else if distance < 15.0 {
+        1.0
+    } else if distance < 25.0 {
+        2.0
+    } else if distance < 35.0 {
+        3.0
+    } else if distance < 45.0 {
+        4.0
+    } else if distance < 65.0 {
+        5.0
+    } else {
+        6.0
+    }
 }
 
 /// `WireEndPoint.load(ItemStack)`: the component is a compound with a packed
@@ -280,7 +319,7 @@ fn attune_rod(
     }
     set_held_component(
         game,
-        "theurgy:divination_linked_block",
+        DIVINATION_LINKED_BLOCK,
         Tag::String(JavaString::from(block.as_str())),
     );
     true
@@ -303,6 +342,104 @@ pub fn right_click_block(
     wire_use_on(game, stack, pos, &mut claimed);
     if claimed {
         *canceled = true;
+    }
+}
+
+/// Right-click in air with a divination rod scans a bounded local cube for the
+/// linked block or linked tag and writes the result into the rod's components.
+pub fn use_item(
+    game: &mut crate::game::Game<'_>,
+    stack: &ItemStack,
+    claimed: &mut bool,
+) {
+    if *claimed || is_sneaking(game) || !stack.item.contains("divination_rod") {
+        return;
+    }
+    *claimed = true;
+
+    let linked_block =
+        component_string(game, stack, DIVINATION_LINKED_BLOCK).filter(|value| !value.is_empty());
+    let linked_tag =
+        component_string(game, stack, DIVINATION_LINKED_TAG).filter(|value| !value.is_empty());
+    if linked_block.is_none() && linked_tag.is_none() {
+        return;
+    }
+
+    let radius = component_i32(game, stack, DIVINATION_RANGE)
+        .unwrap_or(DIVINATION_MAX_RANGE)
+        .clamp(0, DIVINATION_MAX_RANGE);
+
+    let origin = game
+        .player
+        .as_ref()
+        .map(|p| [p.position.x, p.position.y, p.position.z])
+        .unwrap_or([0.0, 0.0, 0.0]);
+    let ox = origin[0] as f64;
+    let oy = origin[1] as f64;
+    let oz = origin[2] as f64;
+    let origin_block = [
+        origin[0].floor() as i32,
+        origin[1].floor() as i32,
+        origin[2].floor() as i32,
+    ];
+
+    let mut best: Option<([i32; 3], f32)> = None;
+    let mut best_distance2 = f64::INFINITY;
+
+    for dx in -radius..=radius {
+        let x = origin_block[0] + dx;
+        for dy in -radius..=radius {
+            let y = origin_block[1] + dy;
+            for dz in -radius..=radius {
+                let z = origin_block[2] + dz;
+                let pos = [x, y, z];
+                let block = game.native_block(pos);
+                if block.is_empty() || is_air(&block) {
+                    continue;
+                }
+
+                let matches = if let Some(id) = linked_block.as_deref() {
+                    block.as_str() == id
+                } else if let Some(tag) = linked_tag.as_deref() {
+                    game.res.items().block_in_tag(tag, block.as_str())
+                } else {
+                    false
+                };
+                if !matches {
+                    continue;
+                }
+
+                let bx = x as f64 + 0.5;
+                let by = y as f64 + 0.5;
+                let bz = z as f64 + 0.5;
+                let ddx = bx - ox;
+                let ddy = by - oy;
+                let ddz = bz - oz;
+                let distance2 = ddx * ddx + ddy * ddy + ddz * ddz;
+                if distance2 < best_distance2 {
+                    best_distance2 = distance2;
+                    best = Some((pos, distance2.sqrt() as f32));
+                }
+            }
+        }
+    }
+
+    if let Some((pos, distance)) = best {
+        set_held_component(
+            game,
+            DIVINATION_POS,
+            Tag::List(vec![
+                Tag::Int(pos[0]),
+                Tag::Int(pos[1]),
+                Tag::Int(pos[2]),
+            ]),
+        );
+        let bucket = distance_bucket(distance);
+        set_held_component(
+            game,
+            DIVINATION_DISTANCE,
+            Tag::Float(f32::to_bits(bucket)),
+        );
     }
 }
 
