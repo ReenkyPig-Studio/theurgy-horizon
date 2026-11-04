@@ -130,7 +130,7 @@ for(const id of items) {
  }
  if(id==='mercurial_wand'){
    d.max_stack_size=1;
-   d.components['theurgy:mercurial_wand_item_mode']=0;
+   d.components['theurgy:mercurial_wand_item_mode']='cycle_direction';
    d.components['theurgy:selected_frequency']=0;
  }
  if(bucket){d.max_stack_size=1;d.crafting_remainder='minecraft:bucket';}

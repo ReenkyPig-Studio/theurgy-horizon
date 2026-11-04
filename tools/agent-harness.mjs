@@ -7,6 +7,10 @@ import {root,run,rustEnv} from './common.mjs';
 // lock serialises only the real native build + game section, never research or
 // editing. A crashed agent leaves a PID-tagged lock which is safe to reclaim.
 const mode=process.argv[2]??'all';
+// Wheel input is a real window event in Horizon (`scroll-at` has no headless
+// fallback). Wand verification therefore uses the renderer explicitly; every
+// other scenario remains headless by default.
+const gui=mode==='wand'||process.env.THEURGY_GUI==='1';
 const matrixRoot=process.env.THEURGY_MATRIX_ROOT??root;
 const target=process.env.THEURGY_CARGO_TARGET??path.join(matrixRoot,'target/native-agent-cache');
 const binary=path.join(target,'fast/horizon-client.exe');
@@ -45,23 +49,26 @@ async function release() {
 await acquire();
 async function exists(file){if(!file)return false;try{await fs.access(file);return true;}catch{return false;}}
 try {
-  if(mode==='items')await run(process.execPath,['tools/build-content.mjs'],{env:{...rustEnv}});
+  if(mode==='items'||mode==='wand') {
+    await run(process.execPath,['tools/build-content.mjs'],{env:{...rustEnv}});
+    await run(process.execPath,['tools/content-check.mjs'],{env:{...rustEnv}});
+  }
   if(await exists(cached)) {
     console.log('[agent-harness] approved binary cache hit:',cached);
   } else {
   console.log('[agent-harness] locked; checking real native proposal for',mode);
-  await run(process.execPath,['tools/native.mjs','check-headless'],{
+  await run(process.execPath,['tools/native.mjs',gui?'check':'check-headless'],{
     env:{...rustEnv,THEURGY_CARGO_TARGET:target},
   });
-  console.log('[agent-harness] check passed; building headless native binary');
-  await run(process.execPath,['tools/native.mjs','build-headless'],{
+  console.log(`[agent-harness] check passed; building ${gui?'GUI':'headless'} native binary`);
+  await run(process.execPath,['tools/native.mjs',gui?'build':'build-headless'],{
     env:{...rustEnv,THEURGY_CARGO_TARGET:target},
   });
   if(cached){await fs.mkdir(path.dirname(cached),{recursive:true});await fs.copyFile(binary,cached);console.log('[agent-harness] cached approved binary');}
   }
   console.log('[agent-harness] running isolated real game:',mode);
   await run(process.execPath,['tools/game.mjs',mode],{
-    env:{...rustEnv,THEURGY_GAME_BIN:cached??binary,THEURGY_GUI:'0'},
+    env:{...rustEnv,THEURGY_GAME_BIN:cached??binary,THEURGY_GUI:gui?'1':'0'},
   });
 } finally {
   await release();
