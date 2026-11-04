@@ -46,7 +46,9 @@ function totalItems(reply) {
 function fluidList(reply) {
   let source = reply;
   if (typeof source === 'string') source = source;
-  const text = typeof source === 'string' ? source : JSON.stringify(source ?? null);
+  const text = typeof source === 'string' ? source
+    : Array.isArray(source?.chat) ? source.chat.join('\n')
+    : JSON.stringify(source ?? null);
   if (typeof text !== 'string') return null;
   // Only the Fluid/Amount pairs matter, and their order inside a compound is
   // not guaranteed, so match each compound body independently.
@@ -129,8 +131,9 @@ export async function runCustom(call, assert) {
   assert.equal(water1After.amount, 0, 'accumulator must not keep leftover water');
   await clearPair(acc1, tank1);
 
-  // -- 2. Solute recipe: crystallized lava -> lava ---------------------------
-  // 200 mB water is only 2 cycles; the 1 solute must be consumed exactly once.
+  // -- 2. Solute recipe: crystallized lava -> 1000 mB lava ------------------
+  // This recipe has no evaporant: merged water is untouched and is not a
+  // multiplier for the 1000 mB result in the pinned accumulation JSON.
   const acc2 = [74, 80, 8], tank2 = [74, 79, 8];
   await placePair(acc2, tank2);
   await step('lava water', mergeFluid(acc2, 'minecraft:water', 200));
@@ -139,32 +142,34 @@ export async function runCustom(call, assert) {
   await step('lava wait', ['wait', '160']);
   const outTank2 = await readTank(tank2, 'tank after lava recipe');
   assert.equal(outTank2.fluid, 'minecraft:lava', 'crystallized lava recipe must fill the tank with lava');
-  assert.equal(outTank2.amount, 200, '200 mB water * (100 mB lava / 100 mB water) must fill exactly 200 mB');
+  assert.equal(outTank2.amount, 1000, 'pinned lava recipe must produce exactly 1000 mB');
   const acc2Items = await step('lava solute consumed', ['container', ...s(acc2)]);
   assert.equal(itemAt(acc2Items, 0), null, 'the solute must be consumed when the recipe has one');
   const water2After = await readTank(acc2, 'accumulator after lava');
-  assert.equal(water2After.amount, 0, 'evaporant must be drained only when the recipe has one');
+  assert.equal(water2After.amount, 200, 'a recipe without evaporant must not drain water');
+  assert.equal(water2After.fluid, 'minecraft:water');
   await clearPair(acc2, tank2);
 
-  // -- 3. Conservation: no solute with no water crafts nothing ---------------
-  // Solute present but no evaporant: `matches` fails, the item must never be
-  // voided. This is the "wrong/missing fluid rolls back" invariant.
+  // -- 3. No-evaporant solute recipe works even with an empty water tank ----
+  // Java matches evaporant=true when the field is absent, so crystallized lava
+  // is consumed once and produces 1000 mB lava without requiring water.
   const acc3 = [78, 80, 8], tank3 = [78, 79, 8];
   await placePair(acc3, tank3);
   await step('dry solute', ['container', ...s(acc3), 'theurgy:crystallized_lava', '1'],
     r => assert.equal(itemAt(r, 0), 'theurgy:crystallized_lava'));
   await step('dry wait', ['wait', '160']);
   const dryItems = await step('dry solute kept', ['container', ...s(acc3)]);
-  assert.equal(itemAt(dryItems, 0), 'theurgy:crystallized_lava',
-    'without evaporant the solute must stay in the input slot');
-  assert.equal(totalItems(dryItems), 1, 'nothing may be created or voided by a non-matching recipe');
+  assert.equal(itemAt(dryItems, 0), null,
+    'the no-evaporant solute recipe consumes exactly one input');
+  assert.equal(totalItems(dryItems), 0, 'the single solute was consumed, never duplicated');
   const dryTank = await readTank(tank3, 'tank after dry solute');
-  assert.equal(dryTank.amount, 0, 'a non-matching recipe must never produce fluid');
+  assert.equal(dryTank.fluid, 'minecraft:lava');
+  assert.equal(dryTank.amount, 1000, 'no-evaporant recipe still produces its exact result');
   await clearPair(acc3, tank3);
 
   // -- 4. Target capacity / full-tank rollback -------------------------------
-  // Pre-fill the tank just under full: 1950/2000 of gas. 1000 mB water can only
-  // afford 5 mB more, i.e. a partial craft, which canCraft must refuse entirely.
+  // Pre-fill to 1950/2000. A water-only craft returns 100 mB and Java's
+  // canCraft requires the WHOLE result to fit, so all inputs must roll back.
   const acc4 = [82, 80, 8], tank4 = [82, 79, 8];
   await placePair(acc4, tank4);
   await step('near full tank', mergeFluid(tank4, SAL, 1950));
@@ -174,13 +179,12 @@ export async function runCustom(call, assert) {
   await step('full wait', ['wait', '320']);
   const fullTank = await readTank(tank4, 'tank after full');
   assert.equal(fullTank.fluid, SAL, 'a full tank keeps its fluid');
-  assert.equal(fullTank.amount, 2000, 'the tank must fill to exactly its 2000 mB capacity, never overfill');
+  assert.equal(fullTank.amount, 1950, 'a full 100 mB result must be refused when only 50 mB fit');
   assert.ok(fullTank.amount <= TANK_CAPACITY, 'tank amount must never exceed the Java capacity of 2000 mB');
   const fullWater = await readTank(acc4, 'accumulator after full');
-  // Whatever craft committed exactly once, the rest may not have been voided:
-  // 1000 mB merged, 5 craftable cycles consumed -> at most 950 left.
-  assert.ok(fullWater.amount >= 950 && fullWater.amount <= 1000,
-    'no water may be voided by refused crafts, saw ' + fullWater.amount + ' mB');
+  // No craft committed: all 1000 mB water remains, not merely a lower bound.
+  assert.equal(fullWater.amount, 1000,
+    'refused full-result craft must not void or partially consume water');
   assert.equal(fullWater.fluid, fullWater.amount > 0 ? 'minecraft:water' : null,
     'residual accumulator fluid must stay water');
   await clearPair(acc4, tank4);
@@ -227,13 +231,18 @@ export async function runCustom(call, assert) {
   assert.equal(overfill.fluid, SAL, 'overfill must not change the fluid identity');
   assert.ok(overfill.amount >= 1000 && overfill.amount <= TANK_CAPACITY,
     'tank amount must stay within [previous, 2000] mB, saw ' + overfill.amount);
+  await step('passive tank negative', mergeFluid(tank7, 'minecraft:water', -500));
+  await step('passive tank negative settle', ['wait', '20']);
+  const negative = await readTank(tank7, 'passive tank after negative');
+  assert.equal(negative.amount, 0, 'negative merged amount must normalize to zero');
+  assert.equal(negative.fluid, null, 'zero fluid must clear its identity');
   await step('passive tank cleanup', ['setblock', ...s(tank7), 'minecraft:air']);
 
   // -- 8. Persistence across save/reload / unload --------------------------
   const acc8 = [98, 80, 8], tank8 = [98, 79, 8];
   await placePair(acc8, tank8);
   await step('persist tank', mergeFluid(tank8, SAL, 740));
-  await step('persist water', mergeFluid(acc8, 'minecraft:water', 600));
+  await step('persist water', mergeFluid(acc8, 'minecraft:water', 1000));
   await step('persist save', ['save']);
   await step('persist relocation', ['tp', '0', '80', '0']);
   await step('persist unload', ['wait', '40']);
@@ -244,7 +253,7 @@ export async function runCustom(call, assert) {
   assert.equal(persistTank.amount, 740, 'tank amount must survive save/reload exactly');
   const persistWater = await readTank(acc8, 'persisted accumulator');
   assert.equal(persistWater.fluid, 'minecraft:water', 'accumulator water must survive save/reload');
-  assert.equal(persistWater.amount, 600, 'accumulator water amount must survive save/reload exactly');
+  assert.equal(persistWater.amount, 1000, 'accumulator water must survive save/reload exactly');
   // Continue crafting on the reloaded state: it must resume, not restart from a
   // corrupt tank.
   await step('persist resume wait', ['wait', '320']);
@@ -254,7 +263,7 @@ export async function runCustom(call, assert) {
   assert.equal(resumed.fluid, SAL, 'resumed production must stay sal ammoniac');
   const resumedWater = await readTank(acc8, 'accumulator drained');
   const produced = resumed.amount - 740;
-  const expectedWater = 600 - produced * 10;
+  const expectedWater = 1000 - produced * 10;
   assert.ok(Math.abs(resumedWater.amount - Math.max(0, expectedWater)) <= 100,
     'water consumption must track production at 100 mB water per 10 mB gas (produced ' + produced +
     ', water ' + resumedWater.amount + ', expected ~' + expectedWater + ')');
