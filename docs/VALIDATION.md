@@ -5,24 +5,36 @@
 - `node tools/native.mjs build-headless`: реальный fast build с `--no-default-features`, без запуска GUI.
 - Все `tools/game.mjs` режимы по умолчанию добавляют `--headless`: нет окна/GPU/renderer,
   но выполняются настоящий integrated server, isolated world, content registry и native hooks.
-- `node tools/headless.mjs all --no-build`: `THEURGY_ALL_MACHINES_PASS`, 63 observations
+- `node tools/headless.mjs all --no-build`: `THEURGY_ALL_MACHINES_PASS`, 65 observations
   (calcination, liquefaction, fermentation, digestion, accumulation, reformation, incubation),
-  evidence `runs/game-1793753955065/evidence.json`; resource warnings после исправления templates: 0.
+  evidence `runs/game-1793843230536/evidence.json`.
 - `node tools/headless.mjs machines --no-build`: `THEURGY_MACHINE_SCENARIOS_PASS`, 49 steps,
   включая heat/cold/invalid input/output/save/reload/break conservation,
   evidence `runs/game-1793753303519/evidence.json` (до последующего harness-only улучшения break evidence).
 - `node tools/headless.mjs chaos-machines --no-build`: `THEURGY_MACHINE_CHAOS_PASS`, seed 9732, 24 steps,
   evidence `runs/game-1793752886632/evidence.json`.
 - `node tools/headless.mjs interactions --no-build`: `THEURGY_INTERACTIONS_PASS`, 35 observations,
-  evidence `runs/game-1793755683976/evidence.json`: настоящие give/place/break, обе половины
+  evidence `runs/game-1793843393444/evidence.json`: настоящие give/place/break, обе половины
   double-high, spill содержимого ровно один раз, запрет occupied-upper без потери предмета.
+- После интеграции mercurial wand на чистых isolated worlds: items 16 observations
+  (`runs/game-1793843074505`), copper-wire endpoints 30 (`runs/game-1793843117638`),
+  divination scanning 15 (`runs/game-1793843182004`).
+- `runs/secure-wand`: candidate SHA256 `024621bd3e4d1f6af0c731c79efd4352a0c4b22904974646b12e595830c5d428`,
+  scenario SHA256 `045951a81412f79de8b96ec8f375f6f1279c202de3783b4d1716af63ea781424`,
+  STATIC_PASS → AI_ALLOW → LOCAL_APPROVED → VERIFIED. Изолированный real-game сценарий:
+  `THEURGY_CUSTOM_PASS mode=wand observations=40`, evidence
+  `.agents/secure-secure-wand/wand/runs/game-1793842089878/evidence.json`.
+  Проверены Java string codec режимов, Shift+wheel, direction/FACING, enable/disable,
+  selected frequency и capacitor UP OUTPUT→BOTH. `scroll-at` требует окно, поэтому только
+  этот trusted harness запускается с GUI; вызов того же сценария в headless не является PASS.
 - Настоящий Java/NeoForge `runGameTestServer` без GUI: `JAVA_GAMETESTS_PASS`, 148/148 upstream tests,
   pinned source 33b959c…, evidence `runs/java-oracle-2026-11-04T01-41-51.953Z/result.json`.
   Это Java baseline, не Rust differential PASS. Запуск: `npm run java:oracle`.
 - Runtime matrix `runs/runtime-main`: 8 coding agents в изолированных worktrees, owned files,
   обязательный locked native build + headless game; готовые patches появляются в `runs/runtime-main/patches`.
   Параллельные checkpoint writes сериализованы после обнаруженного Windows rename race.
-- `npm test`: 19/19; `npm run fast`: 28/28 Rust tests + doc-tests.
+- После wand/provider изменений: `npm test` 34/34; `npm run fast` 28/28 Rust tests + doc-tests;
+  `node tools/native.mjs check-headless` и `build-headless` PASS.
 - Ранее recipes с `neoforge:conditions` молча отбрасывались Horizon до загрузки mod tags;
   `tools/build-content.mjs` теперь удаляет только conditions, сохраняя ingredients/results/times.
 - Это подтверждённый игровой vertical slice всех основных аппаратов, но не автоматическое
