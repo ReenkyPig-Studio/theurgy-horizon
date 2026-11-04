@@ -16,6 +16,12 @@
 - `node tools/headless.mjs interactions --no-build`: `THEURGY_INTERACTIONS_PASS`, 35 observations,
   evidence `runs/game-1793755683976/evidence.json`: настоящие give/place/break, обе половины
   double-high, spill содержимого ровно один раз, запрет occupied-upper без потери предмета.
+- Настоящий Java/NeoForge `runGameTestServer` без GUI: `JAVA_GAMETESTS_PASS`, 148/148 upstream tests,
+  pinned source 33b959c…, evidence `runs/java-oracle-2026-11-04T01-41-51.953Z/result.json`.
+  Это Java baseline, не Rust differential PASS. Запуск: `npm run java:oracle`.
+- Runtime matrix `runs/runtime-main`: 8 coding agents в изолированных worktrees, owned files,
+  обязательный locked native build + headless game; готовые patches появляются в `runs/runtime-main/patches`.
+  Параллельные checkpoint writes сериализованы после обнаруженного Windows rename race.
 - `npm test`: 19/19; `npm run fast`: 28/28 Rust tests + doc-tests.
 - Ранее recipes с `neoforge:conditions` молча отбрасывались Horizon до загрузки mod tags;
   `tools/build-content.mjs` теперь удаляет только conditions, сохраняя ingredients/results/times.
