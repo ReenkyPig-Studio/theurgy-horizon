@@ -94,6 +94,11 @@ function helpers(assert) {
   };
   const equal = (a, b, msg) => {
     if (Object.is(a, b)) return;
+    if (a !== null && b !== null && typeof a === 'object' && typeof b === 'object'
+      && typeof assert?.deepEqual === 'function') {
+      assert.deepEqual(a, b, msg);
+      return;
+    }
     if (typeof assert?.strictEqual === 'function') assert.strictEqual(a, b, msg);
     else if (typeof assert?.equal === 'function') assert.equal(a, b, msg);
     else fail(`${msg}: expected ${JSON.stringify(b)}, got ${JSON.stringify(a)}`);
@@ -118,20 +123,14 @@ async function give(call, pos, i, item, count) {
   return r;
 }
 
-/** Empties slot `i` of a container without assuming a `set ... air 0` convention. */
+/** Empties the fixture's single output through Horizon's real BE NBT path. */
 async function emptySlot(call, pos, i) {
-  // `container set` with a zero count is the only removal path the harness offers;
-  // fall back to setting air when the host rejects zero counts.
-  const r = await call('container', 'set', ...pos.map(String), String(i), 'minecraft:air', '0');
-  if (r && r.ok === false) {
-    await call('container', 'set', ...pos.map(String), String(i), 'minecraft:air', '1');
-    await call('container', 'set', ...pos.map(String), String(i), 'minecraft:air', '0');
-  }
-  return r;
+  if (Number(i) !== 0) throw new Error('incubator fixture has only slot 0');
+  return call(['command', 'data', 'merge', 'block', ...pos.map(String), '{Items:[]}']);
 }
 
 async function readContainer(call, pos) {
-  return slots(await call('container', ...pos.map(String)));
+  return call('container', ...pos.map(String));
 }
 
 async function readBlock(call, pos) {
@@ -205,17 +204,35 @@ function conserve(ok, equal, before, after, label) {
 }
 
 export async function runCustom(call, assert) {
+  const rawCall = call;
+  // Adapt only command shape; every operation still reaches the real socket.
+  call = async (...argv) => {
+    if (argv.length === 1 && Array.isArray(argv[0])) return rawCall(argv[0]);
+    const [command, ...rest] = argv;
+    if (command === 'tick') return rawCall(['wait', String(rest.at(-1))]);
+    if (command === 'getblock') return rawCall(['block', ...rest]);
+    if (command === 'reload') return rawCall(['reload']);
+    if (command === 'container' && rest[0] === 'set') {
+      const index = Number(rest[4]);
+      if (index !== 0) throw new Error('this incubator fixture has only slot 0');
+      return rawCall(['container', ...rest.slice(1, 4), rest[5], rest[6]]);
+    }
+    return rawCall([command, ...rest]);
+  };
   const {ok, equal} = helpers(assert);
 
   // --- probe 1: missing vessel stops any progress ------------------------
   {
     const c = POS.brokenCenter;
     await tearDown(call, c);
-    const v = await placeGrid(call, c, {sulfur: 'minecraft:stone'});
-    await setBlock(call, [c[0], c[1] - 1, c[2]], 'theurgy:brazier');
-    await give(call, v.mercury, 0, 'theurgy:alchemical_mercury', 2);
-    await give(call, v.salt, 0, 'theurgy:alchemical_salt', 2);
-    await give(call, v.sulfur, 0, 'theurgy:alchemical_sulfur', 2);
+    // A real container of the wrong vessel kind keeps the fixture readable;
+    // it must not count as a sulfur vessel.
+    const v = await placeGrid(call, c, {sulfur: 'theurgy:mercury_catalyst'});
+    await setBlock(call, [c[0], c[1] - 1, c[2]], 'theurgy:pyromantic_brazier');
+    await give(call, [c[0], c[1] - 1, c[2]], 0, 'minecraft:coal', '4');
+    await give(call, v.mercury, 0, 'theurgy:mercury_shard', 2);
+    await give(call, v.salt, 0, 'theurgy:alchemical_salt_plant', 2);
+    await give(call, v.sulfur, 0, 'theurgy:alchemical_sulfur_acacia_log', 2);
     const before = await snapshot(call, v, c);
     await call('tick', ...c.map(String), '400');
     const after = await snapshot(call, v, c);
@@ -237,11 +254,12 @@ export async function runCustom(call, assert) {
     await setBlock(call, [x + 1, y, z], MERCURY);
     await setBlock(call, [x, y, z + 1], SALT);
     await setBlock(call, [x, y, z - 2], SULFUR); // diagonal: not a neighbour
-    await setBlock(call, [x, y - 1, z], 'theurgy:brazier');
-    await give(call, [x, y, z - 1], 0, 'theurgy:alchemical_mercury', 4);
-    await give(call, [x + 1, y, z], 0, 'theurgy:alchemical_mercury', 4);
-    await give(call, [x, y, z + 1], 0, 'theurgy:alchemical_salt', 4);
-    await give(call, [x, y, z - 2], 0, 'theurgy:alchemical_sulfur', 4);
+    await setBlock(call, [x, y - 1, z], 'theurgy:pyromantic_brazier');
+    await give(call, [x, y - 1, z], 0, 'minecraft:coal', '4');
+    await give(call, [x, y, z - 1], 0, 'theurgy:mercury_shard', 4);
+    await give(call, [x + 1, y, z], 0, 'theurgy:mercury_shard', 4);
+    await give(call, [x, y, z + 1], 0, 'theurgy:alchemical_salt_plant', 4);
+    await give(call, [x, y, z - 2], 0, 'theurgy:alchemical_sulfur_acacia_log', 4);
     const before = await snapshot(call, {
       mercury: [x, y, z - 1], salt: [x, y, z + 1], sulfur: [x, y, z - 2],
     }, c);
@@ -262,9 +280,9 @@ export async function runCustom(call, assert) {
     const c = POS.center;
     await tearDown(call, c);
     const v = await placeGrid(call, c);
-    await give(call, v.mercury, 0, 'theurgy:alchemical_mercury', 2);
-    await give(call, v.salt, 0, 'theurgy:alchemical_salt', 2);
-    await give(call, v.sulfur, 0, 'theurgy:alchemical_sulfur', 2);
+    await give(call, v.mercury, 0, 'theurgy:mercury_shard', 2);
+    await give(call, v.salt, 0, 'theurgy:alchemical_salt_plant', 2);
+    await give(call, v.sulfur, 0, 'theurgy:alchemical_sulfur_acacia_log', 2);
     await tearDown(call, [c[0], c[1] - 1, c[2]]); // no heat source
     const cold = await snapshot(call, v, c);
     await call('tick', ...c.map(String), '400');
@@ -275,7 +293,8 @@ export async function runCustom(call, assert) {
 
     // Heat it: the same inputs now have to be consumed, proving the gate (not a
     // missing recipe) is what blocked probe 3's craft.
-    await setBlock(call, [c[0], c[1] - 1, c[2]], 'theurgy:brazier');
+    await setBlock(call, [c[0], c[1] - 1, c[2]], 'theurgy:pyromantic_brazier');
+    await give(call, [c[0], c[1] - 1, c[2]], 0, 'minecraft:coal', '4');
     await call('tick', ...c.map(String), '600');
     const hot = await snapshot(call, v, c);
     const crafts = conserve(ok, equal, stillCold, hot, 'heating');
@@ -288,10 +307,11 @@ export async function runCustom(call, assert) {
     const c = POS.center;
     await tearDown(call, c);
     const v = await placeGrid(call, c);
-    await setBlock(call, [c[0], c[1] - 1, c[2]], 'theurgy:brazier');
-    await give(call, v.mercury, 0, 'theurgy:alchemical_mercury', 3);
-    await give(call, v.salt, 0, 'theurgy:alchemical_salt', 3);
-    await give(call, v.sulfur, 0, 'theurgy:alchemical_sulfur', 3);
+    await setBlock(call, [c[0], c[1] - 1, c[2]], 'theurgy:pyromantic_brazier');
+    await give(call, [c[0], c[1] - 1, c[2]], 0, 'minecraft:coal', '4');
+    await give(call, v.mercury, 0, 'theurgy:mercury_shard', 3);
+    await give(call, v.salt, 0, 'theurgy:alchemical_salt_plant', 3);
+    await give(call, v.sulfur, 0, 'theurgy:alchemical_sulfur_acacia_log', 3);
     const before = await snapshot(call, v, c);
     await call('tick', ...c.map(String), '1200');
     const after = await snapshot(call, v, c);
@@ -303,7 +323,7 @@ export async function runCustom(call, assert) {
     ok(first != null && first.count > 0, 'a craft leaves a real result stack in slot 0');
     ok(typeof first.item === 'string' && first.item.includes(':'),
       `the result must be a namespaced item id`);
-    equal(after.out.filter(Boolean).length, 1,
+    equal(slots(after.out).filter(Boolean).length, 1,
       'the incubator has exactly one output slot');
     // Every craft produced the same result item, so the slot is one stack of the
     // recipe result, never a mixed bag.
@@ -318,14 +338,17 @@ export async function runCustom(call, assert) {
     const c = POS.center;
     await tearDown(call, c);
     const v = await placeGrid(call, c);
-    await setBlock(call, [c[0], c[1] - 1, c[2]], 'theurgy:brazier');
-    await give(call, v.mercury, 0, 'theurgy:alchemical_mercury', 2);
-    await give(call, v.salt, 0, 'theurgy:alchemical_salt', 2);
-    await give(call, v.sulfur, 0, 'theurgy:alchemical_sulfur', 2);
+    await setBlock(call, [c[0], c[1] - 1, c[2]], 'theurgy:pyromantic_brazier');
+    await give(call, [c[0], c[1] - 1, c[2]], 0, 'minecraft:coal', '4');
+    await give(call, v.mercury, 0, 'theurgy:mercury_shard', 2);
+    await give(call, v.salt, 0, 'theurgy:alchemical_salt_plant', 2);
+    await give(call, v.sulfur, 0, 'theurgy:alchemical_sulfur_acacia_log', 2);
     const warm = await snapshot(call, v, c);
     await call('tick', ...c.map(String), '40'); // mid-craft, below any recipe time
     // Replace the vessel content mid-craft (one unit left in mercury).
-    await give(call, v.mercury, 0, 'theurgy:alchemical_mercury', 1);
+    await call(['command', 'data', 'merge', 'block', ...v.mercury.map(String),
+      '{Items:[{Slot:0b,id:"theurgy:mercury_shard",count:1}]}']);
+    await call(['wait', '2']);
     const replaced = await snapshot(call, v, c);
     equal(totalItems(replaced.mercury), 1, 'the replacement set the mercury slot to 1');
     equal(blockName(await readBlock(call, v.salt)), SALT,
@@ -346,13 +369,16 @@ export async function runCustom(call, assert) {
     const c = POS.center;
     await tearDown(call, c);
     const v = await placeGrid(call, c);
-    await setBlock(call, [c[0], c[1] - 1, c[2]], 'theurgy:brazier');
-    await give(call, v.mercury, 0, 'theurgy:alchemical_mercury', 2);
-    await give(call, v.salt, 0, 'theurgy:alchemical_salt', 2);
-    await give(call, v.sulfur, 0, 'theurgy:alchemical_sulfur', 2);
+    await setBlock(call, [c[0], c[1] - 1, c[2]], 'theurgy:pyromantic_brazier');
+    await give(call, [c[0], c[1] - 1, c[2]], 0, 'minecraft:coal', '4');
+    await give(call, v.mercury, 0, 'theurgy:mercury_shard', 2);
+    await give(call, v.salt, 0, 'theurgy:alchemical_salt_plant', 2);
+    await give(call, v.sulfur, 0, 'theurgy:alchemical_sulfur_acacia_log', 2);
     // A full slot of an unrelated item: a real craft cannot fit, so nothing may be
     // consumed and the blocking stack must be preserved exactly.
-    await give(call, c, 0, 'minecraft:stone', 64);
+    await call(['command', 'data', 'merge', 'block', ...c.map(String),
+      '{Items:[{Slot:0b,id:"minecraft:stone",count:64}]}']);
+    await call(['wait', '2']);
     const full = await snapshot(call, v, c);
     await call('tick', ...c.map(String), '1200');
     const blocked = await snapshot(call, v, c);
@@ -366,13 +392,15 @@ export async function runCustom(call, assert) {
     // Draining the slot releases the craft: conservation then holds for the crafts
     // that happen afterwards, and the total can never exceed what was available.
     await emptySlot(call, c, 0);
+    const emptied = await snapshot(call, v, c);
+    equal(emptied.output, 0, 'the external drain establishes an empty baseline');
     await call('tick', ...c.map(String), '1200');
     const drained = await snapshot(call, v, c);
     equal(totalItems(drained.out), slot(drained.out, 0)?.count ?? 0,
       'the output slot holds exactly one stack');
     // The three vessels each lost the same number of units (one per craft) and the
     // released crafts produced at least one item each.
-    const crafts = conserve(ok, equal, blocked, drained, 'released craft');
+    const crafts = conserve(ok, equal, emptied, drained, 'released craft');
     ok(crafts >= 1, 'draining the output releases a pending craft');
     ok(crafts <= 2, 'the released crafts are bounded by the two units per vessel');
     await tearDown(call, c);
@@ -383,10 +411,11 @@ export async function runCustom(call, assert) {
     const c = POS.reloadCenter;
     await tearDown(call, c);
     const v = await placeGrid(call, c);
-    await setBlock(call, [c[0], c[1] - 1, c[2]], 'theurgy:brazier');
-    await give(call, v.mercury, 0, 'theurgy:alchemical_mercury', 3);
-    await give(call, v.salt, 0, 'theurgy:alchemical_salt', 3);
-    await give(call, v.sulfur, 0, 'theurgy:alchemical_sulfur', 3);
+    await setBlock(call, [c[0], c[1] - 1, c[2]], 'theurgy:pyromantic_brazier');
+    await give(call, [c[0], c[1] - 1, c[2]], 0, 'minecraft:coal', '4');
+    await give(call, v.mercury, 0, 'theurgy:mercury_shard', 3);
+    await give(call, v.salt, 0, 'theurgy:alchemical_salt_plant', 3);
+    await give(call, v.sulfur, 0, 'theurgy:alchemical_sulfur_acacia_log', 3);
     await call('tick', ...c.map(String), '1200'); // a craft or two completes
     const pre = await snapshot(call, v, c);
     await call('save');
@@ -411,6 +440,8 @@ export async function runCustom(call, assert) {
     ok(3 * crafts <= remainingBefore, 'post-reload crafts are bounded by the saved inputs');
     await tearDown(call, c);
   }
+  return ['missing vessel','duplicate vessel','cold heat gate','successful conservation',
+    'input replacement','output full and drain','save/reload continuation'];
 }
 
 export default {name: 'incubation-chaos', runCustom};
