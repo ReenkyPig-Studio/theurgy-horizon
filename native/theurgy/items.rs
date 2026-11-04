@@ -5,7 +5,7 @@
 // of the double-high apparatus, and the sal ammoniac bucket's fluid identity.
 use horizon_client::items::ItemStack;
 use horizon_world::chunk::BlockState;
-use horizon_world::nbt::{JavaString, Tag};
+use horizon_world::nbt::{Compound, JavaString, Tag};
 
 /// Blocks whose Java class is a double-high apparatus; the lower half holds the
 /// block entity, the upper half is only the model/collision.
@@ -14,6 +14,21 @@ const DOUBLE_HIGH: [&str; 4] = [
     "theurgy:liquefaction_cauldron",
     "theurgy:distiller",
     "theurgy:incubator",
+];
+
+const WIRE_ITEM: &str = "theurgy:copper_wire";
+const WIRE_END_POINT: &str = "theurgy:wire_end_point";
+const WIRE_MAX_RANGE: i64 = 32;
+
+const WIRE_ENDPOINTS: [&str; 8] = [
+    "theurgy:logistics_connector_node",
+    "theurgy:logistics_item_inserter",
+    "theurgy:logistics_item_extractor",
+    "theurgy:logistics_fluid_inserter",
+    "theurgy:logistics_fluid_extractor",
+    "theurgy:logistics_capability_probe",
+    "theurgy:logistics_capability_proxy",
+    "theurgy:logistics_mercury_flux_connector",
 ];
 
 /// Blocks that the Java classes break as a pair when either half is removed.
@@ -43,7 +58,7 @@ pub fn placed(
     if !is_double_high(&stack.item) {
         return;
     }
-    let Some(upper) = upper_state(game, state) else { return };
+    let Some(upper) = upper_state(game, state) else { return; };
     let dimension = game.dim.id();
     game.native_set_block(dimension, [pos[0], pos[1] + 1, pos[2]], upper, 3);
 }
@@ -83,6 +98,149 @@ fn set_held_component(game: &mut crate::game::Game<'_>, id: &str, value: Tag) {
     {
         *current = held;
     }
+}
+
+/// Java `BlockPos.asLong`: x in the high 26 bits, z in the middle 26 bits,
+/// y in the low 12 bits.
+fn block_pos_long(pos: [i32; 3]) -> i64 {
+    (((pos[0] as i64) & 0x3ff_ffff) << 38)
+        | (((pos[2] as i64) & 0x3ff_ffff) << 12)
+        | ((pos[1] as i64) & 0xfff)
+}
+
+/// Inverse of the Minecraft `BlockPos.asLong` packing above.
+fn block_pos_from_long(value: i64) -> [i32; 3] {
+    let x = (value >> 38) as i32;
+    let y = ((value << 52) >> 52) as i32;
+    let z = ((value << 26) >> 38) as i32;
+    [x, y, z]
+}
+
+fn manhattan(a: [i32; 3], b: [i32; 3]) -> i64 {
+    (a[0] as i64 - b[0] as i64).abs()
+        + (a[1] as i64 - b[1] as i64).abs()
+        + (a[2] as i64 - b[2] as i64).abs()
+}
+
+fn is_wire_endpoint(block: &str) -> bool {
+    WIRE_ENDPOINTS.contains(&block)
+}
+
+fn is_sneaking(game: &crate::game::Game<'_>) -> bool {
+    game.has_shift_down() || game.keys.contains(&winit::keyboard::KeyCode::ShiftLeft)
+}
+
+/// `WireEndPoint.load(ItemStack)`: the component is a compound with a packed
+/// `pos` long and a `level` dimension id string.
+fn load_wire_endpoint(
+    game: &crate::game::Game<'_>,
+    stack: &ItemStack,
+) -> Option<([i32; 3], String)> {
+    let tag = game.native_component(stack, WIRE_END_POINT).ok().flatten()?;
+    let Tag::Compound(entries) = tag else {
+        return None;
+    };
+    let mut pos = None;
+    let mut level = None;
+    for (key, value) in entries {
+        if key.to_string_lossy() == "pos" {
+            if let Tag::Long(value) = value {
+                pos = Some(block_pos_from_long(*value));
+            }
+        } else if key.to_string_lossy() == "level" {
+            if let Tag::String(value) = value {
+                level = Some(value.to_string_lossy());
+            }
+        }
+    }
+    Some((pos?, level?))
+}
+
+fn store_wire_endpoint(game: &mut crate::game::Game<'_>, pos: [i32; 3]) {
+    let level = game.dim.id().to_string();
+    let mut entries = Compound::new();
+    entries.insert(JavaString::from("pos"), Tag::Long(block_pos_long(pos)));
+    entries.insert(
+        JavaString::from("level"),
+        Tag::String(JavaString::from(level.as_str())),
+    );
+
+    let slot = game.selected as i32;
+    let Some(mut held) = game.native_carried_stack(slot).cloned() else {
+        return;
+    };
+    if game
+        .native_set_component(&mut held, WIRE_END_POINT, Tag::Compound(entries))
+        .is_ok()
+        && let Some(current) = game.native_carried_stack(slot)
+    {
+        *current = held;
+    }
+}
+
+fn clear_wire_endpoint(game: &mut crate::game::Game<'_>) {
+    let slot = game.selected as i32;
+    let Some(mut held) = game.native_carried_stack(slot).cloned() else {
+        return;
+    };
+    let _ = game.native_remove_component(&mut held, WIRE_END_POINT);
+    if let Some(current) = game.native_carried_stack(slot) {
+        *current = held;
+    }
+}
+
+fn consume_one_wire(game: &mut crate::game::Game<'_>) {
+    let slot = game.selected as i32;
+    let Some(mut held) = game.native_carried_stack(slot).cloned() else {
+        return;
+    };
+    if held.item.as_ref() == WIRE_ITEM && held.count > 0 {
+        held.count = held.count.saturating_sub(1);
+    }
+    if let Some(current) = game.native_carried_stack(slot) {
+        *current = held;
+    }
+}
+
+fn wire_use_on(
+    game: &mut crate::game::Game<'_>,
+    stack: &ItemStack,
+    pos: [i32; 3],
+    claimed: &mut bool,
+) -> bool {
+    *claimed = true;
+
+    let block = game.native_block(pos);
+    if !is_wire_endpoint(block.as_str()) {
+        if is_sneaking(game) {
+            clear_wire_endpoint(game);
+        }
+        return true;
+    }
+
+    if is_sneaking(game) {
+        clear_wire_endpoint(game);
+        return true;
+    }
+
+    let Some((stored, stored_level)) = load_wire_endpoint(game, stack) else {
+        store_wire_endpoint(game, pos);
+        return true;
+    };
+
+    if stored_level != game.dim.id().to_string() {
+        return true;
+    }
+    if stored == pos {
+        return true;
+    }
+    if manhattan(stored, pos) > WIRE_MAX_RANGE {
+        return true;
+    }
+
+    clear_wire_endpoint(game);
+    consume_one_wire(game);
+    true
 }
 
 /// `DivinationRodItem.useOn`: sneak-use links the rod to an allowed block. The
@@ -128,6 +286,26 @@ fn attune_rod(
     true
 }
 
+/// Early `right_click_block` hook: logistics blocks use a barrel template that
+/// consumes the block interaction before `use_item_on` runs. Handle the wire
+/// before that so a valid endpoint click is never lost.
+pub fn right_click_block(
+    game: &mut crate::game::Game<'_>,
+    stack: &ItemStack,
+    pos: [i32; 3],
+    _face: [i32; 3],
+    canceled: &mut bool,
+) {
+    if *canceled || stack.item.as_ref() != WIRE_ITEM {
+        return;
+    }
+    let mut claimed = false;
+    wire_use_on(game, stack, pos, &mut claimed);
+    if claimed {
+        *canceled = true;
+    }
+}
+
 /// `getStateForPlacement`: a double-high apparatus is only placeable when the
 /// block above can be replaced. Claim a prohibited click before the lower half
 /// and its item are committed.
@@ -139,6 +317,10 @@ pub fn use_on(
     claimed: &mut bool,
 ) {
     if *claimed {
+        return;
+    }
+    if stack.item.as_ref() == WIRE_ITEM {
+        wire_use_on(game, stack, pos, claimed);
         return;
     }
     if stack.item.contains("divination_rod") && attune_rod(game, stack, pos, claimed) {
