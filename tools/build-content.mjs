@@ -97,14 +97,42 @@ async function files(dir) {
 const itemRoot=path.join(source,'generated/resources/assets/theurgy/items');
 const items=(await files(itemRoot)).filter(f=>f.endsWith('.json')).map(f=>path.relative(itemRoot,f).replaceAll('\\','/').slice(0,-5)).sort();
 const blockSet=new Set(blocks);
+// DataComponentRegistry defaults for the tool items. The native component
+// types are registered by native/theurgy/registry.rs before content loads.
+const rodSpecs={
+ divination_rod_t1:{tier:'stone',damage:8,attune:true,allowed:'divination_rod_t1_allowed_blocks',disallowed:'divination_rod_t1_disallowed_blocks'},
+ divination_rod_t2:{tier:'iron',damage:16,attune:true,allowed:'divination_rod_t2_allowed_blocks',disallowed:'divination_rod_t2_disallowed_blocks'},
+ divination_rod_t3:{tier:'diamond',damage:32,attune:true,allowed:'divination_rod_t3_allowed_blocks',disallowed:'divination_rod_t3_disallowed_blocks'},
+ divination_rod_t4:{tier:'netherite',damage:128,attune:true,allowed:'divination_rod_t4_allowed_blocks',disallowed:'divination_rod_t4_disallowed_blocks'},
+ sulfur_attuned_divination_rod_abundant:{tier:'stone',damage:16,attune:false,allowed:'divination_rod_t1_allowed_blocks',disallowed:'divination_rod_t1_disallowed_blocks'},
+ sulfur_attuned_divination_rod_common:{tier:'stone',damage:16,attune:false,allowed:'divination_rod_t1_allowed_blocks',disallowed:'divination_rod_t1_disallowed_blocks'},
+ sulfur_attuned_divination_rod_rare:{tier:'stone',damage:32,attune:false,allowed:'divination_rod_t2_allowed_blocks',disallowed:'divination_rod_t2_disallowed_blocks'},
+ sulfur_attuned_divination_rod_precious:{tier:'stone',damage:32,attune:false,allowed:'divination_rod_t3_allowed_blocks',disallowed:'divination_rod_t3_disallowed_blocks'},
+ amethyst_divination_rod:{tier:'stone',damage:16,attune:false,allowed:'divination_rod_t1_allowed_blocks',disallowed:'divination_rod_t1_disallowed_blocks'},
+};
 for(const id of items) {
  const block=blockSet.has(id);
  if(block)continue;
- const rod=id.includes('divination_rod');
+ const rod=rodSpecs[id];
  const bucket=id==='sal_ammoniac_bucket';
- const d={template:bucket?'minecraft:water_bucket':rod?'minecraft:stick':'minecraft:diamond',
+ const d={template:bucket?'minecraft:water_bucket':rod?'minecraft:stick':id==='mercurial_wand'?'minecraft:stick':'minecraft:diamond',
    components:{}};
- if(rod){d.max_stack_size=1;d.components['minecraft:max_damage']=1;}
+ if(rod){
+   d.max_stack_size=1;
+   d.components['minecraft:max_damage']=rod.damage;
+   d.components['theurgy:divination_settings_tier']=rod.tier;
+   d.components['theurgy:divination_settings_allowed_blocks_tag']='theurgy:'+rod.allowed;
+   d.components['theurgy:divination_settings_disallowed_blocks_tag']='theurgy:'+rod.disallowed;
+   d.components['theurgy:divination_settings_range']=96;
+   d.components['theurgy:divination_settings_duration']=40;
+   d.components['theurgy:divination_settings_max_damage']=rod.damage;
+   d.components['theurgy:divination_settings_allow_attuning']=rod.attune;
+ }
+ if(id==='mercurial_wand'){
+   d.max_stack_size=1;
+   d.components['theurgy:mercurial_wand_item_mode']=0;
+   d.components['theurgy:selected_frequency']=0;
+ }
  if(bucket){d.max_stack_size=1;d.crafting_remainder='minecraft:bucket';}
  const p=path.join(dest,'data/theurgy/horizon/item',id+'.json');
  await fs.mkdir(path.dirname(p),{recursive:true});await fs.writeFile(p,JSON.stringify(d,null,2)+'\n');
@@ -128,6 +156,19 @@ for(const file of await files(path.join(dest,'data'))) {
  if(!('neoforge:conditions' in j))continue;
  delete j['neoforge:conditions'];
  await fs.writeFile(file,JSON.stringify(j,null,2)+'\n');
+}
+// NeoForge provides these convention tags outside Theurgy's own data. Horizon
+// does not ship NeoForge's tag bundle, so carry the small set used by the
+// divination-rod Java tags. Do not synthesize unrelated convention tags.
+const conventionTags={
+ 'data/c/tags/block/stones.json':['minecraft:stone','minecraft:granite','minecraft:polished_granite','minecraft:diorite','minecraft:polished_diorite','minecraft:andesite','minecraft:polished_andesite','minecraft:deepslate','minecraft:cobbled_deepslate','minecraft:polished_deepslate','minecraft:tuff','minecraft:polished_tuff','minecraft:calcite','minecraft:dripstone_block','minecraft:basalt','minecraft:smooth_basalt','minecraft:blackstone','minecraft:polished_blackstone'],
+ 'data/c/tags/block/sandstone/blocks.json':['minecraft:sandstone','minecraft:cut_sandstone','minecraft:chiseled_sandstone','minecraft:smooth_sandstone','minecraft:red_sandstone','minecraft:cut_red_sandstone','minecraft:chiseled_red_sandstone','minecraft:smooth_red_sandstone'],
+ 'data/c/tags/block/obsidians.json':['minecraft:obsidian','minecraft:crying_obsidian'],
+};
+for(const [relative,values] of Object.entries(conventionTags)) {
+ const target=path.join(dest,relative);
+ await fs.mkdir(path.dirname(target),{recursive:true});
+ await fs.writeFile(target,JSON.stringify({values},null,2)+'\n');
 }
 await fs.mkdir(path.join(dest,'data/theurgy/horizon/creative_tab'),{recursive:true});
 await fs.writeFile(path.join(dest,'data/theurgy/horizon/creative_tab/theurgy.json'),JSON.stringify({
