@@ -136,7 +136,8 @@ export async function runAll(call, assert) {
     r => assert.ok(blockState(r).startsWith('theurgy:reformation_source_pedestal')));
   await step('reformation result', ['setblock', ...s(result), 'theurgy:reformation_result_pedestal'],
     r => assert.ok(blockState(r).startsWith('theurgy:reformation_result_pedestal')));
-  await step('reformation flux', mergeInt(emitter, 'mercuryFlux', 500));
+  await step('reformation flux', ['command', 'data', 'merge', 'block', ...s(emitter),
+    '{mercuryFluxHandler:{energy:500}}']);
   await step('reformation target item', ['container', ...s(target), 'theurgy:alchemical_niter_animals_abundant', '1'],
     r => assert.equal(itemAt(r, 0), 'theurgy:alchemical_niter_animals_abundant'));
   await step('reformation source item', ['container', ...s(source), 'theurgy:alchemical_niter_crops_abundant', '1'],
