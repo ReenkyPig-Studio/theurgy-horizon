@@ -6,6 +6,7 @@ import {root,config,rustEnv} from './common.mjs';
 import {chaosPlan,machineChaosPlan} from './chaos-plan.mjs';
 import {machineScenarios,selfTest,selfTestChaos,blockName,slots,totalItems} from '../scenarios/machines.mjs';
 import {runAll} from '../scenarios/all.mjs';
+import {runInteractions} from '../scenarios/interactions.mjs';
 
 // Every mode gets its own world folder, game home and control socket. The socket always
 // lives inside the mode's home, never in the player's runtime directory.
@@ -17,6 +18,7 @@ const MODES={
   machines: {home:'.local/machines', world:'TheurgyMachines', native:true, content:true},
   'chaos-machines': {home:'.local/chaos-machines', world:'TheurgyMachinesChaos', native:true, content:true, machinesChaos:true},
   all: {home:'.local/all-machines', world:'TheurgyAll', native:true, content:true, all:true},
+  interactions: {home:'.local/interactions', world:'TheurgyInteractions', native:true, content:true, interactions:true},
 };
 const mode=process.argv[2]??'smoke';
 const spec=MODES[mode];
@@ -63,7 +65,7 @@ async function call(args) {
       }
     });
   });
-  if(result.error)throw new Error(String(result.error));
+  if(result.error){evidence.push({command:args[0],args,reply:result});throw new Error(String(result.error));}
   evidence.push({command:args[0],args,reply:result});
   return result;
 }
@@ -176,6 +178,9 @@ try {
   } else if(spec.all) {
     const results=await runAll(call,assert);
     console.log('THEURGY_ALL_MACHINES_PASS '+results.length+' observations');
+  } else if(spec.interactions) {
+    const results=await runInteractions(call,assert);
+    console.log('THEURGY_INTERACTIONS_PASS '+results.length+' observations');
   } else if(mode==='machines') {
     // Input/output ids come from the placed recipe/content pack so the harness never guesses.
     const scenarios=machineScenarios({
@@ -213,6 +218,7 @@ try {
     mode, world:spec.world, home:gameHome, socket, headless, binary:exe,
     scope:mode==='machines'?'distiller place/insert/heat/process/save/reload/break inventory parity on the isolated machine world'
       :mode==='chaos-machines'?'bounded adversarial distiller probes: duplication, invalid input, repeated placement, reload, destruction'
+      :mode==='interactions'?'real player give/place/break, double-high placement validation and inventory conservation'
       :native?'distiller block registration only'
       :'vanilla game/control harness only (not Theurgy parity)',
     evidence},null,2));

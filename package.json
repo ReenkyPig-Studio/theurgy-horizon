@@ -18,6 +18,7 @@
     "native:build": "node tools/native.mjs build",
     "native:build:headless": "node tools/native.mjs build-headless",
     "game:all": "node tools/game.mjs all",
+    "game:interactions": "node tools/headless.mjs interactions --no-build",
     "game:headless": "node tools/headless.mjs all",
     "game:headless:cached": "node tools/headless.mjs all --no-build",
     "game:chaos": "node tools/game.mjs chaos",

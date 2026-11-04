@@ -13,6 +13,9 @@
   evidence `runs/game-1793753303519/evidence.json` (до последующего harness-only улучшения break evidence).
 - `node tools/headless.mjs chaos-machines --no-build`: `THEURGY_MACHINE_CHAOS_PASS`, seed 9732, 24 steps,
   evidence `runs/game-1793752886632/evidence.json`.
+- `node tools/headless.mjs interactions --no-build`: `THEURGY_INTERACTIONS_PASS`, 35 observations,
+  evidence `runs/game-1793755683976/evidence.json`: настоящие give/place/break, обе половины
+  double-high, spill содержимого ровно один раз, запрет occupied-upper без потери предмета.
 - `npm test`: 19/19; `npm run fast`: 28/28 Rust tests + doc-tests.
 - Ранее recipes с `neoforge:conditions` молча отбрасывались Horizon до загрузки mod tags;
   `tools/build-content.mjs` теперь удаляет только conditions, сохраняя ingredients/results/times.
