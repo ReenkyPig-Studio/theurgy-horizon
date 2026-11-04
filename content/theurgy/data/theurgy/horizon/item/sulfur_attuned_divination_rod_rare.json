@@ -1,7 +1,14 @@
 {
   "template": "minecraft:stick",
   "components": {
-    "minecraft:max_damage": 1
+    "minecraft:max_damage": 32,
+    "theurgy:divination_settings_tier": "stone",
+    "theurgy:divination_settings_allowed_blocks_tag": "theurgy:divination_rod_t2_allowed_blocks",
+    "theurgy:divination_settings_disallowed_blocks_tag": "theurgy:divination_rod_t2_disallowed_blocks",
+    "theurgy:divination_settings_range": 96,
+    "theurgy:divination_settings_duration": 40,
+    "theurgy:divination_settings_max_damage": 32,
+    "theurgy:divination_settings_allow_attuning": false
   },
   "max_stack_size": 1
 }

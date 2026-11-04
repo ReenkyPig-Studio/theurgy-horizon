@@ -1,4 +1,8 @@
 {
-  "template": "minecraft:diamond",
-  "components": {}
+  "template": "minecraft:stick",
+  "components": {
+    "theurgy:mercurial_wand_item_mode": 0,
+    "theurgy:selected_frequency": 0
+  },
+  "max_stack_size": 1
 }
