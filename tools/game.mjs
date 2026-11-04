@@ -22,6 +22,7 @@ const MODES={
   items: {home:'.local/agent-items', world:'TheurgyItems', native:true, content:true, custom:'items'},
   flux: {home:'.local/agent-flux', world:'TheurgyFlux', native:true, content:true, custom:'flux'},
   logistics: {home:'.local/agent-logistics', world:'TheurgyLogistics', native:true, content:true, custom:'logistics'},
+  tools: {home:'.local/agent-tools', world:'TheurgyTools', native:true, content:true, custom:'tools'},
   'content-rules': {home:'.local/agent-content', world:'TheurgyContentRules', native:true, content:true, custom:'content-rules'},
   'incubation-chaos': {home:'.local/agent-incubation', world:'TheurgyIncubationChaos', native:true, content:true, custom:'incubation-chaos'},
   persistence: {home:'.local/agent-persistence', world:'TheurgyPersistence', native:true, content:true, custom:'persistence'},
