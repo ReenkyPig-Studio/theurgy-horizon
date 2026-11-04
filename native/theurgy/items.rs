@@ -5,6 +5,7 @@
 // of the double-high apparatus, and the sal ammoniac bucket's fluid identity.
 use horizon_client::items::ItemStack;
 use horizon_world::chunk::BlockState;
+use horizon_world::nbt::{JavaString, Tag};
 
 /// Blocks whose Java class is a double-high apparatus; the lower half holds the
 /// block entity, the upper half is only the model/collision.
@@ -47,6 +48,86 @@ pub fn placed(
     game.native_set_block(dimension, [pos[0], pos[1] + 1, pos[2]], upper, 3);
 }
 
+/// Read a registered native component from `stack` as a string.
+fn component_string(
+    game: &crate::game::Game<'_>,
+    stack: &ItemStack,
+    id: &str,
+) -> Option<String> {
+    match game.native_component(stack, id).ok().flatten()? {
+        Tag::String(value) => Some(value.to_string_lossy()),
+        _ => None,
+    }
+}
+
+/// Read a registered native component as a boolean (Java persists booleans as
+/// bytes/ints through NBT).
+fn component_bool(game: &crate::game::Game<'_>, stack: &ItemStack, id: &str) -> bool {
+    match game.native_component(stack, id).ok().flatten() {
+        Some(Tag::Byte(value)) => *value != 0,
+        Some(Tag::Int(value)) => *value != 0,
+        Some(Tag::Short(value)) => *value != 0,
+        _ => false,
+    }
+}
+
+/// Write a component on the acting player's held stack. The hook's `stack` is
+/// immutable, so the authoritative carried stack is updated by value.
+fn set_held_component(game: &mut crate::game::Game<'_>, id: &str, value: Tag) {
+    let slot = game.selected as i32;
+    let Some(mut held) = game.native_carried_stack(slot).cloned() else {
+        return;
+    };
+    if game.native_set_component(&mut held, id, value).is_ok()
+        && let Some(current) = game.native_carried_stack(slot)
+    {
+        *current = held;
+    }
+}
+
+/// `DivinationRodItem.useOn`: sneak-use links the rod to an allowed block. The
+/// attached block is stored in the rod's `divination_linked_block` component.
+fn attune_rod(
+    game: &mut crate::game::Game<'_>,
+    stack: &ItemStack,
+    pos: [i32; 3],
+    claimed: &mut bool,
+) -> bool {
+    let sneaking = game.has_shift_down() || game.keys.contains(&winit::keyboard::KeyCode::ShiftLeft);
+    if !sneaking {
+        return false;
+    }
+    *claimed = true;
+    if !component_bool(game, stack, "theurgy:divination_settings_allow_attuning") {
+        return true;
+    }
+    let block = game.native_block(pos);
+    if block == "minecraft:air" {
+        return true;
+    }
+    let allowed = component_string(game, stack, "theurgy:divination_settings_allowed_blocks_tag");
+    let disallowed =
+        component_string(game, stack, "theurgy:divination_settings_disallowed_blocks_tag");
+    if let Some(tag) = allowed.as_deref()
+        && !tag.is_empty()
+        && !game.res.items().block_in_tag(tag, &block)
+    {
+        return true;
+    }
+    if let Some(tag) = disallowed.as_deref()
+        && !tag.is_empty()
+        && game.res.items().block_in_tag(tag, &block)
+    {
+        return true;
+    }
+    set_held_component(
+        game,
+        "theurgy:divination_linked_block",
+        Tag::String(JavaString::from(block.as_str())),
+    );
+    true
+}
+
 /// `getStateForPlacement`: a double-high apparatus is only placeable when the
 /// block above can be replaced. Claim a prohibited click before the lower half
 /// and its item are committed.
@@ -57,7 +138,13 @@ pub fn use_on(
     face: [i32; 3],
     claimed: &mut bool,
 ) {
-    if *claimed || !is_double_high(&stack.item) {
+    if *claimed {
+        return;
+    }
+    if stack.item.contains("divination_rod") && attune_rod(game, stack, pos, claimed) {
+        return;
+    }
+    if !is_double_high(&stack.item) {
         return;
     }
     let clicked = game.world.block(pos[0], pos[1], pos[2]);
