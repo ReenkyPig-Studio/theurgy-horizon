@@ -19,6 +19,14 @@ const MODES={
   'chaos-machines': {home:'.local/chaos-machines', world:'TheurgyMachinesChaos', native:true, content:true, machinesChaos:true},
   all: {home:'.local/all-machines', world:'TheurgyAll', native:true, content:true, all:true},
   interactions: {home:'.local/interactions', world:'TheurgyInteractions', native:true, content:true, interactions:true},
+  flux: {home:'.local/agent-flux', world:'TheurgyFlux', native:true, content:true, custom:'flux'},
+  logistics: {home:'.local/agent-logistics', world:'TheurgyLogistics', native:true, content:true, custom:'logistics'},
+  items: {home:'.local/agent-items', world:'TheurgyItems', native:true, content:true, custom:'items'},
+  'content-rules': {home:'.local/agent-content', world:'TheurgyContentRules', native:true, content:true, custom:'content-rules'},
+  'incubation-chaos': {home:'.local/agent-incubation', world:'TheurgyIncubationChaos', native:true, content:true, custom:'incubation-chaos'},
+  persistence: {home:'.local/agent-persistence', world:'TheurgyPersistence', native:true, content:true, custom:'persistence'},
+  reformation: {home:'.local/agent-reformation', world:'TheurgyReformation', native:true, content:true, custom:'reformation'},
+  fluids: {home:'.local/agent-fluids', world:'TheurgyFluids', native:true, content:true, custom:'fluids'},
 };
 const mode=process.argv[2]??'smoke';
 const spec=MODES[mode];
@@ -178,6 +186,13 @@ try {
   } else if(spec.all) {
     const results=await runAll(call,assert);
     console.log('THEURGY_ALL_MACHINES_PASS '+results.length+' observations');
+  } else if(spec.custom) {
+    // Runtime agent worktrees provide their own scenario module. The central
+    // runner stays generic, so agents never edit a shared dispatcher.
+    const scenario=await import('../scenarios/'+spec.custom+'.mjs');
+    if(typeof scenario.runCustom!=='function')throw new Error('scenario must export runCustom(call, assert)');
+    const results=await scenario.runCustom(call,assert);
+    console.log('THEURGY_CUSTOM_PASS mode='+mode+' observations='+(Array.isArray(results)?results.length:0));
   } else if(spec.interactions) {
     const results=await runInteractions(call,assert);
     console.log('THEURGY_INTERACTIONS_PASS '+results.length+' observations');
@@ -219,6 +234,7 @@ try {
     scope:mode==='machines'?'distiller place/insert/heat/process/save/reload/break inventory parity on the isolated machine world'
       :mode==='chaos-machines'?'bounded adversarial distiller probes: duplication, invalid input, repeated placement, reload, destruction'
       :mode==='interactions'?'real player give/place/break, double-high placement validation and inventory conservation'
+      :spec.custom?'agent-owned real headless integration scenario '+spec.custom
       :native?'distiller block registration only'
       :'vanilla game/control harness only (not Theurgy parity)',
     evidence},null,2));
