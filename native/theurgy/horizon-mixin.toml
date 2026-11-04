@@ -184,3 +184,11 @@ hook_version = 1
 kind = "HEAD"
 helper = "hooks/right_click.rs"
 bindings = [{ name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" }, { name = "pos", ty = "[i32; 3]", value = "pos" }, { name = "face", ty = "[i32; 3]", value = "face" }, { name = "canceled", ty = "&mut bool", value = "canceled" }]
+
+[[injection]]
+id = "mouse_scrolling"
+hook = "mouse_scrolling"
+hook_version = 1
+kind = "HEAD"
+helper = "hooks/mouse_scrolling.rs"
+bindings = [{ name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" }, { name = "scroll", ty = "[f64; 2]", value = "scroll" }, { name = "accumulated", ty = "[i32; 2]", value = "accumulated" }, { name = "canceled", ty = "&mut bool", value = "canceled" }]
