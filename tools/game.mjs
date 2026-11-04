@@ -19,9 +19,9 @@ const MODES={
   'chaos-machines': {home:'.local/chaos-machines', world:'TheurgyMachinesChaos', native:true, content:true, machinesChaos:true},
   all: {home:'.local/all-machines', world:'TheurgyAll', native:true, content:true, all:true},
   interactions: {home:'.local/interactions', world:'TheurgyInteractions', native:true, content:true, interactions:true},
+  items: {home:'.local/agent-items', world:'TheurgyItems', native:true, content:true, custom:'items'},
   flux: {home:'.local/agent-flux', world:'TheurgyFlux', native:true, content:true, custom:'flux'},
   logistics: {home:'.local/agent-logistics', world:'TheurgyLogistics', native:true, content:true, custom:'logistics'},
-  items: {home:'.local/agent-items', world:'TheurgyItems', native:true, content:true, custom:'items'},
   'content-rules': {home:'.local/agent-content', world:'TheurgyContentRules', native:true, content:true, custom:'content-rules'},
   'incubation-chaos': {home:'.local/agent-incubation', world:'TheurgyIncubationChaos', native:true, content:true, custom:'incubation-chaos'},
   persistence: {home:'.local/agent-persistence', world:'TheurgyPersistence', native:true, content:true, custom:'persistence'},
@@ -29,7 +29,9 @@ const MODES={
   fluids: {home:'.local/agent-fluids', world:'TheurgyFluids', native:true, content:true, custom:'fluids'},
 };
 const mode=process.argv[2]??'smoke';
-const spec=MODES[mode];
+const custom=mode.startsWith('custom:')?mode.slice(7):'';
+if(custom&&!/^[a-z0-9][a-z0-9-]*$/.test(custom))throw new Error('invalid custom scenario id');
+const spec=MODES[mode]??(custom?{home:'.local/agent-'+custom,world:'Horizon'+custom,native:true,content:true,custom}:null);
 if(!spec)throw new Error(Object.keys(MODES).join(' | '));
 const native=!!spec.native;
 const withContent=!!spec.content;
@@ -89,7 +91,7 @@ async function launch() {
     '--resources',path.join(version,'.local/horizon-client/26.3'),
     '--game-dir',gameHome,'--home',gameHome,'--test-terrain','--render-distance','2'];
   if(headless)args.push('--headless');
-  if(withContent)args.push('--dev-mod',path.join(root,'content/theurgy'));
+  if(withContent)args.push('--dev-mod',path.resolve(root,process.env.HORIZON_DEV_MOD??'content/theurgy'));
   await call(args);
   launched=true;
   await call(['wait-ready','180']);

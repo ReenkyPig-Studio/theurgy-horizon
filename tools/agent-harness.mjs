@@ -45,6 +45,7 @@ async function release() {
 await acquire();
 async function exists(file){if(!file)return false;try{await fs.access(file);return true;}catch{return false;}}
 try {
+  if(mode==='items')await run(process.execPath,['tools/build-content.mjs'],{env:{...rustEnv}});
   if(await exists(cached)) {
     console.log('[agent-harness] approved binary cache hit:',cached);
   } else {
