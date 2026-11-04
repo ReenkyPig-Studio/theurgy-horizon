@@ -58,6 +58,12 @@ if (mode === 'chaos-machines') {
 }
 
 async function call(args) {
+  if(args.length===1&&args[0]==='reload') {
+    await reload();
+    const result={ok:true,reloaded:true,world:spec.world};
+    evidence.push({command:'reload',args,reply:result});
+    return result;
+  }
   const result=await new Promise((resolve,reject)=>{
     let stdout='',stderr='';
     const p=spawn(ctl,['--socket',socket,'--timeout','120',...args],{cwd:gameHome,env,windowsHide:true});
