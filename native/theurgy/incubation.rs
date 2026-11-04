@@ -317,14 +317,20 @@ fn matches(
     }
 }
 
+/// The maximum stack size of a single output slot.
+const MAX_STACK: u32 = 64;
+
 /// Whether the incubator's single output slot can take `result` without overflowing.
 fn output_can_fit(entity: &ModBlockEntity, result: &ItemStack) -> bool {
+    if result.count == 0 {
+        return false;
+    }
     match entity.items.first().and_then(|s| s.as_ref()) {
-        None => result.count <= 64,
-        Some(old) if old.count == 0 => result.count <= 64,
+        None => result.count <= MAX_STACK,
+        Some(old) if old.count == 0 => result.count <= MAX_STACK,
         Some(old) => {
             old.item == result.item
-                && old.count.saturating_add(result.count) <= old.count.max(result.count).max(64)
+                && old.count.saturating_add(result.count) <= MAX_STACK
         }
     }
 }

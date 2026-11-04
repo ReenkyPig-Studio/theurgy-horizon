@@ -146,6 +146,17 @@ fn solute_matches(game: &mut crate::game::Game<'_>, solute: &str, stack: &ItemSt
 /// Accumulator server tick. Requires a sal ammoniac tank directly below; no
 /// heat. Water tank is NBT `fluids[0]`, input slot is `entity.items[0]`.
 pub fn tick(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut ModBlockEntity) {
+    if entity.id == TANK {
+        let mut tank = read_tank(entity, 0, TANK_CAPACITY);
+        tank.amount = tank.amount.clamp(0, TANK_CAPACITY);
+        if tank.amount == 0 {
+            tank.fluid = None;
+        }
+        write_tank(entity, 0, &tank);
+        entity.data.clear();
+        entity.data.extend([tank.amount, tank.capacity]);
+        return;
+    }
     if entity.id != ACCUMULATOR || game.native_block([pos[0], pos[1] - 1, pos[2]]) != TANK {
         return;
     }
@@ -159,6 +170,8 @@ pub fn tick(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut ModBlo
             if !solute_matches(game, solute, stack) {
                 continue;
             }
+        } else if entity.items.first().is_some_and(Option::is_some) {
+            continue;
         }
         if let Some((wanted, amount)) = &recipe.evaporant
             && (!fluid_matches(wanted, water.fluid.as_deref()) || water.amount < *amount)
