@@ -33,11 +33,14 @@ const [code,signal]=await new Promise(resolve=>{
   child.on('exit',(code,signal)=>resolve([code,signal]));
 });
 clearTimeout(timer);log.end();
-const markers=[...text.matchAll(/.*(?:GameTestServer|tests? (?:passed|failed)|required tests).*$/gim)].map(m=>m[0]).slice(-100);
-const passed=code===0&&/(all (?:required )?tests (?:have )?passed|all tests passed|game tests? (?:have )?passed)/i.test(text);
+const markers=text.split(/\r?\n/).filter(line=>
+  /GAME TESTS COMPLETE|All \d+ required tests passed|tests? failed|BUILD (?:SUCCESSFUL|FAILED)/i.test(line)).slice(-100);
+const passMatch=text.match(/All\s+(\d+)\s+required\s+tests\s+passed/i);
+const genericPass=/All tests passed/i.test(text);
+const passed=code===0&&(Boolean(passMatch)||genericPass);
 const result={status:passed?'JAVA_GAMETESTS_PASS':'JAVA_GAMETESTS_FAIL',kind:'upstream Java baseline, not Rust differential evidence',
   source:{tag:source.tag,revision:source.revision,minecraft:source.minecraft},command:'gradlew runGameTestServer --no-daemon --console=plain',
-  exitCode:code,signal,log:logPath,markers};
+  exitCode:code,signal,tests:passMatch?Number(passMatch[1]):null,log:logPath,markers};
 await fsp.writeFile(path.join(out,'result.json'),JSON.stringify(result,null,2));
 console.log(JSON.stringify(result,null,2));
 if(!passed)process.exitCode=1;
