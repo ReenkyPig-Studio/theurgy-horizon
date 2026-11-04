@@ -89,7 +89,20 @@ function countAt(reply, i) {
 }
 function nbt(reply) {
   const v = reply?.nbt ?? reply?.data ?? reply?.tag ?? null;
-  return v && typeof v === 'object' ? v : null;
+  if (v && typeof v === 'object') return v;
+  const text = Array.isArray(reply?.chat) ? reply.chat.join('\n') : '';
+  if (!text.includes('has the following block data:')) return null;
+  const out = {};
+  for (const key of ['progress', 'totalTime', 'mercuryFlux']) {
+    const match = new RegExp('\\b' + key + '\\s*:\\s*(-?\\d+)').exec(text);
+    if (match) out[key] = Number(match[1]);
+  }
+  const handler = /mercuryFluxHandler\s*:\s*\{([^{}]*)\}/.exec(text);
+  if (handler) {
+    const energy = /\benergy\s*:\s*(-?\d+)/.exec(handler[1]);
+    if (energy) out.mercuryFluxHandler = {energy: Number(energy[1])};
+  }
+  return out;
 }
 /// Short/byte wrappers serialise as `{type:'short',value:n}`; plain ints as numbers.
 function num(tag, key) {
@@ -116,11 +129,11 @@ function fluxOf(reply) {
   if (!tag) return null;
   const handler = handlerOf(reply);
   if (handler) {
-    const amount = num(handler, 'amount');
+    const amount = num(handler, 'energy');
     if (amount !== null) return {amount, capacity: num(handler, 'capacity')};
   }
   const flat = num(tag, 'mercuryFlux');
-  return flat === null ? null : {amount: flat, capacity: null};
+  return flat === null ? {amount: 0, capacity: null} : {amount: flat, capacity: null};
 }
 function progressOf(reply) {
   const tag = nbt(reply);
@@ -195,7 +208,7 @@ export function reformationPlan() {
   const put = (name, pos, item, count) => step({name, args: ['container', ...S(pos), full(item), String(count)], pos});
   const settle = (name, ticks = SETTLE) => cmd(name, ['wait', String(ticks)]);
   const setFlux = (name, amount) =>
-    cmd(name, ['data', 'merge', 'block', ...S(LAYOUT.emitter), `{mercuryFluxHandler:{amount:${amount},capacity:1000}}`],
+    cmd(name, ['data', 'merge', 'block', ...S(LAYOUT.emitter), `{mercuryFluxHandler:{energy:${amount}}}`],
       LAYOUT.emitter);
   const P = LAYOUT;
 
@@ -414,6 +427,8 @@ const EXPECTED_BLOCKS = new Map([
 ]);
 
 export async function runCustom(call, assert) {
+  const rawCall = call;
+  call = async argv => rawCall(argv[0] === 'data' ? ['command', ...argv] : argv);
   const plan = reformationPlan();
   selfTest(plan);
   const results = [];
