@@ -149,6 +149,8 @@ export async function runAll(call, assert) {
   results.push({name: 'reformation result', item: itemAt(reformationOut, 0)});
 
   // ---- Incubator: three horizontal vessels ---------------------------------
+  await step('incubator lab center', ['tp', '50', '80', '8']);
+  await step('incubator lab chunks', ['wait', '40']);
   const inc = P(50, 80, 0);
   const vessels = [[50, 80, -1, 'theurgy:incubator_mercury_vessel'],
     [51, 80, 0, 'theurgy:incubator_salt_vessel'], [50, 80, 1, 'theurgy:incubator_sulfur_vessel']];
