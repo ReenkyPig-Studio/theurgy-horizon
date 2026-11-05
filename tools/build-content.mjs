@@ -31,7 +31,8 @@ const be=new Set(['calcination_oven','pyromantic_brazier','liquefaction_cauldron
  'sal_ammoniac_accumulator','logistics_nexus','mercury_catalyst','mercury_capacitor','caloric_flux_emitter',
  'reformation_source_pedestal','reformation_target_pedestal','reformation_result_pedestal','sulfuric_flux_emitter',
  'mercury_flux_emitter','fermentation_vat','digestion_vat','logistics_item_inserter','logistics_item_extractor',
- 'logistics_fluid_inserter','logistics_fluid_extractor','logistics_capability_proxy','logistics_mercury_flux_connector']);
+ 'logistics_fluid_inserter','logistics_fluid_extractor','logistics_connector_node','logistics_capability_probe',
+ 'logistics_capability_proxy','logistics_mercury_flux_connector']);
 const bool=n=>[n,{type:'boolean'}];
 const props={
  calcination_oven:[bool('lit'),['half',{type:'enum',values:['lower','upper']}]],
