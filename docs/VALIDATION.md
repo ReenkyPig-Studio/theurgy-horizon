@@ -48,6 +48,11 @@
   water fluids; 128 observations, evidence
   `.agents/secure-secure-filter-kabuai/filter-matching/runs/game-1793902171950/evidence.json`.
   Main повтор: `runs/game-1793903267826`. Attribute filters и их GUI отдельно не проверены.
+- `runs/secure-attribute-filters`: provider `kabuai/deepseek-v4.1-flash-1017`, candidate SHA256
+  `4ca41ffe1c5ccc871442a2cc4f485cd7260590c1fc0f1ec61de8f28434ec4314`, VERIFIED.
+  Attribute `match_any/match_all/deny`, inverted rules, `in_tag` и standard `renamed`:
+  82 observations, evidence `.agents/secure-secure-attribute-filters/attribute-filters/runs/game-1793907212768/evidence.json`;
+  main `runs/game-1793908228458`. Остальные attribute kinds и GUI не заявлены.
 - `npm run test:modules`: 21/21 pure logistics tests через `tools/module-tests.mjs`; wrapper сохраняет
   production NBT/algorithm helpers/tests, опуская только требующие реального Game функции. Это не
   замена game evidence. Java/Horizon pack и wire regression после интеграции: filters 23
