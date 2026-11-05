@@ -53,6 +53,13 @@
   Attribute `match_any/match_all/deny`, inverted rules, `in_tag` и standard `renamed`:
   82 observations, evidence `.agents/secure-secure-attribute-filters/attribute-filters/runs/game-1793907212768/evidence.json`;
   main `runs/game-1793908228458`. Остальные attribute kinds и GUI не заявлены.
+- `runs/secure-standard-rules`: provider `kabuai/deepseek-v4.1-flash-1017`, candidate SHA256
+  `1aaac85dedb8c86dccb7cb6941b836fc01517f13411118781163a4a418afe6ec`, VERIFIED.
+  Все standard attribute kinds: placeable/consumable/fluid/enchant/name/damage/stack/equip/fuel/
+  smelting/smoking/blasting/compost, 276 observations, evidence
+  `.agents/secure-secure-standard-rules/standard-attributes/runs/game-1793917122188/evidence.json`;
+  main `runs/game-1793918311191`. Отдельно остаются added_by/enchantment/fluid_contents/item_name
+  и GUI. Rustc потребовал `RUST_MIN_STACK=33554432` для большого injected crate.
 - `npm run test:modules`: 21/21 pure logistics tests через `tools/module-tests.mjs`; wrapper сохраняет
   production NBT/algorithm helpers/tests, опуская только требующие реального Game функции. Это не
   замена game evidence. Java/Horizon pack и wire regression после интеграции: filters 23
