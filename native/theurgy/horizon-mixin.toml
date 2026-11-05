@@ -82,6 +82,12 @@ name = "theurgy_filtered_fluid_transfer"
 source = "filtered_fluid_transfer.rs"
 
 [[module]]
+id = "standard_attributes"
+file = "crates/horizon-client/src/game/machines/native_items.rs"
+name = "theurgy_standard_attributes"
+source = "standard_attributes.rs"
+
+[[module]]
 id = "render"
 file = "crates/horizon-client/src/game.rs"
 name = "theurgy_render"
