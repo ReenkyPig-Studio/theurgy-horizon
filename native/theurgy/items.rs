@@ -328,6 +328,115 @@ fn attune_rod(
 /// Early `right_click_block` hook: logistics blocks use a barrel template that
 /// consumes the block interaction before `use_item_on` runs. Handle the wire
 /// before that so a valid endpoint click is never lost.
+const MERCURIAL_WAND: &str = "theurgy:mercurial_wand";
+const MERCURIAL_WAND_MODE: &str = "theurgy:mercurial_wand_item_mode";
+const SELECTED_FREQUENCY: &str = "theurgy:selected_frequency";
+// Java Logistics{Item,Fluid}ConnectorBlockEntity and
+// LogisticsMercuryFluxConnectorBlockEntity implement all three wand targets.
+const WAND_CONNECTORS: [&str; 5] = [
+    "theurgy:logistics_item_inserter", "theurgy:logistics_item_extractor",
+    "theurgy:logistics_fluid_inserter", "theurgy:logistics_fluid_extractor",
+    "theurgy:logistics_mercury_flux_connector",
+];
+const WAND_MODE_NAMES: [&str; 5] = [
+    "cycle_direction", "switch_logistics_enabled", "select_frequency",
+    "set_selected_frequency", "cycle_capacitor_side",
+];
+fn wand_mode(game: &crate::game::Game<'_>, stack: &ItemStack) -> i32 {
+    // MercurialWandItemMode.Type.CODEC persists names, not ordinals. Accept
+    // legacy integer stacks, but always write the Java string representation.
+    if let Some(mode) = component_i32(game, stack, MERCURIAL_WAND_MODE) {
+        return mode.clamp(0, 4);
+    }
+    component_string(game, stack, MERCURIAL_WAND_MODE)
+        .and_then(|name| WAND_MODE_NAMES.iter().position(|candidate| *candidate == name.as_str()))
+        .unwrap_or(0) as i32
+}
+// CycleSelectedDirectionMode.nextDirection; ordinals are Direction.get3DDataValue.
+fn next_direction(ordinal: i32) -> i32 {
+    match ordinal { 1 => 2, 2 => 4, 4 => 3, 3 => 5, 5 => 0, 0 => 1, _ => 2 }
+}
+fn direction_ordinal(name: &str) -> i32 {
+    match name {
+        "down" | "DOWN" => 0, "up" | "UP" => 1, "north" | "NORTH" => 2,
+        "south" | "SOUTH" => 3, "west" | "WEST" => 4, "east" | "EAST" => 5,
+        _ => 2,
+    }
+}
+fn block_facing(game: &crate::game::Game<'_>, pos: [i32; 3]) -> i32 {
+    let state = game.world.block(pos[0], pos[1], pos[2]);
+    game.pack.assets.registry.state(state)
+        .and_then(|descriptor| descriptor.properties.get("facing"))
+        .map(|name| direction_ordinal(name)).unwrap_or(2)
+}
+fn face_direction(face: [i32; 3]) -> &'static str {
+    match face { [0, -1, 0] => "DOWN", [0, 1, 0] => "UP", [0, 0, -1] => "NORTH",
+        [0, 0, 1] => "SOUTH", [-1, 0, 0] => "WEST", [1, 0, 0] => "EAST", _ => "NORTH" }
+}
+fn wand_use_on(game: &mut crate::game::Game<'_>, stack: &ItemStack, pos: [i32; 3], face: [i32; 3]) -> bool {
+    if stack.item.as_ref() != MERCURIAL_WAND { return false; }
+    let block = game.native_block(pos);
+    let connector = WAND_CONNECTORS.contains(&block.as_str());
+    match wand_mode(game, stack) {
+        0 if connector => {
+            // With no override Java uses the block's FACING, not a hard-coded north.
+            let facing = block_facing(game, pos);
+            game.native_with_mod_block_entity(pos, |entity| {
+                let current = match entity.nbt.get(&JavaString::from("directionOverride")) {
+                    Some(Tag::Int(v)) => *v, Some(Tag::Byte(v)) => *v as i32, _ => facing };
+                entity.nbt.insert(JavaString::from("directionOverride"), Tag::Int(next_direction(current)));
+            });
+            true
+        }
+        1 if connector => {
+            game.native_with_mod_block_entity(pos, |entity| {
+                let current = match entity.nbt.get(&JavaString::from("enabled")) {
+                    Some(Tag::Byte(v)) => *v != 0, Some(Tag::Int(v)) => *v != 0, _ => true };
+                entity.nbt.insert(JavaString::from("enabled"), Tag::Byte(if current { 0 } else { 1 }));
+            });
+            true
+        }
+        2 => {
+            let frequency = component_i32(game, stack, SELECTED_FREQUENCY).unwrap_or(0) + 1;
+            set_held_component(game, SELECTED_FREQUENCY, Tag::Int(frequency));
+            true
+        }
+        3 if connector => {
+            let frequency = component_i32(game, stack, SELECTED_FREQUENCY).unwrap_or(0);
+            game.native_with_mod_block_entity(pos, |entity| {
+                entity.nbt.insert(JavaString::from("frequency"), Tag::Int(frequency));
+            });
+            true
+        }
+        4 if block == "theurgy:mercury_capacitor" => {
+            let face_key = JavaString::from(face_direction(face));
+            game.native_with_mod_block_entity(pos, |entity| {
+                let side_key = JavaString::from("sideModes");
+                let mut modes = match entity.nbt.get(&side_key) { Some(Tag::Compound(map)) => map.clone(), _ => Compound::new() };
+                // MercuryCapacitorBlockEntity constructor: UP/DOWN OUTPUT(2),
+                // horizontal sides INPUT(1); an absent entry is not NONE here.
+                let fallback = if matches!(face_direction(face), "UP" | "DOWN") { 2 } else { 1 };
+                let current = match modes.get(&face_key) { Some(Tag::Int(v)) => *v, Some(Tag::Byte(v)) => *v as i32, _ => fallback };
+                modes.insert(face_key, Tag::Int((current + 1).rem_euclid(4)));
+                entity.nbt.insert(side_key, Tag::Compound(modes));
+            });
+            true
+        }
+        _ => false,
+    }
+}
+pub fn mouse_scroll(game: &mut crate::game::Game<'_>, _scroll: [f64; 2], accumulated: [i32; 2], canceled: &mut bool) {
+    if *canceled || !is_sneaking(game) || accumulated[1] == 0 { return; }
+    let slot = game.selected as i32;
+    let Some(held) = game.native_carried_stack(slot).cloned() else { return; };
+    if held.item.as_ref() != MERCURIAL_WAND { return; }
+    let current = wand_mode(game, &held);
+    let next = if accumulated[1] > 0 { (current + 1).rem_euclid(5) } else { (current - 1).rem_euclid(5) };
+    set_held_component(game, MERCURIAL_WAND_MODE,
+        Tag::String(JavaString::from(WAND_MODE_NAMES[next as usize])));
+    *canceled = true;
+}
+
 pub fn right_click_block(
     game: &mut crate::game::Game<'_>,
     stack: &ItemStack,
@@ -335,7 +444,12 @@ pub fn right_click_block(
     _face: [i32; 3],
     canceled: &mut bool,
 ) {
-    if *canceled || stack.item.as_ref() != WIRE_ITEM {
+    if *canceled { return; }
+    if stack.item.as_ref() == MERCURIAL_WAND && wand_use_on(game, stack, pos, _face) {
+        *canceled = true;
+        return;
+    }
+    if stack.item.as_ref() != WIRE_ITEM {
         return;
     }
     let mut claimed = false;
@@ -352,7 +466,14 @@ pub fn use_item(
     stack: &ItemStack,
     claimed: &mut bool,
 ) {
-    if *claimed || is_sneaking(game) || !stack.item.contains("divination_rod") {
+    if *claimed { return; }
+    if stack.item.as_ref() == MERCURIAL_WAND && wand_mode(game, stack) == 2 {
+        let frequency = component_i32(game, stack, SELECTED_FREQUENCY).unwrap_or(0) + 1;
+        set_held_component(game, SELECTED_FREQUENCY, Tag::Int(frequency));
+        *claimed = true;
+        return;
+    }
+    if is_sneaking(game) || !stack.item.contains("divination_rod") {
         return;
     }
     *claimed = true;
@@ -454,6 +575,10 @@ pub fn use_on(
     claimed: &mut bool,
 ) {
     if *claimed {
+        return;
+    }
+    if stack.item.as_ref() == MERCURIAL_WAND && wand_use_on(game, stack, pos, face) {
+        *claimed = true;
         return;
     }
     if stack.item.as_ref() == WIRE_ITEM {
