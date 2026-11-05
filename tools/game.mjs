@@ -25,6 +25,7 @@ const MODES={
   tools: {home:'.local/agent-tools', world:'TheurgyTools', native:true, content:true, custom:'tools'},
   divination: {home:'.local/agent-divination', world:'TheurgyDivination', native:true, content:true, custom:'divination'},
   wand: {home:'.local/agent-wand', world:'TheurgyWand', native:true, content:true, custom:'wand'},
+  filters: {home:'.local/agent-filters', world:'TheurgyFilters', native:true, content:true, custom:'filters'},
   'content-rules': {home:'.local/agent-content', world:'TheurgyContentRules', native:true, content:true, custom:'content-rules'},
   'incubation-chaos': {home:'.local/agent-incubation', world:'TheurgyIncubationChaos', native:true, content:true, custom:'incubation-chaos'},
   persistence: {home:'.local/agent-persistence', world:'TheurgyPersistence', native:true, content:true, custom:'persistence'},

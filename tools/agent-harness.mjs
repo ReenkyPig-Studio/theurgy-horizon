@@ -49,7 +49,7 @@ async function release() {
 await acquire();
 async function exists(file){if(!file)return false;try{await fs.access(file);return true;}catch{return false;}}
 try {
-  if(mode==='items'||mode==='wand') {
+  if(mode==='items'||mode==='wand'||mode==='custom:wire-graph'||mode==='filters') {
     await run(process.execPath,['tools/build-content.mjs'],{env:{...rustEnv}});
     await run(process.execPath,['tools/content-check.mjs'],{env:{...rustEnv}});
   }
