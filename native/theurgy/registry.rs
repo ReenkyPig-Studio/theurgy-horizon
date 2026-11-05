@@ -29,6 +29,10 @@ const BLOCK_ENTITIES: &[&str] = &[
     "theurgy:logistics_item_extractor",
     "theurgy:logistics_fluid_inserter",
     "theurgy:logistics_fluid_extractor",
+    // These two Java blocks have no BE; Horizon uses a data-only native BE as
+    // their per-endpoint Wire SavedData record (no slots, tanks or tick logic).
+    "theurgy:logistics_connector_node",
+    "theurgy:logistics_capability_probe",
     "theurgy:logistics_capability_proxy",
     "theurgy:logistics_mercury_flux_connector",
 ];

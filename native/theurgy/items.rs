@@ -247,39 +247,7 @@ fn wire_use_on(
     pos: [i32; 3],
     claimed: &mut bool,
 ) -> bool {
-    *claimed = true;
-
-    let block = game.native_block(pos);
-    if !is_wire_endpoint(block.as_str()) {
-        if is_sneaking(game) {
-            clear_wire_endpoint(game);
-        }
-        return true;
-    }
-
-    if is_sneaking(game) {
-        clear_wire_endpoint(game);
-        return true;
-    }
-
-    let Some((stored, stored_level)) = load_wire_endpoint(game, stack) else {
-        store_wire_endpoint(game, pos);
-        return true;
-    };
-
-    if stored_level != game.dim.id().to_string() {
-        return true;
-    }
-    if stored == pos {
-        return true;
-    }
-    if manhattan(stored, pos) > WIRE_MAX_RANGE {
-        return true;
-    }
-
-    clear_wire_endpoint(game);
-    consume_one_wire(game);
-    true
+    crate::game::theurgy_logistics::wire_use_on(game, stack, pos, claimed)
 }
 
 /// `DivinationRodItem.useOn`: sneak-use links the rod to an allowed block. The
