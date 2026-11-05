@@ -88,6 +88,12 @@ name = "theurgy_standard_attributes"
 source = "standard_attributes.rs"
 
 [[module]]
+id = "special_attributes"
+file = "crates/horizon-client/src/game/machines/native_items.rs"
+name = "theurgy_special_attributes"
+source = "special_attributes.rs"
+
+[[module]]
 id = "render"
 file = "crates/horizon-client/src/game.rs"
 name = "theurgy_render"

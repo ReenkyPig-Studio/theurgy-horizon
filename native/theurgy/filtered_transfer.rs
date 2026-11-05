@@ -60,6 +60,7 @@ pub(in crate::game) enum NativeAttributeRule {
         inverted: bool,
     },
     Standard(super::theurgy_standard_attributes::NativeStandardRule),
+    Special(super::theurgy_special_attributes::NativeSpecialRule),
     Unknown,
 }
 
@@ -77,6 +78,7 @@ impl NativeAttributeRule {
                 Some(renamed ^ *inverted)
             }
             NativeAttributeRule::Standard(rule) => Some(rule.allows_item(stack)),
+            NativeAttributeRule::Special(rule) => Some(rule.allows_item(stack)),
             NativeAttributeRule::Unknown => None,
         }
     }
@@ -315,6 +317,11 @@ impl Game<'_> {
                 };
                 match self.native_standard_rule(&value.to_string_lossy(), inverted) {
                     Some(rule) => result.rules.push(NativeAttributeRule::Standard(rule)),
+                    None => result.rules.push(NativeAttributeRule::Unknown),
+                }
+            } else if let Some(Tag::Compound(payload)) = rule_map.get(&JavaString::from("payload")) {
+                match self.native_special_rule(kind.as_str(), payload, inverted) {
+                    Some(rule) => result.rules.push(NativeAttributeRule::Special(rule)),
                     None => result.rules.push(NativeAttributeRule::Unknown),
                 }
             } else {
