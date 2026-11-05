@@ -70,6 +70,18 @@ name = "theurgy_items"
 source = "items.rs"
 
 [[module]]
+id = "filtered_transfer"
+file = "crates/horizon-client/src/game/machines/native_items.rs"
+name = "theurgy_filtered_transfer"
+source = "filtered_transfer.rs"
+
+[[module]]
+id = "filtered_fluid_transfer"
+file = "crates/horizon-client/src/game/machines/native_fluids.rs"
+name = "theurgy_filtered_fluid_transfer"
+source = "filtered_fluid_transfer.rs"
+
+[[module]]
 id = "render"
 file = "crates/horizon-client/src/game.rs"
 name = "theurgy_render"
