@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 use super::*;
 use horizon_world::nbt::{Compound, JavaString, Tag};
+use std::collections::HashSet;
+use std::sync::Arc;
 
 pub(in crate::game) struct NativeListFilter {
     pub deny: bool,
@@ -39,6 +41,77 @@ impl NativeListFilter {
         }
 
         if self.deny { !matched } else { matched }
+    }
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(in crate::game) enum NativeAttributeMode {
+    MatchAny,
+    MatchAll,
+    Deny,
+}
+
+pub(in crate::game) enum NativeAttributeRule {
+    InTag {
+        members: HashSet<Arc<str>>,
+        inverted: bool,
+    },
+    StandardRenamed {
+        inverted: bool,
+    },
+    Unknown,
+}
+
+impl NativeAttributeRule {
+    fn matches(&self, stack: &ItemStack) -> Option<bool> {
+        match self {
+            NativeAttributeRule::InTag { members, inverted } => {
+                Some(members.contains(&stack.item) ^ *inverted)
+            }
+            NativeAttributeRule::StandardRenamed { inverted } => {
+                let renamed = stack
+                    .data()
+                    .and_then(|d| d.other("minecraft:custom_name"))
+                    .is_some();
+                Some(renamed ^ *inverted)
+            }
+            NativeAttributeRule::Unknown => None,
+        }
+    }
+}
+
+pub(in crate::game) struct NativeAttributeFilter {
+    mode: NativeAttributeMode,
+    rules: Vec<NativeAttributeRule>,
+}
+
+impl NativeAttributeFilter {
+    pub(in crate::game) fn allows_item(&self, stack: &ItemStack) -> bool {
+        if self.rules.is_empty() {
+            return true;
+        }
+
+        let mut any = false;
+        let mut all = true;
+        for rule in &self.rules {
+            let matched = rule.matches(stack).unwrap_or(false);
+            any |= matched;
+            all &= matched;
+        }
+
+        match self.mode {
+            NativeAttributeMode::MatchAny => any,
+            NativeAttributeMode::MatchAll => all,
+            NativeAttributeMode::Deny => !any,
+        }
+    }
+}
+
+fn native_attribute_tag_bool(value: Option<&Tag>) -> bool {
+    match value {
+        Some(Tag::Byte(value)) => *value != 0,
+        Some(Tag::Int(value)) => *value != 0,
+        _ => false,
     }
 }
 
@@ -146,6 +219,106 @@ impl Game<'_> {
             }
 
             result.entries.push(stack);
+        }
+
+        result
+    }
+
+    pub(in crate::game) fn native_attribute_filter(
+        &self,
+        filter: Option<&ItemStack>,
+    ) -> NativeAttributeFilter {
+        let mut result = NativeAttributeFilter {
+            mode: NativeAttributeMode::MatchAny,
+            rules: Vec::new(),
+        };
+
+        let Some(filter) = filter else { return result; };
+
+        let config = self
+            .native_component(filter, "codedefinedgui:attribute_filter_config")
+            .ok()
+            .flatten();
+
+        let Some(Tag::Compound(config)) = config.as_ref() else { return result; };
+        let config: &Compound = config;
+
+        if let Some(Tag::String(mode)) = config.get(&JavaString::from("mode")) {
+            let mode = mode.to_string_lossy();
+            if mode == "match_all" {
+                result.mode = NativeAttributeMode::MatchAll;
+            } else if mode == "deny" {
+                result.mode = NativeAttributeMode::Deny;
+            } else {
+                result.mode = NativeAttributeMode::MatchAny;
+            }
+        }
+
+        let Some(Tag::List(rules)) = config.get(&JavaString::from("rules")) else {
+            return result;
+        };
+
+        for rule in &rules[..] {
+            let Tag::Compound(rule_map) = rule else {
+                result.rules.push(NativeAttributeRule::Unknown);
+                continue;
+            };
+
+            let inverted = native_attribute_tag_bool(rule_map.get(&JavaString::from("inverted")));
+
+            let Some(Tag::String(kind)) = rule_map.get(&JavaString::from("type")) else {
+                result.rules.push(NativeAttributeRule::Unknown);
+                continue;
+            };
+            let kind = kind.to_string_lossy();
+
+            if kind == "codedefinedgui:in_tag" {
+                let Some(Tag::Compound(payload)) = rule_map.get(&JavaString::from("payload")) else {
+                    result.rules.push(NativeAttributeRule::Unknown);
+                    continue;
+                };
+                let Some(Tag::String(id)) = payload.get(&JavaString::from("id")) else {
+                    result.rules.push(NativeAttributeRule::Unknown);
+                    continue;
+                };
+
+                let id = id.to_string_lossy();
+                let members: HashSet<Arc<str>> = self
+                    .res
+                    .items()
+                    .item_tags
+                    .get(id.as_str())
+                    .map(|values| {
+                        values
+                            .iter()
+                            .map(|item| {
+                                let item: &str = item.as_ref();
+                                Arc::<str>::from(item)
+                            })
+                            .collect()
+                    })
+                    .unwrap_or_default();
+
+                result.rules.push(NativeAttributeRule::InTag { members, inverted });
+            } else if kind == "codedefinedgui:standard" {
+                let Some(Tag::Compound(payload)) = rule_map.get(&JavaString::from("payload")) else {
+                    result.rules.push(NativeAttributeRule::Unknown);
+                    continue;
+                };
+
+                let renamed = match payload.get(&JavaString::from("value")) {
+                    Some(Tag::String(value)) => value.to_string_lossy() == "renamed",
+                    _ => false,
+                };
+
+                if renamed {
+                    result.rules.push(NativeAttributeRule::StandardRenamed { inverted });
+                } else {
+                    result.rules.push(NativeAttributeRule::Unknown);
+                }
+            } else {
+                result.rules.push(NativeAttributeRule::Unknown);
+            }
         }
 
         result
