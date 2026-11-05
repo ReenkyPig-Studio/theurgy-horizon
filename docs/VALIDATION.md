@@ -33,6 +33,21 @@
 - Runtime matrix `runs/runtime-main`: 8 coding agents в изолированных worktrees, owned files,
   обязательный locked native build + headless game; готовые patches появляются в `runs/runtime-main/patches`.
   Параллельные checkpoint writes сериализованы после обнаруженного Windows rename race.
+- `runs/secure-wire-graph`: candidate SHA256 `bea4e1b0f3005775f5c73be65cfe563e1e8da26ee445efb3ba9f6b90326fd415`,
+  VERIFIED; Java wire `{from:Long,to:Long}` graph, connect/disconnect, save/reload и frequency
+  isolation без `nexusId` shortcut, 56 observations, evidence
+  `.agents/secure-secure-wire-graph/wire-graph/runs/game-1793846117479/evidence.json`.
+- `runs/secure-filters`: candidate SHA256 `a34d5146899c553fb6dbfde31bf6cd906ba033039b2a3c29aae4b2c9d2306264`,
+  VERIFIED; filter count-one attachment/removal, preserved custom name, `filter` NBT, reload и
+  `has_filter`, 23 observations, evidence
+  `.agents/secure-secure-filters/filters/runs/game-1793848533588/evidence.json`.
+  Это не доказательство filter GUI, attribute/list matching или fluid filtering.
+- `npm run test:modules`: 21/21 pure logistics tests через `tools/module-tests.mjs`; wrapper сохраняет
+  production NBT/algorithm helpers/tests, опуская только требующие реального Game функции. Это не
+  замена game evidence. Java/Horizon pack и wire regression после интеграции: filters 23
+  (`runs/game-1793849048665`), wire graph 56 (`runs/game-1793849049528`), tools 30
+  (`runs/game-1793849146637`), nexus logistics 32 (`runs/game-1793849143107`), machines 65
+  (`runs/game-1793849210474`), interactions 35 (`runs/game-1793849349928`).
 - После wand/provider изменений: `npm test` 34/34; `npm run fast` 28/28 Rust tests + doc-tests;
   `node tools/native.mjs check-headless` и `build-headless` PASS.
 - Ранее recipes с `neoforge:conditions` молча отбрасывались Horizon до загрузки mod tags;

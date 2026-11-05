@@ -7,6 +7,7 @@
     "doctor": "node tools/dev.mjs doctor",
     "inventory": "node tools/inventory.mjs",
     "fast": "node tools/dev.mjs fast",
+    "test:modules": "node tools/module-tests.mjs logistics",
     "check": "node tools/dev.mjs check",
     "plan": "node matrix/swarm.mjs",
     "swarm": "node matrix/swarm.mjs",

@@ -94,5 +94,6 @@ node tools/proposal.mjs runs/<run>/checkpoint.json crafting --approve-reviewed-c
 Интегрированы native block entities, контейнеры/танки, рецепты и основные аппараты;
 есть реальные headless PASS всех аппаратов, distiller persistence/break и bounded chaos.
 Это уже не bootstrap-only, но полный parity ещё не объявляется: mercurial wand, rod attunement/scanning
-и wire endpoints имеют real-game PASS, однако полный wire/logistics graph, остальные item behaviours,
-GUI/renderer и Java differential traces требуют отдельных проверок. См. актуальный раздел VALIDATION.md.
+и persisted wire item graph имеют real-game PASS, фильтры сохраняют/возвращают компонентный stack,
+однако filter GUI/matching, fluids/flux/proxy graph, остальные item behaviours, GUI/renderer и Java
+differential traces требуют отдельных проверок. См. актуальный раздел VALIDATION.md.
