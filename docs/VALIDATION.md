@@ -42,6 +42,12 @@
   `has_filter`, 23 observations, evidence
   `.agents/secure-secure-filters/filters/runs/game-1793848533588/evidence.json`.
   Это не доказательство filter GUI, attribute/list matching или fluid filtering.
+- `runs/secure-filter-kabuai`: provider `kabuai/deepseek-v4.1-flash-1017`, candidate SHA256
+  `08690facc7e1eacbdf3b06b6451ed594d8116bb3f44dd12e839a768bb72a6551`, VERIFIED.
+  CodeDefinedGUI 1.14 list filters: allow/deny на extractor и inserter, exact components,
+  water fluids; 128 observations, evidence
+  `.agents/secure-secure-filter-kabuai/filter-matching/runs/game-1793902171950/evidence.json`.
+  Main повтор: `runs/game-1793903267826`. Attribute filters и их GUI отдельно не проверены.
 - `npm run test:modules`: 21/21 pure logistics tests через `tools/module-tests.mjs`; wrapper сохраняет
   production NBT/algorithm helpers/tests, опуская только требующие реального Game функции. Это не
   замена game evidence. Java/Horizon pack и wire regression после интеграции: filters 23
