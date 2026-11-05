@@ -59,6 +59,7 @@ pub(in crate::game) enum NativeAttributeRule {
     StandardRenamed {
         inverted: bool,
     },
+    Standard(super::theurgy_standard_attributes::NativeStandardRule),
     Unknown,
 }
 
@@ -75,6 +76,7 @@ impl NativeAttributeRule {
                     .is_some();
                 Some(renamed ^ *inverted)
             }
+            NativeAttributeRule::Standard(rule) => Some(rule.allows_item(stack)),
             NativeAttributeRule::Unknown => None,
         }
     }
@@ -225,7 +227,7 @@ impl Game<'_> {
     }
 
     pub(in crate::game) fn native_attribute_filter(
-        &self,
+        &mut self,
         filter: Option<&ItemStack>,
     ) -> NativeAttributeFilter {
         let mut result = NativeAttributeFilter {
@@ -238,7 +240,8 @@ impl Game<'_> {
         let config = self
             .native_component(filter, "codedefinedgui:attribute_filter_config")
             .ok()
-            .flatten();
+            .flatten()
+            .cloned();
 
         let Some(Tag::Compound(config)) = config.as_ref() else { return result; };
         let config: &Compound = config;
@@ -306,15 +309,13 @@ impl Game<'_> {
                     continue;
                 };
 
-                let renamed = match payload.get(&JavaString::from("value")) {
-                    Some(Tag::String(value)) => value.to_string_lossy() == "renamed",
-                    _ => false,
-                };
-
-                if renamed {
-                    result.rules.push(NativeAttributeRule::StandardRenamed { inverted });
-                } else {
+                let Some(Tag::String(value)) = payload.get(&JavaString::from("value")) else {
                     result.rules.push(NativeAttributeRule::Unknown);
+                    continue;
+                };
+                match self.native_standard_rule(&value.to_string_lossy(), inverted) {
+                    Some(rule) => result.rules.push(NativeAttributeRule::Standard(rule)),
+                    None => result.rules.push(NativeAttributeRule::Unknown),
                 }
             } else {
                 result.rules.push(NativeAttributeRule::Unknown);
