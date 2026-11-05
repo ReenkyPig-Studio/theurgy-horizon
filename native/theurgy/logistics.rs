@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: MIT
 use crate::game::theurgy_host::{bool, int, set_int};
 use horizon_client::containers::{BlockEntity, ModBlockEntity};
+use horizon_client::items::ItemStack;
 use horizon_core::geometry::Direction;
+use horizon_world::nbt::{Compound, JavaString, Tag};
+use std::collections::BTreeSet;
 
 // ---------------------------------------------------------------------------
 // Pure logic: logistics network model
@@ -190,6 +193,89 @@ pub fn connector_direction(override_dir: Option<u8>, facing: u8) -> u8 {
     override_dir.unwrap_or(facing)
 }
 
+// FilterBehaviour.writeNetwork uses ItemStack.OPTIONAL_CODEC (the saved
+// ItemStackTemplate shape), so preserve id/count/components, not just an id.
+fn stack_tag(stack: &ItemStack) -> Tag {
+    let mut record = Compound::new();
+    record.insert(JavaString::from("id"), Tag::String(JavaString::from(stack.item.as_ref())));
+    if stack.count != 1 { record.insert(JavaString::from("count"), Tag::Int(stack.count as i32)); }
+    let Some(data) = stack.data() else { return Tag::Compound(record); };
+    let mut components = Compound::new();
+    if stack.damage != 0 {
+        components.insert(JavaString::from("minecraft:damage"), Tag::Int(stack.damage as i32));
+    }
+    for key in ["minecraft:custom_name", "minecraft:enchantments", "minecraft:custom_data",
+        "theurgy:filter_items", "theurgy:filter_is_deny_list",
+        "theurgy:filter_respects_data_components", "theurgy:filter_mode",
+        "theurgy:filter_attributes"] {
+        if let Some(tag) = data.other(key) { components.insert(JavaString::from(key), tag.clone()); }
+    }
+    if !components.is_empty() { record.insert(JavaString::from("components"), Tag::Compound(components)); }
+    Tag::Compound(record)
+}
+fn saved_filter(nbt: &Compound) -> Option<ItemStack> {
+    let Tag::Compound(record) = nbt.get(&JavaString::from("filter"))? else { return None; };
+    let Some(Tag::String(id)) = record.get(&JavaString::from("id")) else { return None; };
+    let id = id.to_string_lossy();
+    if !matches!(id.as_str(), "theurgy:list_filter" | "theurgy:attribute_filter") { return None; }
+    let count = match record.get(&JavaString::from("count")) { Some(Tag::Int(v)) => *v, _ => 1 };
+    if count <= 0 { return None; }
+    let mut stack = ItemStack::new(&id, 1);
+    let Some(Tag::Compound(components)) = record.get(&JavaString::from("components")) else { return Some(stack); };
+    for (key, value) in components {
+        let _ = gameless_set_component(&mut stack, &key.to_string_lossy(), value.clone());
+    }
+    Some(stack)
+}
+// The saved template's components are already valid NBT. Construct only a
+// private clone here; the normal native_component path supplies defaults and
+// validates registered ids when the player subsequently uses the filter.
+fn gameless_set_component(stack: &mut ItemStack, id: &str, value: Tag) -> Result<(), ()> {
+    stack.data_mut().set_other(id, Some(value));
+    stack.tidy();
+    Ok(())
+}
+fn filter_block(block: &str) -> bool {
+    matches!(block, "theurgy:logistics_item_inserter" | "theurgy:logistics_item_extractor"
+        | "theurgy:logistics_fluid_inserter" | "theurgy:logistics_fluid_extractor")
+}
+fn sync_filter_state(game: &mut crate::game::Game<'_>, pos: Pos, present: bool) {
+    let state = game.world.block(pos[0], pos[1], pos[2]);
+    let Some(mut descriptor) = game.pack.assets.registry.state(state).cloned() else { return; };
+    descriptor.properties.insert("has_filter".to_owned(), present.to_string());
+    if let Ok(next) = game.pack.assets.registry.resolve(&descriptor) {
+        game.native_set_block(game.dim.id(), pos, next, 2);
+    }
+}
+/// The main-hand half of FilterBehaviour.useItemOn, before a barrel menu opens.
+pub fn filter_use_on(game: &mut crate::game::Game<'_>, pos: Pos) -> bool {
+    if !filter_block(game.native_block(pos).as_str()) { return false; }
+    let slot = game.selected as i32;
+    let held = game.native_carried_stack(slot).cloned();
+    let existing = game.native_with_mod_block_entity(pos, |entity| saved_filter(&entity.nbt)).flatten();
+    if let Some(stack) = existing {
+        if !wire_sneaking(game) || held.is_some() { return false; }
+        let player = game.native_acting_id();
+        // Atomic give-back: only clear and consume the block state if the whole
+        // preserved stack fits. No item duplication or destruction on full bag.
+        let returned = game.native_give_stack(player, stack.clone());
+        if returned.is_some() { return true; }
+        game.native_with_mod_block_entity(pos, |entity| { entity.nbt.remove(&JavaString::from("filter")); });
+        sync_filter_state(game, pos, false);
+        return true;
+    }
+    let Some(stack) = held else { return false; };
+    if !matches!(stack.item.as_ref(), "theurgy:list_filter" | "theurgy:attribute_filter") { return false; }
+    let inserted = game.native_with_mod_block_entity(pos, |entity| {
+        entity.nbt.insert(JavaString::from("filter"), stack_tag(&stack));
+    }).is_some();
+    if inserted {
+        if let Some(current) = game.native_carried_stack(slot) { current.count = current.count.saturating_sub(1); }
+        sync_filter_state(game, pos, true);
+    }
+    inserted
+}
+
 // ---------------------------------------------------------------------------
 // Block entity tick
 // ---------------------------------------------------------------------------
@@ -290,6 +376,164 @@ fn add(a: Pos, b: Pos) -> Pos {
     [a[0] + b[0], a[1] + b[1], a[2] + b[2]]
 }
 
+// ---------------------------------------------------------------------------
+// Copper wires (Java WireItem/Wires/Wire). Horizon has no SavedData hook, so
+// each oriented Java wire record is persisted at its `to` block entity. The
+// complete graph is reconstructed from the live endpoints and the ticking
+// entity's own NBT (which Horizon temporarily removes from the world map).
+// ---------------------------------------------------------------------------
+
+const WIRE_ITEM: &str = "theurgy:copper_wire";
+const WIRE_END_POINT: &str = "theurgy:wire_end_point";
+const WIRE_CONNECTIONS: &str = "wireConnections";
+const WIRE_MAX_RANGE: i64 = 32;
+const WIRE_ENDPOINTS: [&str; 8] = [
+    "theurgy:logistics_connector_node", "theurgy:logistics_item_inserter",
+    "theurgy:logistics_item_extractor", "theurgy:logistics_fluid_inserter",
+    "theurgy:logistics_fluid_extractor", "theurgy:logistics_capability_probe",
+    "theurgy:logistics_capability_proxy", "theurgy:logistics_mercury_flux_connector",
+];
+
+fn wire_pos_long(pos: Pos) -> i64 {
+    (((pos[0] as i64) & 0x3ff_ffff) << 38)
+        | (((pos[2] as i64) & 0x3ff_ffff) << 12)
+        | ((pos[1] as i64) & 0xfff)
+}
+fn wire_pos_from_long(value: i64) -> Pos {
+    [((value >> 38) as i32), ((value << 52) >> 52) as i32, ((value << 26) >> 38) as i32]
+}
+fn wire_manhattan(a: Pos, b: Pos) -> i64 {
+    (a[0] as i64 - b[0] as i64).abs()
+        + (a[1] as i64 - b[1] as i64).abs()
+        + (a[2] as i64 - b[2] as i64).abs()
+}
+fn wire_endpoint_block(block: &str) -> bool { WIRE_ENDPOINTS.contains(&block) }
+fn wire_sneaking(game: &crate::game::Game<'_>) -> bool {
+    game.has_shift_down() || game.keys.contains(&winit::keyboard::KeyCode::ShiftLeft)
+}
+fn load_wire_endpoint(game: &crate::game::Game<'_>, stack: &ItemStack) -> Option<(Pos, String)> {
+    let Tag::Compound(entries) = game.native_component(stack, WIRE_END_POINT).ok().flatten()? else { return None; };
+    let pos = match entries.get(&JavaString::from("pos")) { Some(Tag::Long(v)) => wire_pos_from_long(*v), _ => return None };
+    let level = match entries.get(&JavaString::from("level")) { Some(Tag::String(v)) => v.to_string_lossy(), _ => return None };
+    Some((pos, level))
+}
+fn change_wire_component(game: &mut crate::game::Game<'_>, value: Option<Tag>) {
+    let slot = game.selected as i32;
+    let Some(mut held) = game.native_carried_stack(slot).cloned() else { return; };
+    let changed = match value {
+        Some(tag) => game.native_set_component(&mut held, WIRE_END_POINT, tag).is_ok(),
+        None => { let _ = game.native_remove_component(&mut held, WIRE_END_POINT); true }
+    };
+    if changed && let Some(current) = game.native_carried_stack(slot) { *current = held; }
+}
+fn store_wire_endpoint(game: &mut crate::game::Game<'_>, pos: Pos) {
+    let mut point = Compound::new();
+    point.insert(JavaString::from("pos"), Tag::Long(wire_pos_long(pos)));
+    point.insert(JavaString::from("level"), Tag::String(JavaString::from(game.dim.id())));
+    change_wire_component(game, Some(Tag::Compound(point)));
+}
+fn change_wire_count(game: &mut crate::game::Game<'_>, delta: i32) {
+    let slot = game.selected as i32;
+    let Some(mut held) = game.native_carried_stack(slot).cloned() else { return; };
+    if held.item.as_ref() == WIRE_ITEM {
+        held.count = if delta < 0 { held.count.saturating_sub(1) } else { held.count.saturating_add(1).min(64) };
+        if let Some(current) = game.native_carried_stack(slot) { *current = held; }
+    }
+}
+fn wire_records(nbt: &Compound) -> Vec<(Pos, Pos)> {
+    let Some(Tag::List(list)) = nbt.get(&JavaString::from(WIRE_CONNECTIONS)) else { return Vec::new(); };
+    list.iter().take(256).filter_map(|tag| {
+        let Tag::Compound(record) = tag else { return None; };
+        let from = match record.get(&JavaString::from("from")) { Some(Tag::Long(v)) => wire_pos_from_long(*v), _ => return None };
+        let to = match record.get(&JavaString::from("to")) { Some(Tag::Long(v)) => wire_pos_from_long(*v), _ => return None };
+        Some((from, to))
+    }).collect()
+}
+fn same_wire(edge: (Pos, Pos), a: Pos, b: Pos) -> bool {
+    (edge.0 == a && edge.1 == b) || (edge.0 == b && edge.1 == a)
+}
+fn find_wire(game: &crate::game::Game<'_>, a: Pos, b: Pos) -> Option<Pos> {
+    for (&(x, y, z), block_entity) in game.world.block_entities.iter() {
+        let BlockEntity::Mod(entity) = block_entity else { continue; };
+        if wire_records(&entity.nbt).into_iter().any(|edge| same_wire(edge, a, b)) { return Some([x, y, z]); }
+    }
+    None
+}
+fn add_wire(game: &mut crate::game::Game<'_>, owner: Pos, from: Pos, to: Pos) -> bool {
+    game.native_with_mod_block_entity(owner, |entity| {
+        let mut records = match entity.nbt.get(&JavaString::from(WIRE_CONNECTIONS)) {
+            Some(Tag::List(list)) => list.clone(), _ => Vec::new(),
+        };
+        let mut record = Compound::new();
+        record.insert(JavaString::from("from"), Tag::Long(wire_pos_long(from)));
+        record.insert(JavaString::from("to"), Tag::Long(wire_pos_long(to)));
+        records.push(Tag::Compound(record));
+        entity.nbt.insert(JavaString::from(WIRE_CONNECTIONS), Tag::List(records));
+    }).is_some()
+}
+fn remove_wire(game: &mut crate::game::Game<'_>, owner: Pos, a: Pos, b: Pos) -> bool {
+    game.native_with_mod_block_entity(owner, |entity| {
+        let key = JavaString::from(WIRE_CONNECTIONS);
+        let mut records = match entity.nbt.get(&key) { Some(Tag::List(list)) => list.clone(), _ => Vec::new() };
+        records.retain(|tag| {
+            let Tag::Compound(record) = tag else { return true; };
+            let from = match record.get(&JavaString::from("from")) { Some(Tag::Long(v)) => wire_pos_from_long(*v), _ => return true };
+            let to = match record.get(&JavaString::from("to")) { Some(Tag::Long(v)) => wire_pos_from_long(*v), _ => return true };
+            !same_wire((from, to), a, b)
+        });
+        if records.is_empty() { entity.nbt.remove(&key); } else { entity.nbt.insert(key, Tag::List(records)); }
+    }).is_some()
+}
+
+/// WireItem.useOn: select, connect, or disconnect an existing unordered edge.
+pub fn wire_use_on(game: &mut crate::game::Game<'_>, stack: &ItemStack, pos: Pos, claimed: &mut bool) -> bool {
+    *claimed = true;
+    if !wire_endpoint_block(game.native_block(pos).as_str()) {
+        if wire_sneaking(game) { change_wire_component(game, None); }
+        return true;
+    }
+    if wire_sneaking(game) { change_wire_component(game, None); return true; }
+    let Some((stored, level)) = load_wire_endpoint(game, stack) else {
+        store_wire_endpoint(game, pos);
+        return true;
+    };
+    if level != game.dim.id() || stored == pos || wire_manhattan(stored, pos) > WIRE_MAX_RANGE { return true; }
+    if let Some(owner) = find_wire(game, stored, pos) {
+        if remove_wire(game, owner, stored, pos) {
+            change_wire_component(game, None);
+            change_wire_count(game, 1);
+        }
+    } else if add_wire(game, pos, stored, pos) {
+        change_wire_component(game, None);
+        change_wire_count(game, -1);
+    }
+    true
+}
+
+fn reachable_nodes(start: Pos, edges: &[(Pos, Pos)]) -> Vec<Pos> {
+    let mut reached = BTreeSet::from([start]);
+    // Every relaxation adds at least one node; the explicit bound also makes
+    // malformed cyclic NBT harmless.
+    for _ in 0..edges.len() {
+        let before = reached.len();
+        for (a, b) in edges {
+            if reached.contains(a) { reached.insert(*b); }
+            if reached.contains(b) { reached.insert(*a); }
+        }
+        if reached.len() == before { break; }
+    }
+    reached.into_iter().collect()
+}
+fn wire_network(game: &crate::game::Game<'_>, start: Pos, own_nbt: &Compound) -> Vec<Pos> {
+    let mut edges = wire_records(own_nbt);
+    for (&(x, y, z), block_entity) in game.world.block_entities.iter() {
+        let BlockEntity::Mod(entity) = block_entity else { continue; };
+        edges.extend(wire_records(&entity.nbt));
+    }
+    edges.retain(|(a, b)| wire_endpoint_block(game.native_block(*a).as_str()) && wire_endpoint_block(game.native_block(*b).as_str()));
+    reachable_nodes(start, &edges)
+}
+
 pub fn tick(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut ModBlockEntity) {
     let id = entity.id.clone();
     if is_nexus(&id) {
@@ -320,7 +564,9 @@ fn fresh_nexus_id(pos: Pos, entity: &ModBlockEntity) -> String {
 /// Scans loaded block entities for connectors sharing `nexus_id`.
 fn collect_network(
     game: &crate::game::Game<'_>,
-    nexus_id: &str,
+    nexus_id: Option<&str>,
+    wired: &[Pos],
+    frequency: i32,
     self_pos: Pos,
 ) -> Vec<(Pos, LeafNodeMode, CapabilityKind, u8)> {
     let mut out = Vec::new();
@@ -335,9 +581,9 @@ fn collect_network(
         let Some((mode, kind)) = block_kind(&ent.id) else {
             continue;
         };
-        if java_nexus_id(&ent.nbt).as_deref() != Some(nexus_id) {
-            continue;
-        }
+        let connected = wired.contains(&p)
+            || (nexus_id.is_some() && java_nexus_id(&ent.nbt).as_deref() == nexus_id);
+        if !connected || int(&ent.nbt, "frequency", 0) != frequency { continue; }
         let state = read_state(&ent.nbt);
         if !state.enabled {
             continue;
@@ -360,6 +606,7 @@ fn tick_connector(
     };
     let mut state = read_state(&entity.nbt);
     let mut state_changed = false;
+    let filter = saved_filter(&entity.nbt);
     if state.extraction_amount == 0 {
         state.extraction_amount = match kind {
             CapabilityKind::Item => MAX_ITEM_EXTRACTION_AMOUNT,
@@ -405,14 +652,14 @@ fn tick_connector(
         return;
     }
 
-    let Some(nexus_id) = java_nexus_id(&entity.nbt) else {
-        if state_changed {
-            write_state(&mut entity.nbt, &state);
-        }
+    let nexus_id = java_nexus_id(&entity.nbt);
+    let wired = wire_network(game, pos, &entity.nbt);
+    if nexus_id.is_none() && wired.len() <= 1 {
+        if state_changed { write_state(&mut entity.nbt, &state); }
         return;
-    };
-
-    let network = collect_network(game, &nexus_id, pos);
+    }
+    let frequency = int(&entity.nbt, "frequency", 0);
+    let network = collect_network(game, nexus_id.as_deref(), &wired, frequency, pos);
 
     match (mode, kind) {
         (LeafNodeMode::Extract, CapabilityKind::Item) => {
@@ -463,6 +710,45 @@ fn tick_connector(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn exact_java_pos_roundtrip_and_negative_coordinates() {
+        for p in [[30,80,28],[-1,-100,-1],[-1000,320,2000],[-33554432,-2048,-33554432]] {
+            assert_eq!(wire_pos_from_long(wire_pos_long(p)), p);
+        }
+        assert_eq!(wire_pos_long([30,80,28]), 8_246_337_323_088);
+    }
+    #[test]
+    fn wire_graph_reaches_cycles_and_not_disconnected_components() {
+        let edges=[([0,0,0],[1,0,0]),([2,0,0],[0,0,0]),([2,0,0],[1,0,0]),([9,0,0],[10,0,0])];
+        assert_eq!(reachable_nodes([0,0,0],&edges),vec![[0,0,0],[1,0,0],[2,0,0]]);
+        assert!(same_wire(edges[0],[1,0,0],[0,0,0]));
+    }
+    #[test]
+    fn wire_records_reject_malformed_nbt() {
+        let mut record=Compound::new();
+        record.insert(JavaString::from("from"),Tag::String(JavaString::from("bad")));
+        let mut nbt=Compound::new();
+        nbt.insert(JavaString::from("wireConnections"),Tag::List(vec![Tag::Compound(record)]));
+        assert!(wire_records(&nbt).is_empty());
+    }
+    #[test]
+    fn wire_records_persist_java_longs() {
+        let mut nbt=Compound::new();
+        let mut wire=Compound::new();
+        wire.insert(JavaString::from("from"),Tag::Long(wire_pos_long([40,80,40])));
+        wire.insert(JavaString::from("to"),Tag::Long(wire_pos_long([47,80,40])));
+        nbt.insert(JavaString::from("wireConnections"),Tag::List(vec![Tag::Compound(wire)]));
+        assert_eq!(wire_records(&nbt),vec![([40,80,40],[47,80,40])]);
+    }
+    #[test]
+    fn filter_template_preserves_registered_component() {
+        let mut original=ItemStack::new("theurgy:list_filter",1);
+        original.data_mut().set_other("theurgy:filter_mode",Some(Tag::String(JavaString::from("match_all_any"))));
+        let saved=stack_tag(&original);
+        let mut nbt=Compound::new();nbt.insert(JavaString::from("filter"),saved);
+        assert_eq!(saved_filter(&nbt).as_ref(),Some(&original));
+    }
 
     #[test]
     fn slow_tick_respects_offset() {
@@ -606,11 +892,9 @@ mod tests {
     #[test]
     fn fresh_nexus_id_is_stable_and_position_sensitive() {
         let nbt = horizon_world::nbt::Compound::new();
-        let entity = ModBlockEntity {
-            id: "theurgy:logistics_nexus".to_owned(),
-            nbt,
-            items: Vec::new(),
-        };
+        let entity = ModBlockEntity::new(horizon_client::containers::ModBlockEntityFields {
+            id: "theurgy:logistics_nexus".to_owned(), nbt, ..Default::default()
+        });
         let a = fresh_nexus_id([0, 0, 0], &entity);
         let b = fresh_nexus_id([0, 0, 0], &entity);
         let c = fresh_nexus_id([1, 0, 0], &entity);
