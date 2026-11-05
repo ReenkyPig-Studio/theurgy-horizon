@@ -678,8 +678,12 @@ fn tick_connector(
                 let to_face = direction_from_index(dir).opposite();
                 let source_rule = game.native_list_filter(filter.as_ref());
                 let sink_rule = game.native_list_filter(sink_filter.as_ref());
+                let source_attribute = game.native_attribute_filter(filter.as_ref());
+                let sink_attribute = game.native_attribute_filter(sink_filter.as_ref());
                 let accept = |stack: &ItemStack| source_rule.allows_item(stack)
-                    && sink_rule.allows_item(stack);
+                    && sink_rule.allows_item(stack)
+                    && source_attribute.allows_item(stack)
+                    && sink_attribute.allows_item(stack);
                 let moved = game.native_move_items_filtered(game.dim.id(), source, from_face, sink, to_face, &accept, amount);
                 if moved > 0 { state_changed = true; }
             }
