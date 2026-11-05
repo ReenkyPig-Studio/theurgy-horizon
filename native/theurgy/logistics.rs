@@ -207,17 +207,19 @@ fn stack_tag(stack: &ItemStack) -> Tag {
     for key in ["minecraft:custom_name", "minecraft:enchantments", "minecraft:custom_data",
         "theurgy:filter_items", "theurgy:filter_is_deny_list",
         "theurgy:filter_respects_data_components", "theurgy:filter_mode",
-        "theurgy:filter_attributes"] {
+        "theurgy:filter_attributes", "codedefinedgui:list_filter_contents",
+        "codedefinedgui:list_filter_config", "codedefinedgui:attribute_filter_reference",
+        "codedefinedgui:attribute_filter_config"] {
         if let Some(tag) = data.other(key) { components.insert(JavaString::from(key), tag.clone()); }
     }
     if !components.is_empty() { record.insert(JavaString::from("components"), Tag::Compound(components)); }
     Tag::Compound(record)
 }
-fn saved_filter(nbt: &Compound) -> Option<ItemStack> {
-    let Tag::Compound(record) = nbt.get(&JavaString::from("filter"))? else { return None; };
+fn template_stack(tag: &Tag) -> Option<ItemStack> {
+    let Tag::Compound(record) = tag else { return None; };
     let Some(Tag::String(id)) = record.get(&JavaString::from("id")) else { return None; };
     let id = id.to_string_lossy();
-    if !matches!(id.as_str(), "theurgy:list_filter" | "theurgy:attribute_filter") { return None; }
+    if id.is_empty() { return None; }
     let count = match record.get(&JavaString::from("count")) { Some(Tag::Int(v)) => *v, _ => 1 };
     if count <= 0 { return None; }
     let mut stack = ItemStack::new(&id, 1);
@@ -226,6 +228,10 @@ fn saved_filter(nbt: &Compound) -> Option<ItemStack> {
         let _ = gameless_set_component(&mut stack, &key.to_string_lossy(), value.clone());
     }
     Some(stack)
+}
+fn saved_filter(nbt: &Compound) -> Option<ItemStack> {
+    let stack = template_stack(nbt.get(&JavaString::from("filter"))?)?;
+    matches!(stack.item.as_ref(), "theurgy:list_filter" | "theurgy:attribute_filter").then_some(stack)
 }
 // The saved template's components are already valid NBT. Construct only a
 // private clone here; the normal native_component path supplies defaults and
@@ -568,7 +574,7 @@ fn collect_network(
     wired: &[Pos],
     frequency: i32,
     self_pos: Pos,
-) -> Vec<(Pos, LeafNodeMode, CapabilityKind, u8)> {
+) -> Vec<(Pos, LeafNodeMode, CapabilityKind, u8, Option<ItemStack>)> {
     let mut out = Vec::new();
     for (&(x, y, z), block_entity) in game.world.block_entities.iter() {
         let p = [x, y, z];
@@ -590,7 +596,7 @@ fn collect_network(
         }
         let facing = facing_of(game, p);
         let dir = connector_direction(state.direction_override, facing);
-        out.push((p, mode, kind, dir));
+        out.push((p, mode, kind, dir, saved_filter(&ent.nbt)));
     }
     out
 }
@@ -664,33 +670,39 @@ fn tick_connector(
     match (mode, kind) {
         (LeafNodeMode::Extract, CapabilityKind::Item) => {
             let source = add(pos, dir_offset(target_dir));
-            let sinks: Vec<Pos> = network
-                .iter()
-                .filter(|(_, m, k, _)| *m == LeafNodeMode::Insert && *k == CapabilityKind::Item)
-                .map(|(p, _, _, d)| add(*p, dir_offset(*d)))
-                .collect();
             let amount = state.extraction_amount.clamp(1, MAX_ITEM_EXTRACTION_AMOUNT) as u32;
             let from_face = direction_from_index(target_dir).opposite();
-            for (sink, dir) in network.iter().filter(|(_, m, k, _)| *m == LeafNodeMode::Insert && *k == CapabilityKind::Item)
-                .map(|(p, _, _, d)| (add(*p, dir_offset(*d)), *d)) {
+            for (sink, dir, sink_filter) in network.iter()
+                .filter(|(_, m, k, _, _)| *m == LeafNodeMode::Insert && *k == CapabilityKind::Item)
+                .map(|(p, _, _, d, filter)| (add(*p, dir_offset(*d)), *d, filter)) {
                 let to_face = direction_from_index(dir).opposite();
-                let moved = game.native_move_items(game.dim.id(), source, from_face, sink, to_face, None, amount);
+                let source_rule = game.native_list_filter(filter.as_ref());
+                let sink_rule = game.native_list_filter(sink_filter.as_ref());
+                let accept = |stack: &ItemStack| source_rule.allows_item(stack)
+                    && sink_rule.allows_item(stack);
+                let moved = game.native_move_items_filtered(game.dim.id(), source, from_face, sink, to_face, &accept, amount);
                 if moved > 0 { state_changed = true; }
             }
         }
         (LeafNodeMode::Extract, CapabilityKind::Fluid) => {
             let source = add(pos, dir_offset(target_dir));
-            let sinks: Vec<Pos> = network
-                .iter()
-                .filter(|(_, m, k, _)| *m == LeafNodeMode::Insert && *k == CapabilityKind::Fluid)
-                .map(|(p, _, _, d)| add(*p, dir_offset(*d)))
-                .collect();
             let amount = state.extraction_amount.clamp(1, MAX_FLUID_EXTRACTION_AMOUNT);
             let from_face = direction_from_index(target_dir).opposite();
-            for (sink, dir) in network.iter().filter(|(_, m, k, _)| *m == LeafNodeMode::Insert && *k == CapabilityKind::Fluid)
-                .map(|(p, _, _, d)| (add(*p, dir_offset(*d)), *d)) {
+            for (sink, dir, sink_filter) in network.iter()
+                .filter(|(_, m, k, _, _)| *m == LeafNodeMode::Insert && *k == CapabilityKind::Fluid)
+                .map(|(p, _, _, d, filter)| (add(*p, dir_offset(*d)), *d, filter)) {
                 let to_face = direction_from_index(dir).opposite();
-                if let Some((_, moved)) = game.native_move_fluids(game.dim.id(), source, from_face, sink, to_face, amount) {
+                let source_rule = game.native_list_filter(filter.as_ref());
+                let sink_rule = game.native_list_filter(sink_filter.as_ref());
+                let accepted = game.native_fluid_tanks(game.dim.id(), source, from_face)
+                    .into_iter().flatten().find(|tank| tank.amount > 0)
+                    .is_some_and(|tank| tank.fluid.as_deref().is_none_or(|fluid|
+                        source_rule.allows_fluid(game, fluid)
+                        && sink_rule.allows_fluid(game, fluid)));
+                // Both rules were evaluated against the first drainable fluid
+                // above; do not capture Game in the mutable transfer closure.
+                if !accepted { continue; }
+                if let Some((_, moved)) = game.native_move_fluids_filtered(game.dim.id(), source, from_face, sink, to_face, &|_| true, amount) {
                     if moved > 0 { state_changed = true; }
                 }
             }
