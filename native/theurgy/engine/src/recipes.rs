@@ -24,7 +24,7 @@ pub struct Recipe<'a> {
 
 pub fn sized_ingredient(value: &Value) -> (&Value, u32) {
     if let Some(inner) = value.get("ingredient") {
-        (inner, value.get("count").and_then(Value::as_u64).unwrap_or(1) as u32)
+        (inner, value.get("count").and_then(Value::as_u64).unwrap_or(1).min(u64::from(u32::MAX)) as u32)
     } else {
         (value, 1)
     }
@@ -35,7 +35,7 @@ pub fn ingredient_parts<'a>(kind: &str, json: &'a Value) -> Vec<(&'a Value, u32)
         "theurgy:calcination" | "theurgy:distillation" => {
             json.get("ingredient").map(sized_ingredient).into_iter().collect()
         }
-        "theurgy:liquefaction" => json.get("ingredient").map(|v| (v, 1)).into_iter().collect(),
+        "theurgy:liquefaction" => json.get("ingredient").map(sized_ingredient).into_iter().collect(),
         "theurgy:fermentation" | "theurgy:digestion" => json
             .get("ingredients").and_then(Value::as_array).into_iter().flatten()
             .map(sized_ingredient).collect(),
@@ -51,7 +51,7 @@ pub fn fluid_part<'a>(kind: &str, json: &'a Value) -> Option<(&'a str, i32)> {
     };
     let value = json.get(field)?;
     let id = value.get("ingredient")?.as_str()?;
-    Some((id, value.get("amount")?.as_i64()? as i32))
+    Some((id, value.get("amount")?.as_i64()?.clamp(0, i64::from(i32::MAX)) as i32))
 }
 
 /// Finds a recipe from the current server table. Ingredient tags/components are
@@ -81,7 +81,7 @@ where F: FnMut(&Value, &Item) -> bool {
 pub fn can_fit(output: Option<&Item>, result: &Item) -> bool {
     match output {
         None => result.count <= result.max_stack,
-        Some(old) => old.id == result.id && old.count + result.count <= old.max_stack.min(result.max_stack),
+        Some(old) => old.id == result.id && u64::from(old.count) + u64::from(result.count) <= u64::from(old.max_stack.min(result.max_stack)),
     }
 }
 
