@@ -39,21 +39,25 @@ fn clamp_non_negative(value: i32) -> i32 {
 pub fn crafting(entity: &ModBlockEntity) -> theurgy_engine::crafting::Crafting {
     theurgy_engine::crafting::Crafting {
         progress: clamp_non_negative(int(&entity.nbt, "progress", 0)),
-        total_time: clamp_non_negative(int(&entity.nbt, "totalTime", 100)),
-        is_processing: bool(&entity.nbt, "isProcessing"),
-        could_craft_last_tick: bool(&entity.nbt, "couldCraftLastTick"),
+        total_time: clamp_non_negative(int(&entity.nbt, "totalTime", 0)),
+        // Java's saveAdditional stores only the two shorts. These flags are
+        // network/runtime state, so keep them in non-persistent menu data.
+        is_processing: entity.data.get(4).copied().unwrap_or(0) != 0,
+        could_craft_last_tick: entity.data.get(5).copied().unwrap_or(0) != 0,
     }
 }
 
 pub fn save_crafting(entity: &mut ModBlockEntity, state: &theurgy_engine::crafting::Crafting) {
-    set_int(&mut entity.nbt, "progress", clamp_non_negative(state.progress));
-    set_int(&mut entity.nbt, "totalTime", clamp_non_negative(state.total_time));
-    set_int(&mut entity.nbt, "isProcessing", i32::from(state.is_processing));
-    set_int(
-        &mut entity.nbt,
-        "couldCraftLastTick",
-        i32::from(state.could_craft_last_tick),
-    );
+    // CraftingBehaviour.saveAdditional uses putShort for both values.
+    entity.nbt.insert(JavaString::from("progress"), Tag::Short(state.progress as i16));
+    entity.nbt.insert(JavaString::from("totalTime"), Tag::Short(state.total_time as i16));
+    entity.nbt.remove(&JavaString::from("isProcessing"));
+    entity.nbt.remove(&JavaString::from("couldCraftLastTick"));
+    if entity.data.len() < 6 {
+        entity.data.resize(6, 0);
+    }
+    entity.data[4] = i32::from(state.is_processing);
+    entity.data[5] = i32::from(state.could_craft_last_tick);
 }
 
 pub fn tank(entity: &ModBlockEntity, index: usize, capacity: i32) -> theurgy_engine::recipes::Tank {

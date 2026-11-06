@@ -216,7 +216,8 @@ pub fn tick(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut ModBlo
     write_tank(entity, 0, &water);
     host::save_crafting(entity, &state);
     entity.data.clear();
-    entity.data.extend([state.progress, state.total_time, water.amount, water.capacity]);
+    entity.data.extend([state.progress, state.total_time, water.amount, water.capacity,
+        i32::from(state.is_processing), i32::from(state.could_craft_last_tick)]);
 }
 
 #[cfg(test)]

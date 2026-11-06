@@ -236,3 +236,67 @@ hook_version = 1
 kind = "HEAD"
 helper = "hooks/chunk_load.rs"
 bindings = [{ name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" }, { name = "dimension", ty = "&str", value = "dimension" }, { name = "chunk", ty = "[i32; 2]", value = "chunk" }, { name = "new", ty = "bool", value = "new" }]
+
+[[injection]]
+id = "use_duration"
+hook = "use_duration"
+hook_version = 1
+kind = "HEAD"
+helper = "hooks/use_duration.rs"
+bindings = [{ name = "game", ty = "&crate::game::Game<'_>", value = "&*self" }, { name = "stack", ty = "&horizon_client::items::ItemStack", value = "stack" }, { name = "duration", ty = "&mut i32", value = "duration" }]
+
+[[injection]]
+id = "use_finish"
+hook = "living_entity_use_item_finish"
+hook_version = 1
+kind = "HEAD"
+helper = "hooks/use_finish.rs"
+bindings = [{ name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" }, { name = "stack", ty = "&horizon_client::items::ItemStack", value = "stack" }, { name = "entity", ty = "Option<i32>", value = "entity" }, { name = "hand", ty = "horizon_client::first_person::Hand", value = "hand" }, { name = "duration", ty = "i32", value = "duration" }, { name = "result", ty = "&mut Option<horizon_client::items::ItemStack>", value = "result" }]
+
+[[injection]]
+id = "release_using"
+hook = "release_using"
+hook_version = 1
+kind = "HEAD"
+helper = "hooks/release_using.rs"
+bindings = [{ name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" }, { name = "stack", ty = "&horizon_client::items::ItemStack", value = "stack" }, { name = "entity", ty = "Option<i32>", value = "entity" }, { name = "time_left", ty = "i32", value = "time_left" }, { name = "used", ty = "&mut bool", value = "used" }]
+
+[[injection]]
+id = "use_animation"
+hook = "use_animation"
+hook_version = 1
+kind = "HEAD"
+helper = "hooks/use_animation.rs"
+bindings = [{ name = "stack", ty = "&horizon_client::items::ItemStack", value = "stack" }, { name = "animation", ty = "&mut horizon_world::consumable::UseAnimation", value = "animation" }]
+
+[[injection]]
+id = "tooltip"
+hook = "tooltip"
+hook_version = 1
+kind = "HEAD"
+helper = "hooks/tooltip.rs"
+bindings = [{ name = "game", ty = "&crate::game::Game<'_>", value = "&*self" }, { name = "stack", ty = "&horizon_client::items::ItemStack", value = "stack" }, { name = "lines", ty = "&mut Vec<(horizon_client::text::Text, u32)>", value = "lines" }]
+
+[[injection]]
+id = "be_update_tag"
+hook = "block_entity_update_tag"
+hook_version = 1
+kind = "HEAD"
+helper = "hooks/be_update_tag.rs"
+bindings = [{ name = "pos", ty = "[i32; 3]", value = "pos" }, { name = "entity", ty = "&horizon_client::containers::ModBlockEntity", value = "entity" }, { name = "tag", ty = "&mut Option<horizon_world::nbt::Compound>", value = "tag" }]
+
+[[injection]]
+id = "be_submit"
+hook = "block_entity_submit"
+hook_version = 1
+kind = "HEAD"
+helper = "hooks/be_submit.rs"
+bindings = [{ name = "game", ty = "&crate::game::Game<'_>", value = "&*self" }, { name = "pos", ty = "[i32; 3]", value = "pos" }, { name = "block", ty = "&str", value = "block" }, { name = "state", ty = "horizon_world::registry::BlockStateId", value = "state" }, { name = "entity", ty = "&horizon_client::containers::ModBlockEntity", value = "entity" }, { name = "draw", ty = "&mut crate::game::native_block_entity_draw::BlockEntityDraw", value = "draw" }]
+
+[[injection]]
+id = "be_bounds"
+hook = "block_entity_render_bounding_box"
+hook_version = 1
+kind = "HEAD"
+helper = "hooks/be_bounds.rs"
+bindings = [{ name = "pos", ty = "[i32; 3]", value = "pos" }, { name = "block", ty = "&str", value = "block" }, { name = "state", ty = "horizon_world::registry::BlockStateId", value = "state" }, { name = "entity", ty = "&horizon_client::containers::ModBlockEntity", value = "entity" }, { name = "bounds", ty = "&mut [f32; 6]", value = "bounds" }]
