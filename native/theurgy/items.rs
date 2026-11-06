@@ -27,7 +27,9 @@ const DIVINATION_DISTANCE: &str = "theurgy:divination_distance";
 const DIVINATION_RANGE: &str = "theurgy:divination_settings_range";
 const DIVINATION_MAX_RANGE: i32 = 96;
 const DIVINATION_TIER: &str = "theurgy:divination_settings_tier";
+const DIVINATION_DURATION: &str = "theurgy:divination_settings_duration";
 const DIVINATION_NOT_FOUND: f32 = 7.0;
+const DIVINATION_SEARCHING: f32 = 8.0;
 
 const WIRE_ENDPOINTS: [&str; 8] = [
     "theurgy:logistics_connector_node",
@@ -56,6 +58,102 @@ fn upper_state(game: &crate::game::Game<'_>, state: horizon_world::registry::Blo
     registry.resolve(&descriptor).ok()
 }
 
+fn uuid_from_random(game: &mut crate::game::Game<'_>) -> (String, Tag) {
+    use horizon_core::random::RandomSource;
+    let mut most = game.world.random.next_long() as u64;
+    let mut least = game.world.random.next_long() as u64;
+    most = (most & 0xffff_ffff_ffff_0fff) | 0x0000_0000_0000_4000;
+    least = (least & 0x3fff_ffff_ffff_ffff) | 0x8000_0000_0000_0000;
+    let text = format!(
+        "{:08x}-{:04x}-{:04x}-{:04x}-{:012x}",
+        (most >> 32) as u32,
+        ((most >> 16) & 0xffff) as u16,
+        (most & 0xffff) as u16,
+        (least >> 48) as u16,
+        least & 0xffff_ffff_ffff
+    );
+    let values = vec![
+        (most >> 32) as i32,
+        most as i32,
+        (least >> 32) as i32,
+        least as i32,
+    ];
+    (text, Tag::IntArray(values))
+}
+
+fn uuid_text(game: &crate::game::Game<'_>, stack: &ItemStack) -> Option<String> {
+    match game.native_component(stack, "theurgy:logistics_nexus_id").ok().flatten()? {
+        Tag::String(value) => Some(value.to_string_lossy()),
+        Tag::IntArray(values) if values.len() == 4 => {
+            let most = ((values[0] as u32 as u64) << 32) | values[1] as u32 as u64;
+            let least = ((values[2] as u32 as u64) << 32) | values[3] as u32 as u64;
+            Some(format!(
+                "{:08x}-{:04x}-{:04x}-{:04x}-{:012x}",
+                (most >> 32) as u32,
+                ((most >> 16) & 0xffff) as u16,
+                (most & 0xffff) as u16,
+                (least >> 48) as u16,
+                least & 0xffff_ffff_ffff
+            ))
+        }
+        _ => None,
+    }
+}
+
+fn apply_block_item_components(
+    game: &mut crate::game::Game<'_>,
+    stack: &ItemStack,
+    pos: [i32; 3],
+) {
+    let flux = component_i32(game, stack, "theurgy:mercury_flux_storage");
+    let to_convert = component_i32(game, stack, "theurgy:mercury_flux_to_convert");
+    let per_tick = component_i32(game, stack, "theurgy:current_mercury_flux_per_tick");
+    let nexus = (stack.item.as_ref() == "theurgy:logistics_nexus")
+        .then(|| uuid_text(game, stack))
+        .flatten();
+    let catalyst = (stack.item.as_ref() == "theurgy:mercury_catalyst")
+        .then(|| game.native_component(stack, "theurgy:mercury_catalyst_inventory").ok().flatten().cloned())
+        .flatten();
+    game.native_with_mod_block_entity(pos, |entity| {
+        if let Some(amount) = flux {
+            let mut handler = Compound::new();
+            handler.insert(JavaString::from("energy"), Tag::Int(amount.max(0)));
+            entity.nbt.insert(JavaString::from("mercuryFluxHandler"), Tag::Compound(handler));
+        }
+        if let Some(amount) = to_convert {
+            entity.nbt.insert(JavaString::from("mercuryFluxToConvert"), Tag::Int(amount));
+        }
+        if let Some(amount) = per_tick {
+            entity.nbt.insert(JavaString::from("currentMercuryFluxPerTick"), Tag::Int(amount));
+        }
+        if let Some(id) = nexus {
+            entity.nbt.insert(JavaString::from("nexusId"), Tag::String(JavaString::from(id.as_str())));
+        }
+        if let Some(contents) = catalyst {
+            let records: Vec<Tag> = match contents {
+                Tag::List(list) => list,
+                Tag::Compound(map) => match map.get(&JavaString::from("items")).or_else(|| map.get(&JavaString::from("slots"))) {
+                    Some(Tag::List(list)) => list.clone(),
+                    _ => Vec::new(),
+                },
+                _ => Vec::new(),
+            };
+            if let Some(record) = records.first() {
+                let template = match record {
+                    Tag::Compound(map) => map.get(&JavaString::from("item")).unwrap_or(record),
+                    other => other,
+                };
+                if let Some(item) = crate::game::theurgy_logistics::template_stack(template) {
+                    if entity.items.is_empty() {
+                        entity.items.resize(1, None);
+                    }
+                    entity.items[0] = Some(item);
+                }
+            }
+        }
+    });
+}
+
 /// `DistillerBlock.setPlacedBy` and its siblings: place the upper half at
 /// `pos.above()` with the same block's `half=upper` state.
 pub fn placed(
@@ -65,12 +163,36 @@ pub fn placed(
     state: horizon_world::registry::BlockStateId,
 ) {
     crate::game::theurgy_selection::placed(game, stack, pos);
+    apply_block_item_components(game, stack, pos);
     if !is_double_high(&stack.item) {
         return;
     }
     let Some(upper) = upper_state(game, state) else { return; };
     let dimension = game.dim.id();
     game.native_set_block(dimension, [pos[0], pos[1] + 1, pos[2]], upper, 3);
+}
+
+/// `LogisticsNexusBlockItem.inventoryTick`: every stack receives one stable
+/// random UUID before it can be paired, without changing an existing id.
+pub fn inventory_tick(game: &mut crate::game::Game<'_>, slot: i32) {
+    let Some(stack) = game.native_carried_stack(slot).cloned() else {
+        return;
+    };
+    if stack.item.as_ref() != "theurgy:logistics_nexus_id" && stack.item.as_ref() != "theurgy:logistics_nexus" {
+        return;
+    }
+    if uuid_text(game, &stack).is_some() {
+        return;
+    }
+    let (_, tag) = uuid_from_random(game);
+    let Some(mut stack) = game.native_carried_stack(slot).cloned() else {
+        return;
+    };
+    if game.native_set_component(&mut stack, "theurgy:logistics_nexus_id", tag).is_ok()
+        && let Some(current) = game.native_carried_stack(slot)
+    {
+        *current = stack;
+    }
 }
 
 /// Read a registered native component from `stack` as a string.
@@ -152,6 +274,40 @@ fn is_sneaking(game: &crate::game::Game<'_>) -> bool {
 
 fn is_air(block: &str) -> bool {
     matches!(block, "minecraft:air" | "minecraft:cave_air" | "minecraft:void_air")
+}
+
+fn acting_position(game: &crate::game::Game<'_>) -> [f64; 3] {
+    game.native_acting_player()
+        .map(|player| player.position)
+        .or_else(|| game.player.as_ref().map(|p| [p.position.x, p.position.y, p.position.z]))
+        .unwrap_or([0.0; 3])
+}
+
+fn play_tuning_fork(game: &mut crate::game::Game<'_>) {
+    let at = acting_position(game);
+    game.with_level(|_, level, _| {
+        level.native_play_sound("theurgy:tuning_fork", at, 7, 1.0, 1.0)
+    });
+}
+
+fn overlay(game: &mut crate::game::Game<'_>, key: &str, args: &[horizon_client::text::Text]) {
+    let player = game.native_acting_id();
+    game.native_action_bar(player, horizon_client::text::Text::translate(key, args));
+}
+
+fn held_distance(game: &crate::game::Game<'_>, stack: &ItemStack) -> Option<[i32; 3]> {
+    match game.native_component(stack, DIVINATION_POS).ok().flatten()? {
+        Tag::IntArray(values) if values.len() == 3 => Some([values[0], values[1], values[2]]),
+        Tag::List(values) if values.len() == 3 => {
+            let mut pos = [0; 3];
+            for (index, value) in values.iter().enumerate() {
+                let Tag::Int(value) = value else { return None; };
+                pos[index] = *value;
+            }
+            Some(pos)
+        }
+        _ => None,
+    }
 }
 
 fn distance_bucket(distance: f32) -> f32 {
@@ -458,6 +614,162 @@ pub fn mouse_scroll(game: &mut crate::game::Game<'_>, _scroll: [f64; 2], accumul
     *canceled = true;
 }
 
+fn bucket_fluid(item: &str) -> Option<&'static str> {
+    match item {
+        "minecraft:water_bucket" => Some("minecraft:water"),
+        "minecraft:lava_bucket" => Some("minecraft:lava"),
+        "theurgy:sal_ammoniac_bucket" => Some("theurgy:sal_ammoniac"),
+        _ => None,
+    }
+}
+
+fn fluid_bucket(fluid: &str) -> Option<&'static str> {
+    match fluid {
+        "minecraft:water" => Some("minecraft:water_bucket"),
+        "minecraft:lava" => Some("minecraft:lava_bucket"),
+        "theurgy:sal_ammoniac" => Some("theurgy:sal_ammoniac_bucket"),
+        _ => None,
+    }
+}
+
+fn mod_tank(block: &str) -> Option<i32> {
+    match block {
+        "theurgy:sal_ammoniac_tank" => Some(2_000),
+        "theurgy:liquefaction_cauldron" => Some(2_000),
+        "theurgy:fermentation_vat" | "theurgy:digestion_vat" | "theurgy:sal_ammoniac_accumulator" => Some(10_000),
+        _ => None,
+    }
+}
+
+fn tank_accepts(block: &str, fluid: &str) -> bool {
+    match block {
+        "theurgy:liquefaction_cauldron" | "theurgy:sal_ammoniac_accumulator" => {
+            fluid == if block == "theurgy:liquefaction_cauldron" { "theurgy:sal_ammoniac" } else { "minecraft:water" }
+        }
+        "theurgy:fermentation_vat" | "theurgy:digestion_vat" => {
+            matches!(fluid, "minecraft:water" | "theurgy:sal_ammoniac")
+        }
+        "theurgy:sal_ammoniac_tank" => true,
+        _ => false,
+    }
+}
+
+fn replace_held(game: &mut crate::game::Game<'_>, item: &str) {
+    if game.native_acting_player().is_some_and(|player| player.game_mode == 1) {
+        return;
+    }
+    if let Some(held) = game.native_carried_stack(game.selected as i32) {
+        *held = ItemStack::new(item, 1);
+    }
+}
+
+/// Bucket and empty-hand interactions of `OneTankFluidHandlerBehaviour`, plus
+/// the custom fluid identity of the sal ammoniac bucket in the world.
+fn fluid_use_on(
+    game: &mut crate::game::Game<'_>,
+    stack: &ItemStack,
+    pos: [i32; 3],
+    face: [i32; 3],
+) -> bool {
+    let block = game.native_block(pos);
+    if let Some(capacity) = mod_tank(&block) {
+        let open = game.native_block_property(pos, "open").as_deref() != Some("false");
+        let shift = is_sneaking(game);
+        if stack.item.as_ref() == "minecraft:air" && shift {
+            if open {
+                game.native_with_mod_block_entity(pos, |entity| {
+                    let empty = theurgy_engine::recipes::Tank { fluid: None, amount: 0, capacity };
+                    crate::game::theurgy_host::save_tanks(entity, &[empty]);
+                });
+                game.native_block_entity_sync(pos);
+            }
+            return true;
+        }
+        if !open {
+            return false;
+        }
+        if let Some(fluid) = bucket_fluid(&stack.item) {
+            if !tank_accepts(&block, fluid) {
+                return false;
+            }
+            let accepted = game.native_with_mod_block_entity(pos, |entity| {
+                let mut tank = crate::game::theurgy_host::tank(entity, 0, capacity);
+                if tank.fluid.as_deref().is_some_and(|old| old != fluid) {
+                    return false;
+                }
+                let accepted = 1000.min(capacity - tank.amount);
+                if accepted <= 0 {
+                    return false;
+                }
+                tank.fluid = Some(fluid.to_owned());
+                tank.amount += accepted;
+                crate::game::theurgy_host::save_tanks(entity, &[tank]);
+                true
+            }).unwrap_or(false);
+            if accepted {
+                replace_held(game, "minecraft:bucket");
+                game.native_block_entity_sync(pos);
+            }
+            return accepted;
+        }
+        if stack.item.as_ref() == "minecraft:bucket" {
+            let drained = game.native_with_mod_block_entity(pos, |entity| {
+                let mut tank = crate::game::theurgy_host::tank(entity, 0, capacity);
+                let Some(fluid) = tank.fluid.clone().filter(|_| tank.amount >= 1000) else {
+                    return None;
+                };
+                tank.amount -= 1000;
+                if tank.amount == 0 {
+                    tank.fluid = None;
+                }
+                crate::game::theurgy_host::save_tanks(entity, &[tank]);
+                fluid_bucket(&fluid)
+            }).flatten();
+            if let Some(bucket) = drained {
+                replace_held(game, bucket);
+                game.native_block_entity_sync(pos);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Vanilla BucketItem knows only vanilla fluids. Handle the mod bucket's
+    // world pickup/placement explicitly and leave vanilla buckets untouched.
+    if stack.item.as_ref() == "theurgy:sal_ammoniac_bucket" {
+        let clicked_state = game.world.block(pos[0], pos[1], pos[2]);
+        let clicked_replaceable = game.with_level(|b, _, _| b.is_replaceable(clicked_state));
+        let target = if clicked_replaceable {
+            pos
+        } else {
+            [pos[0] + face[0], pos[1] + face[1], pos[2] + face[2]]
+        };
+        let target_state = game.world.block(target[0], target[1], target[2]);
+        if !game.with_level(|b, _, _| b.is_replaceable(target_state)) {
+            return false;
+        }
+        let Some(fluid) = game.pack.assets.registry.default_state("theurgy:sal_ammoniac") else {
+            return false;
+        };
+        if game.native_set_block(game.dim.id(), target, fluid, 3) {
+            replace_held(game, "minecraft:bucket");
+            return true;
+        }
+    } else if stack.item.as_ref() == "minecraft:bucket"
+        && block == "theurgy:sal_ammoniac"
+        && game.native_block_property(pos, "level").as_deref().unwrap_or("0") == "0"
+    {
+        let Some(air) = game.pack.assets.registry.default_state("minecraft:air") else {
+            return false;
+        };
+        if game.native_set_block(game.dim.id(), pos, air, 3) {
+            replace_held(game, "theurgy:sal_ammoniac_bucket");
+            return true;
+        }
+    }
+    false
+}
+
 pub fn right_click_block(
     game: &mut crate::game::Game<'_>,
     stack: &ItemStack,
@@ -466,6 +778,10 @@ pub fn right_click_block(
     canceled: &mut bool,
 ) {
     if *canceled { return; }
+    if fluid_use_on(game, stack, pos, _face) {
+        *canceled = true;
+        return;
+    }
     if stack.item.as_ref() == MERCURIAL_WAND && wand_use_on(game, stack, pos, _face) {
         *canceled = true;
         return;
@@ -480,8 +796,8 @@ pub fn right_click_block(
     }
 }
 
-/// Right-click in air with a divination rod scans a bounded local cube for the
-/// linked block or linked tag and writes the result into the rod's components.
+/// Start the Java timed use. The actual scan and durability cost happen only
+/// when the full duration completes; an early release restores the old result.
 pub fn use_item(
     game: &mut crate::game::Game<'_>,
     stack: &ItemStack,
@@ -498,7 +814,22 @@ pub fn use_item(
         return;
     }
     *claimed = true;
+    let linked = component_string(game, stack, DIVINATION_LINKED_BLOCK).is_some()
+        || component_string(game, stack, DIVINATION_LINKED_TAG).is_some();
+    if !linked {
+        overlay(game, "message.theurgy.divination_rod.no_link", &[]);
+        return;
+    }
+    set_held_component(game, DIVINATION_DISTANCE, Tag::Float(DIVINATION_SEARCHING.to_bits()));
+    play_tuning_fork(game);
+}
 
+/// Server half of `DivinationRodItem.finishUsingItem`: scan, apply cooldown
+/// and durability, and break a rod which reached its maximum on the prior use.
+fn scan_rod(
+    game: &mut crate::game::Game<'_>,
+    stack: &ItemStack,
+) {
     let linked_block =
         component_string(game, stack, DIVINATION_LINKED_BLOCK).filter(|value| !value.is_empty());
     let linked_tag =
@@ -511,11 +842,7 @@ pub fn use_item(
         .unwrap_or(DIVINATION_MAX_RANGE)
         .clamp(0, DIVINATION_MAX_RANGE);
 
-    let origin = game
-        .player
-        .as_ref()
-        .map(|p| [p.position.x, p.position.y, p.position.z])
-        .unwrap_or([0.0, 0.0, 0.0]);
+    let origin = acting_position(game);
     let ox = origin[0] as f64;
     let oy = origin[1] as f64;
     let oz = origin[2] as f64;
@@ -611,6 +938,135 @@ pub fn use_item(
             DIVINATION_DISTANCE,
             Tag::Float(f32::to_bits(DIVINATION_NOT_FOUND)),
         );
+    }
+}
+
+/// `DivinationRodItem.getUseDuration`.
+pub fn use_duration(
+    game: &crate::game::Game<'_>,
+    stack: &ItemStack,
+    duration: &mut i32,
+) {
+    if stack.item.contains("divination_rod") {
+        *duration = component_i32(game, stack, DIVINATION_DURATION).unwrap_or(40).max(0);
+    }
+}
+
+/// `DivinationRodItem.releaseUsing`: no scan and no durability cost. Preserve
+/// a previous result, or restore NOT_FOUND when there was none.
+pub fn release_using(
+    game: &mut crate::game::Game<'_>,
+    stack: &ItemStack,
+    _entity: Option<i32>,
+    _time_left: i32,
+    used: &mut bool,
+) {
+    if !stack.item.contains("divination_rod") {
+        return;
+    }
+    let distance = held_distance(game, stack).map_or(DIVINATION_NOT_FOUND, |pos| {
+        let player = acting_position(game);
+        let dx = pos[0] as f64 + 0.5 - player[0];
+        let dz = pos[2] as f64 + 0.5 - player[2];
+        distance_bucket((dx * dx + dz * dz).sqrt() as f32)
+    });
+    set_held_component(game, DIVINATION_DISTANCE, Tag::Float(distance.to_bits()));
+    *used = false;
+}
+
+/// Completion hook. `result` is the actual stack returned by Horizon, so this
+/// works for either hand even though the older scan helper writes main-hand
+/// components for compatibility with the existing use hooks.
+pub fn finish_using(
+    game: &mut crate::game::Game<'_>,
+    stack: &ItemStack,
+    _entity: Option<i32>,
+    hand: horizon_client::first_person::Hand,
+    _duration: i32,
+    result: &mut Option<ItemStack>,
+) {
+    if !stack.item.contains("divination_rod") {
+        return;
+    }
+    let mut result_stack = stack.clone();
+    let max_damage = component_i32(game, stack, "theurgy:divination_settings_max_damage")
+        .unwrap_or(1)
+        .max(1) as u32;
+    if result_stack.damage >= max_damage {
+        result_stack.count = result_stack.count.saturating_sub(1);
+        result_stack.damage = 0;
+        *result = (result_stack.count > 0).then_some(result_stack);
+        return;
+    }
+
+    scan_rod(game, stack);
+    if hand == horizon_client::first_person::Hand::Main {
+        result_stack = game
+            .native_carried_stack(game.selected as i32)
+            .cloned()
+            .unwrap_or(result_stack);
+    } else {
+        // Off-hand scans use the same world result. Copy the two result
+        // components directly rather than accidentally editing the main hand.
+        if let Some(main) = game.native_carried_stack(game.selected as i32).cloned() {
+            for id in [DIVINATION_POS, DIVINATION_DISTANCE] {
+                if let Ok(Some(value)) = game.native_component(&main, id) {
+                    let _ = game.native_set_component(&mut result_stack, id, value.clone());
+                }
+            }
+        }
+    }
+
+    let duration = component_i32(game, stack, DIVINATION_DURATION).unwrap_or(40).max(0);
+    game.add_cooldown(std::sync::Arc::from(stack.item.as_ref()), duration);
+    let creative = game.native_acting_player().is_some_and(|player| player.game_mode == 1);
+    if !creative {
+        result_stack.damage = result_stack.damage.saturating_add(1);
+    }
+    *result = Some(result_stack);
+}
+
+/// Java uses the ordinary item pose, not bow/spyglass animations.
+pub fn use_animation(
+    stack: &ItemStack,
+    animation: &mut horizon_world::consumable::UseAnimation,
+) {
+    if stack.item.contains("divination_rod") {
+        *animation = horizon_world::consumable::UseAnimation::None;
+    }
+}
+
+/// Client tooltip parity for linked rods and their last result.
+pub fn tooltip(
+    game: &crate::game::Game<'_>,
+    stack: &ItemStack,
+    lines: &mut Vec<(horizon_client::text::Text, u32)>,
+) {
+    if let Some(id) = uuid_text(game, stack) {
+        lines.push((horizon_client::text::Text::literal(format!("Nexus ID: {id}")), u32::MAX));
+    }
+    if let Some(stored) = component_i32(game, stack, "theurgy:mercury_flux_storage") {
+        let capacity = match stack.item.as_ref() {
+            "theurgy:mercury_catalyst" => 50_000,
+            "theurgy:mercury_capacitor" => 500_000,
+            _ => 1_000,
+        };
+        lines.push((horizon_client::text::Text::literal(format!("Mercury Flux: {stored} / {capacity}")), u32::MAX));
+    }
+    if !stack.item.contains("divination_rod") {
+        return;
+    }
+    let linked = component_string(game, stack, DIVINATION_LINKED_BLOCK)
+        .or_else(|| component_string(game, stack, DIVINATION_LINKED_TAG));
+    let Some(linked) = linked else {
+        lines.push((horizon_client::text::Text::translate("tooltip.theurgy..divination_rod.no_link", &[]), u32::MAX));
+        return;
+    };
+    let target = horizon_client::text::Text::literal(linked);
+    lines.push((horizon_client::text::Text::translate("tooltip.theurgy..divination_rod.linked_to", &[target.clone()]), u32::MAX));
+    if let Some(pos) = held_distance(game, stack) {
+        let coordinates = horizon_client::text::Text::literal(format!("{}, {}, {}", pos[0], pos[1], pos[2]));
+        lines.push((horizon_client::text::Text::translate("tooltip.theurgy..divination_rod.last_result", &[target, coordinates]), u32::MAX));
     }
 }
 
