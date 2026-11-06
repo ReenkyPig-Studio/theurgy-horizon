@@ -325,7 +325,8 @@ pub fn tick(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut ModBlo
     entity.data.clear();
     entity
         .data
-        .extend([state.progress, state.total_time, current_flux, FLUX_CAPACITY]);
+        .extend([state.progress, state.total_time, current_flux, FLUX_CAPACITY,
+            i32::from(state.is_processing), i32::from(state.could_craft_last_tick)]);
     if effects.block_updates > 0 || crafted {
         game.native_block_entity_sync(pos);
     }
@@ -342,6 +343,8 @@ fn stop_idle(entity: &mut ModBlockEntity) {
         state.total_time,
         current_flux,
         FLUX_CAPACITY,
+        i32::from(state.is_processing),
+        i32::from(state.could_craft_last_tick),
     ]);
     let _ = effects;
 }

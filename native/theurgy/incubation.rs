@@ -130,7 +130,7 @@ fn write_network(nbt: &mut Compound, state: &Crafting) {
 }
 
 fn save_state(entity: &mut ModBlockEntity, state: &Crafting) {
-    write_network(&mut entity.nbt, state);
+    crate::game::theurgy_host::save_crafting(entity, state);
 }
 
 /// The total crafting time the incubator would report now, mirroring
@@ -202,7 +202,7 @@ fn tick_incubator(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut 
     }
     let vessels = classify_neighbours(neighbours.iter().map(|(id, at)| (id.as_str(), *at)));
 
-    let mut state = read_network(&entity.nbt);
+    let mut state = crate::game::theurgy_host::crafting(entity);
 
     let (Some(mercury), Some(salt), Some(sulfur)) =
         (vessels.mercury, vessels.salt, vessels.sulfur)

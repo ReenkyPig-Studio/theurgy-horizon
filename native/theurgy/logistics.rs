@@ -195,7 +195,7 @@ pub fn connector_direction(override_dir: Option<u8>, facing: u8) -> u8 {
 
 // FilterBehaviour.writeNetwork uses ItemStack.OPTIONAL_CODEC (the saved
 // ItemStackTemplate shape), so preserve id/count/components, not just an id.
-fn stack_tag(stack: &ItemStack) -> Tag {
+pub fn stack_tag(stack: &ItemStack) -> Tag {
     let mut record = Compound::new();
     record.insert(JavaString::from("id"), Tag::String(JavaString::from(stack.item.as_ref())));
     if stack.count != 1 { record.insert(JavaString::from("count"), Tag::Int(stack.count as i32)); }
@@ -215,7 +215,7 @@ fn stack_tag(stack: &ItemStack) -> Tag {
     if !components.is_empty() { record.insert(JavaString::from("components"), Tag::Compound(components)); }
     Tag::Compound(record)
 }
-fn template_stack(tag: &Tag) -> Option<ItemStack> {
+pub fn template_stack(tag: &Tag) -> Option<ItemStack> {
     let Tag::Compound(record) = tag else { return None; };
     let Some(Tag::String(id)) = record.get(&JavaString::from("id")) else { return None; };
     let id = id.to_string_lossy();

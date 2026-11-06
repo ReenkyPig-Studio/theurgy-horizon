@@ -148,10 +148,15 @@ fn apply_plan_to_items(
 }
 
 fn read_tank(entity: &ModBlockEntity, index: usize) -> Tank {
+    let capacity = if entity.id == "theurgy:liquefaction_cauldron" {
+        2_000
+    } else {
+        MACHINE_TANK_CAPACITY
+    };
     let empty = Tank {
         fluid: None,
         amount: 0,
-        capacity: MACHINE_TANK_CAPACITY,
+        capacity,
     };
     let Some(Tag::List(list)) = entity.nbt.get(&JavaString::from("fluids")) else {
         return empty;
@@ -167,13 +172,13 @@ fn read_tank(entity: &ModBlockEntity, index: usize) -> Tank {
         _ => None,
     };
     let amount = match map.get(&JavaString::from("Amount")) {
-        Some(Tag::Int(v)) => (*v).clamp(0, MACHINE_TANK_CAPACITY),
+        Some(Tag::Int(v)) => (*v).clamp(0, capacity),
         _ => 0,
     };
     Tank {
         fluid,
         amount,
-        capacity: MACHINE_TANK_CAPACITY,
+        capacity,
     }
 }
 
@@ -462,6 +467,8 @@ pub fn tick(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut ModBlo
         state.total_time.max(0),
         tanks.first().map_or(0, |tank| tank.amount.max(0)),
         tanks.first().map_or(0, |tank| tank.capacity.max(0)),
+        i32::from(state.is_processing),
+        i32::from(state.could_craft_last_tick),
     ]);
     if result.state_changed || result.crafted {
         game.native_block_entity_sync(pos);
