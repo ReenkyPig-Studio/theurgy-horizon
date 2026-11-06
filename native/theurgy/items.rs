@@ -25,7 +25,9 @@ const DIVINATION_LINKED_TAG: &str = "theurgy:divination_linked_tag";
 const DIVINATION_POS: &str = "theurgy:divination_pos";
 const DIVINATION_DISTANCE: &str = "theurgy:divination_distance";
 const DIVINATION_RANGE: &str = "theurgy:divination_settings_range";
-const DIVINATION_MAX_RANGE: i32 = 32;
+const DIVINATION_MAX_RANGE: i32 = 96;
+const DIVINATION_TIER: &str = "theurgy:divination_settings_tier";
+const DIVINATION_NOT_FOUND: f32 = 7.0;
 
 const WIRE_ENDPOINTS: [&str; 8] = [
     "theurgy:logistics_connector_node",
@@ -62,6 +64,7 @@ pub fn placed(
     pos: [i32; 3],
     state: horizon_world::registry::BlockStateId,
 ) {
+    crate::game::theurgy_selection::placed(game, stack, pos);
     if !is_double_high(&stack.item) {
         return;
     }
@@ -169,6 +172,48 @@ fn distance_bucket(distance: f32) -> f32 {
     }
 }
 
+/// `ToolMaterial.incorrectBlocksForDrops()` for every tier used by the rods.
+/// The check is separate from the allowed/disallowed Theurgy tags in Java.
+fn incorrect_blocks_tag(tier: &str) -> &'static str {
+    match tier {
+        "wood" | "wooden" => "minecraft:incorrect_for_wooden_tool",
+        "gold" => "minecraft:incorrect_for_gold_tool",
+        "iron" => "minecraft:incorrect_for_iron_tool",
+        "diamond" => "minecraft:incorrect_for_diamond_tool",
+        "netherite" => "minecraft:incorrect_for_netherite_tool",
+        _ => "minecraft:incorrect_for_stone_tool",
+    }
+}
+
+/// `DivinationRodItem.getOreTagFromBlockId`: try the two-word ore name before
+/// the one-word name. Thus `sal_ammoniac_ore` resolves to `c:ores/sal_ammoniac`,
+/// never to the partial `c:ores/ammoniac` tag.
+fn ore_tag_candidates(block: &str) -> Vec<String> {
+    let path = block.split_once(':').map_or(block, |(_, path)| path);
+    let Some(stem) = path.strip_suffix("_ore") else {
+        return vec![format!("c:ores/{path}")];
+    };
+    let words: Vec<&str> = stem.split('_').collect();
+    let mut candidates = Vec::with_capacity(2);
+    if words.len() >= 2 {
+        candidates.push(format!(
+            "c:ores/{}_{}",
+            words[words.len() - 2],
+            words[words.len() - 1]
+        ));
+    }
+    if let Some(word) = words.last() {
+        candidates.push(format!("c:ores/{word}"));
+    }
+    candidates
+}
+
+fn deepslate_variant(block: &str) -> Option<String> {
+    let (namespace, path) = block.split_once(':').unwrap_or(("minecraft", block));
+    (path.contains("_ore") && !path.contains("deepslate_"))
+        .then(|| format!("{namespace}:deepslate_{path}"))
+}
+
 /// `WireEndPoint.load(ItemStack)`: the component is a compound with a packed
 /// `pos` long and a `level` dimension id string.
 fn load_wire_endpoint(
@@ -268,6 +313,14 @@ fn attune_rod(
     }
     let block = game.native_block(pos);
     if block == "minecraft:air" {
+        return true;
+    }
+    let tier = component_string(game, stack, DIVINATION_TIER).unwrap_or_else(|| "stone".into());
+    if game
+        .res
+        .items()
+        .block_in_tag(incorrect_blocks_tag(&tier), &block)
+    {
         return true;
     }
     let allowed = component_string(game, stack, "theurgy:divination_settings_allowed_blocks_tag");
@@ -472,6 +525,23 @@ pub fn use_item(
         origin[2].floor() as i32,
     ];
 
+    // Java first expands a linked block through its non-empty ore tag. Only
+    // when no such tag exists does it scan the block and its deepslate variant.
+    let linked_ore_tag = linked_block.as_deref().and_then(|block| {
+        ore_tag_candidates(block).into_iter().find(|tag| {
+            game.res
+                .items()
+                .block_tags
+                .get(tag)
+                .is_some_and(|blocks| !blocks.is_empty())
+        })
+    });
+    let linked_deepslate = linked_block.as_deref().and_then(|block| {
+        deepslate_variant(block).filter(|candidate| {
+            game.pack.assets.registry.default_state(candidate).is_some()
+        })
+    });
+
     let mut best: Option<([i32; 3], f32)> = None;
     let mut best_distance2 = f64::INFINITY;
 
@@ -487,10 +557,13 @@ pub fn use_item(
                     continue;
                 }
 
-                let matches = if let Some(id) = linked_block.as_deref() {
-                    block.as_str() == id
-                } else if let Some(tag) = linked_tag.as_deref() {
+                let matches = if let Some(tag) = linked_tag.as_deref() {
                     game.res.items().block_in_tag(tag, block.as_str())
+                } else if let Some(tag) = linked_ore_tag.as_deref() {
+                    game.res.items().block_in_tag(tag, block.as_str())
+                } else if let Some(id) = linked_block.as_deref() {
+                    block.as_str() == id
+                        || linked_deepslate.as_deref() == Some(block.as_str())
                 } else {
                     false
                 };
@@ -505,9 +578,16 @@ pub fn use_item(
                 let ddy = by - oy;
                 let ddz = bz - oz;
                 let distance2 = ddx * ddx + ddy * ddy + ddz * ddz;
+                // Scanner.scan rejects every centre outside the spherical
+                // radius; a cube scan can otherwise select an out-of-range ore.
+                if distance2 > f64::from(radius * radius) {
+                    continue;
+                }
                 if distance2 < best_distance2 {
                     best_distance2 = distance2;
-                    best = Some((pos, distance2.sqrt() as f32));
+                    // DivinationRodItem.getDistance deliberately ignores Y.
+                    // Keep nearest-result selection 3D, but bucket display 2D.
+                    best = Some((pos, (ddx * ddx + ddz * ddz).sqrt() as f32));
                 }
             }
         }
@@ -517,17 +597,19 @@ pub fn use_item(
         set_held_component(
             game,
             DIVINATION_POS,
-            Tag::List(vec![
-                Tag::Int(pos[0]),
-                Tag::Int(pos[1]),
-                Tag::Int(pos[2]),
-            ]),
+            Tag::IntArray(pos.to_vec()),
         );
         let bucket = distance_bucket(distance);
         set_held_component(
             game,
             DIVINATION_DISTANCE,
             Tag::Float(f32::to_bits(bucket)),
+        );
+    } else {
+        set_held_component(
+            game,
+            DIVINATION_DISTANCE,
+            Tag::Float(f32::to_bits(DIVINATION_NOT_FOUND)),
         );
     }
 }
@@ -654,6 +736,32 @@ mod tests {
     fn bucket_keeps_the_empty_bucket() {
         assert_eq!(bucket_remainder("theurgy:sal_ammoniac_bucket"), Some("minecraft:bucket"));
         assert_eq!(bucket_remainder("minecraft:water_bucket"), None);
+    }
+
+    #[test]
+    fn divination_ore_tags_prefer_the_full_two_word_name() {
+        assert_eq!(
+            ore_tag_candidates("theurgy:sal_ammoniac_ore"),
+            vec!["c:ores/sal_ammoniac", "c:ores/ammoniac"]
+        );
+        assert_eq!(
+            ore_tag_candidates("minecraft:deepslate_iron_ore"),
+            vec!["c:ores/deepslate_iron", "c:ores/iron"]
+        );
+        assert_eq!(ore_tag_candidates("minecraft:stone"), vec!["c:ores/stone"]);
+        assert_eq!(
+            deepslate_variant("minecraft:iron_ore").as_deref(),
+            Some("minecraft:deepslate_iron_ore")
+        );
+        assert_eq!(deepslate_variant("minecraft:deepslate_iron_ore"), None);
+    }
+
+    #[test]
+    fn divination_tiers_use_the_vanilla_incorrect_block_tags() {
+        assert_eq!(incorrect_blocks_tag("stone"), "minecraft:incorrect_for_stone_tool");
+        assert_eq!(incorrect_blocks_tag("iron"), "minecraft:incorrect_for_iron_tool");
+        assert_eq!(incorrect_blocks_tag("diamond"), "minecraft:incorrect_for_diamond_tool");
+        assert_eq!(incorrect_blocks_tag("netherite"), "minecraft:incorrect_for_netherite_tool");
     }
 
     #[test]
