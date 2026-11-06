@@ -41,7 +41,7 @@ export async function runCustom(call, assert) {
   await step('deepslate variant only', ['setblock', '40', '88', '40', 'theurgy:deepslate_sal_ammoniac_ore']);
   await step('move away', ['tp', '40', '80', '40']);
   await step('look air', ['look', '180', '0']);
-  await step('scan air', ['use-item']);
+  await step('scan air for the full Java duration', ['use-item', '--hold', '3']);
   await call(['wait', '20']);
   const scanned = await step('scan inventory', ['inventory']);
   const components = String(held(scanned)?.components ?? '');
@@ -51,6 +51,16 @@ export async function runCustom(call, assert) {
     'ore-tag scan must identify the deepslate variant at 40,88,40: ' + components);
   assert.ok(components.includes('"theurgy:divination_distance":0.0f'),
     'Java distance is horizontal (2D), so vertical separation must not raise the bucket: ' + components);
+
+  // Early cancellation does not rescan or damage the rod; it restores the
+  // previous result instead of leaving SEARCHING=8 in the component.
+  await step('early release', ['use-item', '--hold', '0.25']);
+  await call(['wait', '10']);
+  const released = await step('release inventory', ['inventory']);
+  const releasedComponents = String(held(released)?.components ?? '');
+  assert.ok(releasedComponents.includes('"theurgy:divination_distance":0.0f'),
+    'early release must restore the previous result, not SEARCHING/NOT_FOUND: ' + releasedComponents);
+  assert.ok(releasedComponents.includes('divination_pos'), 'early release must preserve the previous position');
   return results;
 }
 
