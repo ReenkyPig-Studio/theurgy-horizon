@@ -522,6 +522,19 @@ fn tick_catalyst(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut M
     }
 }
 
+fn receiver_limits(id: &str) -> Option<(i32, i32)> {
+    // (capacity, maxInsert). Catalyst explicitly rejects external flux.
+    Some(match id {
+        "theurgy:mercury_catalyst" => (CATALYST_CAPACITY, 0),
+        "theurgy:mercury_capacitor" => (CAPACITOR_CAPACITY, CAPACITOR_CAPACITY),
+        "theurgy:mercury_flux_emitter"
+        | "theurgy:caloric_flux_emitter"
+        | "theurgy:sulfuric_flux_emitter"
+        | "theurgy:logistics_mercury_flux_connector" => (1_000, 1_000),
+        _ => return None,
+    })
+}
+
 /// Pushes flux from `buffer` into adjacent flux handlers, conserving energy.
 fn push_flux(
     game: &mut crate::game::Game<'_>,
@@ -534,7 +547,7 @@ fn push_flux(
     for dir in dirs.iter().copied() {
         let neighbor = dir.offset(pos);
         if game.native_with_mod_block_entity(neighbor, |neighbor_entity| {
-            matches!(neighbor_entity.id.as_str(), "theurgy:mercury_catalyst" | "theurgy:mercury_capacitor" | "theurgy:mercury_flux_emitter" | "theurgy:caloric_flux_emitter")
+            receiver_limits(&neighbor_entity.id).is_some()
         }).unwrap_or(false) {
             targets.push(neighbor);
         }
@@ -552,12 +565,15 @@ fn push_flux(
             continue;
         }
         let accepted = game.native_with_mod_block_entity(*neighbor, |neighbor_entity| {
+            let Some((capacity, max_insert)) = receiver_limits(&neighbor_entity.id) else {
+                return 0;
+            };
             let mut neighbor_buffer = SimpleMercuryFluxHandler::with_energy(
-                CAPACITOR_CAPACITY,
-                CAPACITOR_CAPACITY,
-                CAPACITOR_CAPACITY,
+                capacity,
+                max_insert,
+                capacity,
                 tank_energy(&neighbor_entity.nbt, "mercuryFluxHandler")
-                    .clamp(0, CAPACITOR_CAPACITY),
+                    .clamp(0, capacity),
             );
             let accepted = neighbor_buffer.insert(*share);
             if accepted > 0 {
@@ -624,27 +640,91 @@ fn tick_capacitor(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut 
 // Mercury flux emitter
 // ---------------------------------------------------------------------------
 
-fn tick_mercury_emitter(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut ModBlockEntity) {
+fn tick_mercury_emitter(game: &mut crate::game::Game<'_>, _pos: [i32; 3], entity: &mut ModBlockEntity) {
     let energy = tank_energy(&entity.nbt, "mercuryFluxHandler").clamp(0, MERCURY_EMITTER_CAPACITY);
-    store_energy_child_or_discard(&mut entity.nbt, "mercuryFluxHandler", energy);
-
-    if let Some(child) = compound_child(&entity.nbt, "energyStorage") {
-        let amount = theurgy_host::int(child, "energy", 0).clamp(0, MERCURY_EMITTER_CAPACITY);
-        let mut storage = Compound::new();
-        theurgy_host::set_int(&mut storage, "energy", amount);
-        set_child_compound(&mut entity.nbt, "energyStorage", storage);
-    }
 
     let game_time = game.world.game_time;
-    if game_time % i64::from(MERCURY_EMITTER_TICK_INTERVAL) == 0 {
-        let mut buffer = SimpleMercuryFluxHandler::with_energy(
-            MERCURY_EMITTER_CAPACITY,
-            MERCURY_EMITTER_CAPACITY,
-            MERCURY_EMITTER_CAPACITY,
-            energy,
+    if game_time % i64::from(MERCURY_EMITTER_TICK_INTERVAL) != 0 || !enabled(&entity.nbt) {
+        store_energy_child_or_discard(&mut entity.nbt, "mercuryFluxHandler", energy);
+        return;
+    }
+    let Some(target) = crate::game::theurgy_selection::read_points(&entity.nbt, "selectedPoints")
+        .first()
+        .copied()
+    else {
+        store_energy_child_or_discard(&mut entity.nbt, "mercuryFluxHandler", energy);
+        return;
+    };
+
+    // MercuryFluxEmitterMercuryFluxBehaviour.tickServer: exactly one selected
+    // target and exactly ten units per slow tick, never all six neighbours.
+    if energy >= MERCURY_EMITTER_FLUX_PER_TRANSFER {
+        let accepted = game
+            .native_with_mod_block_entity(target, |target_entity| {
+                let Some((capacity, max_insert)) = receiver_limits(&target_entity.id) else {
+                    return 0;
+                };
+                let stored = tank_energy(&target_entity.nbt, "mercuryFluxHandler")
+                    .clamp(0, capacity);
+                let mut receiver = SimpleMercuryFluxHandler::with_energy(
+                    capacity,
+                    max_insert,
+                    capacity,
+                    stored,
+                );
+                let accepted = receiver.insert(MERCURY_EMITTER_FLUX_PER_TRANSFER);
+                if accepted > 0 {
+                    store_energy_child_or_discard(
+                        &mut target_entity.nbt,
+                        "mercuryFluxHandler",
+                        receiver.energy,
+                    );
+                }
+                accepted
+            })
+            .unwrap_or(0);
+        let remaining = energy - accepted;
+        store_energy_child_or_discard(&mut entity.nbt, "mercuryFluxHandler", remaining);
+        if accepted > 0 {
+            game.native_block_entity_sync(target);
+        }
+    } else {
+        store_energy_child_or_discard(&mut entity.nbt, "mercuryFluxHandler", energy);
+    }
+
+    // MercuryFluxEmitterEnergyBehaviour uses the same selected point. FE and
+    // mercury flux are separate buffers; never convert one into the other.
+    let energy_stored = compound_child(&entity.nbt, "energyStorage")
+        .map(|child| theurgy_host::int(child, "energy", 0).clamp(0, MERCURY_EMITTER_CAPACITY))
+        .unwrap_or(0);
+    if energy_stored >= MERCURY_EMITTER_FLUX_PER_TRANSFER {
+        let accepted = game
+            .native_with_mod_block_entity(target, |target_entity| {
+                let key = if compound_child(&target_entity.nbt, "energyStorage").is_some() {
+                    "energyStorage"
+                } else if compound_child(&target_entity.nbt, "energyBuffer").is_some() {
+                    "energyBuffer"
+                } else {
+                    return 0;
+                };
+                let stored = compound_child(&target_entity.nbt, key)
+                    .map(|child| theurgy_host::int(child, "energy", 0))
+                    .unwrap_or(0)
+                    .clamp(0, 1_000);
+                let accepted = MERCURY_EMITTER_FLUX_PER_TRANSFER.min(1_000 - stored);
+                if accepted > 0 {
+                    store_energy_child(&mut target_entity.nbt, key, stored + accepted);
+                }
+                accepted
+            })
+            .unwrap_or(0);
+        store_energy_child_or_discard(
+            &mut entity.nbt,
+            "energyStorage",
+            energy_stored - accepted,
         );
-        push_flux(game, pos, entity, &mut buffer, &Direction::ALL);
-        store_energy_child_or_discard(&mut entity.nbt, "mercuryFluxHandler", buffer.energy);
+    } else {
+        store_energy_child_or_discard(&mut entity.nbt, "energyStorage", energy_stored);
     }
 }
 
@@ -653,19 +733,9 @@ fn tick_mercury_emitter(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity:
 // ---------------------------------------------------------------------------
 
 fn selected_target(nbt: &Compound) -> Option<[i32; 3]> {
-    let points = match nbt.get(&JavaString::from("selectedPoints")) {
-        Some(Tag::List(list)) => list,
-        _ => return None,
-    };
-    let first = points.first()?;
-    let compound = match first {
-        Tag::Compound(c) => c,
-        _ => return None,
-    };
-    let x = theurgy_host::int(compound, "x", 0);
-    let y = theurgy_host::int(compound, "y", 0);
-    let z = theurgy_host::int(compound, "z", 0);
-    Some([x, y, z])
+    crate::game::theurgy_selection::read_points(nbt, "selectedPoints")
+        .first()
+        .copied()
 }
 
 fn tick_caloric_emitter(game: &mut crate::game::Game<'_>, _pos: [i32; 3], entity: &mut ModBlockEntity) {
@@ -687,6 +757,14 @@ fn tick_caloric_emitter(game: &mut crate::game::Game<'_>, _pos: [i32; 3], entity
         return;
     }
 
+    let valid_target = game
+        .native_with_mod_block_entity(target, |target_entity| {
+            crate::game::theurgy_selection::heat_receiver(&target_entity.id)
+        })
+        .unwrap_or(false);
+    if !valid_target {
+        return;
+    }
     let hot_until = game.native_with_mod_block_entity(target, |target_entity| {
         theurgy_host::int(&target_entity.nbt, "hotUntil", 0)
     });
