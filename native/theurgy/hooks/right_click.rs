@@ -19,7 +19,6 @@ fn hook(
         *canceled = true;
         return;
     }
-    if let Some(stack) = stack {
-        crate::game::theurgy_items::right_click_block(game, &stack, pos, face, canceled);
-    }
+    let stack = stack.unwrap_or_else(|| horizon_client::items::ItemStack::new("minecraft:air", 0));
+    crate::game::theurgy_items::right_click_block(game, &stack, pos, face, canceled);
 }
