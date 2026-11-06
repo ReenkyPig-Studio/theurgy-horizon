@@ -94,6 +94,24 @@ name = "theurgy_special_attributes"
 source = "special_attributes.rs"
 
 [[module]]
+id = "selection"
+file = "crates/horizon-client/src/game.rs"
+name = "theurgy_selection"
+source = "selection.rs"
+
+[[module]]
+id = "interactions"
+file = "crates/horizon-client/src/game.rs"
+name = "theurgy_interactions"
+source = "interactions.rs"
+
+[[module]]
+id = "worldgen"
+file = "crates/horizon-client/src/game.rs"
+name = "theurgy_worldgen"
+source = "worldgen.rs"
+
+[[module]]
 id = "render"
 file = "crates/horizon-client/src/game.rs"
 name = "theurgy_render"
@@ -179,28 +197,6 @@ kind = "HEAD"
 helper = "hooks/destroy.rs"
 bindings = [{ name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" }, { name = "pos", ty = "[i32; 3]", value = "pos" }, { name = "state", ty = "horizon_world::registry::BlockStateId", value = "state" }, { name = "canceled", ty = "&mut bool", value = "canceled" }]
 
-[[module]]
-id = "screens"
-file = "crates/horizon-client/src/game.rs"
-name = "theurgy_screens"
-source = "screens.rs"
-
-[[injection]]
-id = "screen"
-hook = "screen"
-hook_version = 1
-kind = "HEAD"
-helper = "hooks/screen.rs"
-bindings = [{ name = "game", ty = "&crate::game::Game<'_>", value = "&*self" }, { name = "block", ty = "&str", value = "block" }, { name = "screen", ty = "&mut Option<NativeScreen>", value = "screen" }]
-
-[[injection]]
-id = "screen_draw"
-hook = "screen_draw"
-hook_version = 1
-kind = "HEAD"
-helper = "hooks/screen_draw.rs"
-bindings = [{ name = "game", ty = "&crate::game::Game<'_>", value = "&*self" }, { name = "block", ty = "&str", value = "block" }, { name = "data", ty = "&[i32]", value = "data" }, { name = "batch", ty = "&mut HudBatch", value = "batch" }, { name = "origin", ty = "[f32; 2]", value = "origin" }]
-
 [[injection]]
 id = "right_click"
 hook = "right_click_block"
@@ -210,9 +206,33 @@ helper = "hooks/right_click.rs"
 bindings = [{ name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" }, { name = "pos", ty = "[i32; 3]", value = "pos" }, { name = "face", ty = "[i32; 3]", value = "face" }, { name = "canceled", ty = "&mut bool", value = "canceled" }]
 
 [[injection]]
+id = "inventory_tick"
+hook = "inventory_tick"
+hook_version = 1
+kind = "HEAD"
+helper = "hooks/inventory_tick.rs"
+bindings = [{ name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" }, { name = "slot", ty = "i32", value = "slot" }, { name = "selected", ty = "bool", value = "selected" }]
+
+[[injection]]
+id = "left_click"
+hook = "left_click_block"
+hook_version = 1
+kind = "HEAD"
+helper = "hooks/left_click.rs"
+bindings = [{ name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" }, { name = "pos", ty = "[i32; 3]", value = "pos" }, { name = "face", ty = "[i32; 3]", value = "face" }, { name = "state", ty = "horizon_world::registry::BlockStateId", value = "state" }, { name = "canceled", ty = "&mut bool", value = "canceled" }]
+
+[[injection]]
 id = "mouse_scrolling"
 hook = "mouse_scrolling"
 hook_version = 1
 kind = "HEAD"
 helper = "hooks/mouse_scrolling.rs"
 bindings = [{ name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" }, { name = "scroll", ty = "[f64; 2]", value = "scroll" }, { name = "accumulated", ty = "[i32; 2]", value = "accumulated" }, { name = "canceled", ty = "&mut bool", value = "canceled" }]
+
+[[injection]]
+id = "chunk_load"
+hook = "chunk_load"
+hook_version = 1
+kind = "HEAD"
+helper = "hooks/chunk_load.rs"
+bindings = [{ name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" }, { name = "dimension", ty = "&str", value = "dimension" }, { name = "chunk", ty = "[i32; 2]", value = "chunk" }, { name = "new", ty = "bool", value = "new" }]

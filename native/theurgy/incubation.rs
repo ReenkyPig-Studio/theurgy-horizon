@@ -15,7 +15,7 @@
 
 use horizon_client::containers::ModBlockEntity;
 use horizon_client::items::ItemStack;
-use horizon_world::nbt::Compound;
+use horizon_world::nbt::{Compound, JavaString, Tag};
 use theurgy_engine::crafting::Crafting;
 
 /// Value of `IncubationRecipe.DEFAULT_TIME`.
@@ -256,7 +256,7 @@ fn tick_incubator(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut 
 
     // Whether the output accepts the result right now. Java's craft() performs this
     // at the moment the timer elapses; we compute it up front to gate the timer.
-    let result = game.native_recipe_result(&shape.result);
+    let result = recipe_result(game, &shape.result);
     let can_craft = result.as_ref().is_some_and(|out| output_can_fit(entity, out));
 
     let time = shape.time.max(0);
@@ -304,6 +304,45 @@ fn is_heated(game: &crate::game::Game<'_>, pos: [i32; 3]) -> bool {
     crate::game::theurgy_heat::heated(game, pos)
 }
 
+/// `TagRecipeResult.getStack`: resolve the first registered item in tag order,
+/// then apply the result's count/components. Empty tags are barriers in Java,
+/// not a silently empty recipe output.
+fn recipe_result(
+    game: &crate::game::Game<'_>,
+    json: &serde_json::Value,
+) -> Option<ItemStack> {
+    if json.get("type").and_then(serde_json::Value::as_str) != Some("theurgy:tag") {
+        return game.native_recipe_result(json);
+    }
+    let tag = json.get("tag").and_then(serde_json::Value::as_str)?;
+    let first = game
+        .res
+        .items()
+        .item_tag_order
+        .get(tag)
+        .into_iter()
+        .flatten()
+        .find(|item| game.res.items().get(item).is_some());
+    if let Some(first) = first {
+        let mut resolved = json.clone();
+        resolved["id"] = serde_json::Value::String(first.clone());
+        return game.native_recipe_result(&resolved);
+    }
+
+    let count = json
+        .get("count")
+        .and_then(serde_json::Value::as_u64)
+        .unwrap_or(1);
+    let barrier = serde_json::json!({"id": "minecraft:barrier", "count": count});
+    let mut result = game.native_recipe_result(&barrier)?;
+    let empty_name = format!("Empty Tag: {tag}");
+    result.data_mut().set_other(
+        "minecraft:custom_name",
+        Some(Tag::String(JavaString::from(empty_name.as_str()))),
+    );
+    Some(result)
+}
+
 /// `Ingredient.test` against `native_recipe_ingredient`.
 fn matches(
     game: &crate::game::Game<'_>,
@@ -330,6 +369,8 @@ fn output_can_fit(entity: &ModBlockEntity, result: &ItemStack) -> bool {
         Some(old) if old.count == 0 => result.count <= MAX_STACK,
         Some(old) => {
             old.item == result.item
+                && old.damage == result.damage
+                && old.extra == result.extra
                 && old.count.saturating_add(result.count) <= MAX_STACK
         }
     }
@@ -379,7 +420,11 @@ fn perform_craft(
     if incubator.items.is_empty() {
         incubator.items.push(Some(result.clone()));
     } else if let Some(slot) = incubator.items[0].as_mut() {
-        if slot.count == 0 || slot.item == result.item {
+        if slot.count == 0
+            || (slot.item == result.item
+                && slot.damage == result.damage
+                && slot.extra == result.extra)
+        {
             slot.item = result.item.clone();
             slot.count = slot.count.saturating_add(result.count);
         } else {
