@@ -6,6 +6,7 @@
 use horizon_client::items::ItemStack;
 use horizon_world::chunk::BlockState;
 use horizon_world::nbt::{Compound, JavaString, Tag};
+use horizon_world::level::LevelAccess;
 
 /// Blocks whose Java class is a double-high apparatus; the lower half holds the
 /// block entity, the upper half is only the model/collision.
@@ -56,6 +57,93 @@ fn upper_state(game: &crate::game::Game<'_>, state: horizon_world::registry::Blo
     }
     descriptor.properties.insert("half".to_owned(), "upper".to_owned());
     registry.resolve(&descriptor).ok()
+}
+
+fn facing_name(direction: horizon_core::geometry::Direction) -> &'static str {
+    match direction {
+        horizon_core::geometry::Direction::Down => "down",
+        horizon_core::geometry::Direction::Up => "up",
+        horizon_core::geometry::Direction::North => "north",
+        horizon_core::geometry::Direction::South => "south",
+        horizon_core::geometry::Direction::West => "west",
+        horizon_core::geometry::Direction::East => "east",
+    }
+}
+
+fn horizontal_yaw(yaw: f32) -> &'static str {
+    match (yaw.div_euclid(90.0).round() as i32).rem_euclid(4) {
+        0 => "south",
+        1 => "west",
+        2 => "north",
+        _ => "east",
+    }
+}
+
+/// Native `getStateForPlacement` for facing, waterlogging and pipe/nexus
+/// connection states. This happens before the block entity is created.
+pub fn state_for_placement(
+    level: &crate::game::GameLevel<'_>,
+    state: horizon_world::registry::BlockStateId,
+    context: &horizon_world::level::PlacementContext,
+    fluid: horizon_world::fluid::FluidState,
+    answer: &mut Option<Option<horizon_world::registry::BlockStateId>>,
+) {
+    let Some(mut descriptor) = level.registry.state(state).cloned() else {
+        return;
+    };
+    let block = descriptor.name.as_str();
+    if !block.starts_with("theurgy:") {
+        return;
+    }
+    let connector = matches!(
+        block,
+        "theurgy:logistics_item_inserter"
+            | "theurgy:logistics_item_extractor"
+            | "theurgy:logistics_fluid_inserter"
+            | "theurgy:logistics_fluid_extractor"
+            | "theurgy:logistics_mercury_flux_connector"
+            | "theurgy:logistics_capability_proxy"
+            | "theurgy:caloric_flux_emitter"
+            | "theurgy:mercury_flux_emitter"
+            | "theurgy:sulfuric_flux_emitter"
+    );
+    if connector {
+        let mut facing = context.face;
+        let neighbor = level.block_state(context.hit_pos);
+        if level.registry.state(neighbor).is_some_and(|other| {
+            other.name == block
+                && other.properties.get("facing").is_some_and(|value| value == facing_name(facing))
+        }) {
+            facing = facing.opposite();
+        }
+        descriptor.properties.insert("facing".into(), facing_name(facing).into());
+    } else if matches!(block, "theurgy:fermentation_vat" | "theurgy:digestion_vat") {
+        descriptor.properties.insert("facing".into(), horizontal_yaw(context.yaw).into());
+        descriptor.properties.insert("open".into(), "true".into());
+    }
+    if descriptor.properties.contains_key("waterlogged") {
+        descriptor.properties.insert(
+            "waterlogged".into(),
+            (fluid.kind() == horizon_world::fluid::FluidKind::Water).to_string(),
+        );
+    }
+    if matches!(block, "theurgy:logistics_nexus" | "theurgy:logistics_connector_node") {
+        for direction in horizon_core::geometry::Direction::ALL {
+            let at = horizon_core::position::BlockPos::new(
+                context.pos.x + direction.normal()[0],
+                context.pos.y + direction.normal()[1],
+                context.pos.z + direction.normal()[2],
+            );
+            let neighbor = level.block_state(at);
+            let present = level.registry.state(neighbor).is_some_and(|other| {
+                other.name.starts_with("theurgy:logistics_")
+            });
+            descriptor.properties.insert(facing_name(direction).into(), present.to_string());
+        }
+    }
+    if let Ok(resolved) = level.registry.resolve(&descriptor) {
+        *answer = Some(Some(resolved));
+    }
 }
 
 fn uuid_from_random(game: &mut crate::game::Game<'_>) -> (String, Tag) {
