@@ -187,9 +187,8 @@ const SAL_AMMONIAC_TANK_CAPACITY: i32 = 2_000;
 
 pub fn fluids(block: &str) -> Option<ModFluidTanks> {
     let capacity = match block {
-        "theurgy:sal_ammoniac_tank" => SAL_AMMONIAC_TANK_CAPACITY,
-        "theurgy:liquefaction_cauldron"
-        | "theurgy:fermentation_vat"
+        "theurgy:sal_ammoniac_tank" | "theurgy:liquefaction_cauldron" => 2_000,
+        "theurgy:fermentation_vat"
         | "theurgy:digestion_vat"
         | "theurgy:sal_ammoniac_accumulator" => TANK_CAPACITY,
         _ => return None,
@@ -322,6 +321,7 @@ mod tests {
         assert_eq!(tank.inputs, vec![0]);
         assert_eq!(tank.outputs, vec![0]);
         assert!(fluids("theurgy:distiller").is_none());
+    assert_eq!(fluids("theurgy:liquefaction_cauldron").expect("cauldron").tanks, vec![2_000]);
     }
 
     #[test]

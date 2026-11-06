@@ -304,6 +304,66 @@ pub fn cauldron_bounding_box() -> ([f32; 3], [f32; 3]) {
     ([0.0, 0.0, 0.0], [1.0, 1.0, 1.0])
 }
 
+/// Client update tag with the same item-template shape used by Java's
+/// `ItemStack.OPTIONAL_CODEC`; client item slots otherwise stay empty.
+pub fn update_tag(
+    _pos: [i32; 3],
+    entity: &ModBlockEntity,
+    tag: &mut Option<Compound>,
+) {
+    let mut nbt = entity.nbt.clone();
+    let items = entity.items.iter().enumerate().filter_map(|(slot, stack)| {
+        let stack = stack.as_ref()?;
+        let Tag::Compound(mut record) = crate::game::theurgy_logistics::stack_tag(stack) else {
+            return None;
+        };
+        record.insert(JavaString::from("Slot"), Tag::Byte(slot as i8));
+        Some(Tag::Compound(record))
+    }).collect();
+    nbt.insert(JavaString::from("Items"), Tag::List(items));
+    *tag = Some(nbt);
+}
+
+/// Submit carried fluid geometry. GeckoLib model submission is handled by the
+/// same entry point below; only the cauldron adds quads here.
+pub fn submit(
+    game: &crate::game::Game<'_>,
+    _pos: [i32; 3],
+    block: &str,
+    _state: horizon_world::registry::BlockStateId,
+    entity: &ModBlockEntity,
+    draw: &mut crate::game::native_block_entity_draw::BlockEntityDraw,
+) {
+    if block != "theurgy:liquefaction_cauldron" {
+        return;
+    }
+    let color = cauldron_color(entity, 0xFFFF_FFFF);
+    let sprite = cauldron_sprite(entity);
+    let state = extract_cauldron(entity, draw.light as i32, 0, color, sprite);
+    draw.light = state.fluid_light as u32;
+    for quad in cauldron_quads(&state) {
+        game.native_draw_quad(
+            draw,
+            "theurgy:block/sal_ammoniac/still",
+            quad.positions,
+            [state.u0 * 16.0, state.v0 * 16.0, state.u1 * 16.0, state.v1 * 16.0],
+            0xFFFF_FFFF,
+        );
+    }
+}
+
+pub fn bounds(
+    _pos: [i32; 3],
+    block: &str,
+    _state: horizon_world::registry::BlockStateId,
+    _entity: &ModBlockEntity,
+    bounds: &mut [f32; 6],
+) {
+    if matches!(block, "theurgy:distiller" | "theurgy:calcination_oven" | "theurgy:liquefaction_cauldron") {
+        *bounds = [-1.0, -1.0, -1.0, 2.0, 3.0, 2.0];
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
