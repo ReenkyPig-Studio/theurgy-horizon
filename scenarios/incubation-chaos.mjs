@@ -221,6 +221,12 @@ export async function runCustom(call, assert) {
   };
   const {ok, equal} = helpers(assert);
 
+  // All fixtures are in the x=40..49 lab band. Load it before using the
+  // container control path; spawn is seed-dependent and may be several chunks
+  // away, in which case the client has no authoritative mod BE to insert into.
+  await call('tp', '44', '82', '40');
+  await call('wait', '40');
+
   // --- probe 1: missing vessel stops any progress ------------------------
   {
     const c = POS.brokenCenter;

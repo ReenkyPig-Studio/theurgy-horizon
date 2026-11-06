@@ -255,6 +255,10 @@ export function reformationPlan() {
   block('source pedestal A is placed', P.sourceA);
   cmd('place source pedestal B', ['setblock', ...S(P.sourceB), SOURCE], P.sourceB);
   block('source pedestal B is placed', P.sourceB);
+  const point = (pos, type) => `{blockPos:[I;${S(pos).join(',')}],type:"${type}"}`;
+  cmd('player-selected reformation array', ['data', 'merge', 'block', ...S(P.emitter),
+    `{sourcePedestals:[${point(P.sourceA,'SOURCE')},${point(P.sourceB,'SOURCE')}],targetPedestal:${point(P.target,'TARGET')},resultPedestal:${point(P.result,'RESULT')}}`],
+    P.emitter);
   // Every readback above is checked by `runCustom`, which knows the expected id.
   expectPedestal('fresh result pedestal is empty', P.result, null, 0);
   expectPedestal('fresh source pedestal is empty', P.sourceA, null, 0);

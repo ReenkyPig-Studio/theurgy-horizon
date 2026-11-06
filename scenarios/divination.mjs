@@ -34,7 +34,12 @@ export async function runCustom(call, assert) {
     'attunement must link the ore: ' + JSON.stringify(held(linked)));
   assert.ok(String(held(linked).components).includes(ORE), 'linked block must be the ore');
 
-  await step('move away', ['tp', '40', '80', '36']);
+  // A normal-ore attunement must expand through c:ores/sal_ammoniac. Remove
+  // the exact linked block and leave only its deepslate variant, high enough
+  // that a 3D distance bucket would differ from Java's horizontal 2D bucket.
+  await step('remove exact linked ore', ['setblock', '40', '80', '40', 'minecraft:air']);
+  await step('deepslate variant only', ['setblock', '40', '88', '40', 'theurgy:deepslate_sal_ammoniac_ore']);
+  await step('move away', ['tp', '40', '80', '40']);
   await step('look air', ['look', '180', '0']);
   await step('scan air', ['use-item']);
   await call(['wait', '20']);
@@ -42,8 +47,10 @@ export async function runCustom(call, assert) {
   const components = String(held(scanned)?.components ?? '');
   assert.ok(components.includes('divination_pos'), 'scan must store divination_pos: ' + components);
   assert.ok(components.includes('divination_distance'), 'scan must store divination_distance: ' + components);
-  assert.ok(/"theurgy:divination_pos"\s*:\s*\[\s*40\s*,\s*80\s*,\s*40\s*\]/.test(components),
-    'scan result must identify the ore at 40,80,40: ' + components);
+  assert.ok(/"theurgy:divination_pos"\s*:\s*\[\s*(?:I;)?\s*40\s*,\s*88\s*,\s*40\s*\]/.test(components),
+    'ore-tag scan must identify the deepslate variant at 40,88,40: ' + components);
+  assert.ok(components.includes('"theurgy:divination_distance":0.0f'),
+    'Java distance is horizontal (2D), so vertical separation must not raise the bucket: ' + components);
   return results;
 }
 

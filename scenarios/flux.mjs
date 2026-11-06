@@ -86,30 +86,47 @@ export async function runCustom(call, assert) {
   results.push({name: 'capacitor state', reply: capData});
 
   // ---- Capacity split: emitter drains into a capacitor through a target ---
-  const emitter = P(8, 90, 40), drainCap = P(9, 90, 40);
+  const emitter = P(8, 90, 40), drainCap = P(9, 90, 40), bystander = P(8, 90, 41);
   await place('emitter place', emitter, 'theurgy:mercury_flux_emitter');
   await place('drain capacitor place', drainCap, 'theurgy:mercury_capacitor');
+  await place('unselected adjacent capacitor', bystander, 'theurgy:mercury_capacitor');
   await step('emitter buffer', mergeEnergy(emitter, 100));
+  await step('emitter selected target', ['command', 'data', 'merge', 'block', ...s(emitter),
+    `{selectedPoints:[{blockPos:[I;${drainCap.join(',')}]}]}`]);
   const before = await step('drain capacitor before', ['command', 'data', 'get', 'block', ...s(drainCap)]);
   results.push({name: 'drain capacitor before', reply: before});
   await step('emitter run', ['wait', '40']);
   await step('emitter sync', ['wait', '2']);
   const after = await step('drain capacitor after', ['command', 'data', 'get', 'block', ...s(drainCap)]);
   const beforeEnergy = energyOf(before) ?? 0, afterEnergy = energyOf(after) ?? 0;
-  assert.ok(afterEnergy > beforeEnergy, 'emitter must push flux into the adjacent capacitor');
-  const emitterAfter = await step('emitter after push', ['command', 'data', 'get', 'block', ...s(emitter)]);
-  const left = energyOf(emitterAfter) ?? 0;
-  assert.ok(afterEnergy - beforeEnergy + left === 100,
-    `flux must be conserved (capacitor ${beforeEnergy}->${afterEnergy}, emitter left ${left})`);
+  assert.ok(afterEnergy > beforeEnergy, 'emitter must push flux into the selected capacitor');
+  // Do not sleep between the three conservation reads: a 20-tick pulse between
+  // them would otherwise compare different world states and look like loss.
+  // If a pulse lands in the middle of one series, retry the complete series.
+  let finalCap = 0, finalEmitter = 0, finalBystander = 0, conserved = false;
+  for (let attempt = 0; attempt < 6 && !conserved; attempt++) {
+    const capNow = await call(['command', 'data', 'get', 'block', ...s(drainCap)]);
+    const emitterNow = await call(['command', 'data', 'get', 'block', ...s(emitter)]);
+    const bystanderNow = await call(['command', 'data', 'get', 'block', ...s(bystander)]);
+    results.push({name: 'consistent flux reads ' + attempt, capNow, emitterNow, bystanderNow});
+    finalCap = energyOf(capNow) ?? 0;
+    finalEmitter = energyOf(emitterNow) ?? 0;
+    finalBystander = energyOf(bystanderNow) ?? 0;
+    conserved = finalCap + finalEmitter + finalBystander === 100;
+    if (!conserved) await call(['wait', '1']);
+  }
+  assert.ok(conserved,
+    `flux must be conserved (capacitor ${finalCap}, emitter ${finalEmitter}, bystander ${finalBystander})`);
+  assert.equal(finalBystander, 0, 'an adjacent but unselected capacitor must receive no flux');
   results.push({name: 'drain capacitor after', reply: after});
 
   // ---- Caloric emitter: heats a valid selected target ---------------------
   const caloric = P(12, 90, 40), target = P(12, 92, 40);
   await place('caloric place', caloric, 'theurgy:caloric_flux_emitter');
-  await pedestalTarget('caloric target', target, true);
+  await place('caloric heat receiver', target, 'theurgy:distiller');
   await step('caloric buffer', mergeEnergy(caloric, 500));
   await step('caloric selection', ['command', 'data', 'merge', 'block', ...s(caloric),
-    `{selectedPoints:[{x:${target[0]},y:${target[1]},z:${target[2]}}]}`]);
+    `{selectedPoints:[{blockPos:[I;${target.join(',')}]}]}`]);
   const targetBefore = await step('caloric target before', ['command', 'data', 'get', 'block', ...s(target)]);
   results.push({name: 'caloric target before', reply: targetBefore});
   await step('caloric run', ['wait', '60']);

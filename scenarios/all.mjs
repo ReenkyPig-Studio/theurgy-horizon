@@ -134,6 +134,10 @@ export async function runAll(call, assert) {
     r => assert.ok(blockState(r).startsWith('theurgy:reformation_source_pedestal')));
   await step('reformation source2', ['setblock', ...s(source2), 'theurgy:reformation_source_pedestal'],
     r => assert.ok(blockState(r).startsWith('theurgy:reformation_source_pedestal')));
+  const selectedSource = p => `{blockPos:[I;${p.join(',')}],type:"SOURCE"}`;
+  const selected = (p, type) => `{blockPos:[I;${p.join(',')}],type:"${type}"}`;
+  await step('reformation explicit player selection', ['command', 'data', 'merge', 'block', ...s(emitter),
+    `{sourcePedestals:[${selectedSource(source)},${selectedSource(source2)}],targetPedestal:${selected(target,'TARGET')},resultPedestal:${selected(result,'RESULT')}}`]);
   await step('reformation result', ['setblock', ...s(result), 'theurgy:reformation_result_pedestal'],
     r => assert.ok(blockState(r).startsWith('theurgy:reformation_result_pedestal')));
   await step('reformation flux', ['command', 'data', 'merge', 'block', ...s(emitter),
