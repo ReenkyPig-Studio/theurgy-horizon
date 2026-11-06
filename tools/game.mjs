@@ -55,6 +55,7 @@ await fs.access(exe); // fail before launching if native binary not built
 const ctl=path.join(version,'horizon-ctl.exe');
 const env={...rustEnv,HORIZON_HOME:gameHome,HORIZON_CONTROL:socket,HORIZON_NO_AUDIO:'1'};
 const evidence=[];
+let customResults=null;
 let launched=false;
 
 // Validate the offline plan before touching Minecraft: shape, determinism, lab containment.
@@ -203,8 +204,8 @@ try {
     // runner stays generic, so agents never edit a shared dispatcher.
     const scenario=await import('../scenarios/'+spec.custom+'.mjs');
     if(typeof scenario.runCustom!=='function')throw new Error('scenario must export runCustom(call, assert)');
-    const results=await scenario.runCustom(call,assert);
-    console.log('THEURGY_CUSTOM_PASS mode='+mode+' observations='+(Array.isArray(results)?results.length:0));
+    customResults=await scenario.runCustom(call,assert);
+    console.log('THEURGY_CUSTOM_PASS mode='+mode+' observations='+(Array.isArray(customResults)?customResults.length:0));
   } else if(spec.interactions) {
     const results=await runInteractions(call,assert);
     console.log('THEURGY_INTERACTIONS_PASS '+results.length+' observations');
@@ -249,6 +250,7 @@ try {
       :spec.custom?'agent-owned real headless integration scenario '+spec.custom
       :native?'distiller block registration only'
       :'vanilla game/control harness only (not Theurgy parity)',
+    customResults,
     evidence},null,2));
   console.log('Evidence:',out);
 }

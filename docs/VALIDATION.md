@@ -64,8 +64,9 @@
   VERIFIED. `added_by`, `enchantment`, `fluid_contents`, `item_name`: 86 observations,
   evidence `.agents/secure-secure-special-gemini/special-attributes/runs/game-1793922825787/evidence.json`;
   main `runs/game-1793923962257`. Standard 276 и list/attribute regression также PASS.
-- `npm run test:modules`: 21/21 pure logistics tests через `tools/module-tests.mjs`; wrapper сохраняет
-  production NBT/algorithm helpers/tests, опуская только требующие реального Game функции. Это не
+- `npm run test:modules`: 40/40 pure tests через `tools/module-tests.mjs` (logistics 21,
+  worldgen 2, selection 3, interactions 2, items 5, registry 7); wrapper сохраняет production
+  NBT/algorithm helpers/tests, опуская только требующие реального Game функции. Это не
   замена game evidence. Java/Horizon pack и wire regression после интеграции: filters 23
   (`runs/game-1793849048665`), wire graph 56 (`runs/game-1793849049528`), tools 30
   (`runs/game-1793849146637`), nexus logistics 32 (`runs/game-1793849143107`), machines 65
@@ -76,6 +77,62 @@
   `tools/build-content.mjs` теперь удаляет только conditions, сохраняя ingredients/results/times.
 - Это подтверждённый игровой vertical slice всех основных аппаратов, но не автоматическое
   доказательство 100% parity всех item interactions, logistics, rendering и Java GameTests.
+
+## Review-исправления Java 26.3 (Horizon 2944480)
+
+- Выдуманные apparatus-меню удалены полностью: `native/theurgy/screens.rs`, оба screen-hook
+  и JSON `data/theurgy/horizon/menu/*`. Вместо них `interactions.rs` переносит
+  `TwoSlotItemHandlerBehaviour`, `DynamicOneOutputSlotItemHandlerBehaviour` и
+  `OneSlotItemHandlerBehaviour`: ПКМ вставляет допустимый ресурс, пустая рука забирает
+  output, затем input, без открытия экрана и с сохранением компонентов.
+- `registry.rs` теперь повторяет `CapabilityRegistry`: у calcination/distillation/
+  liquefaction/fermentation/digestion UP=только входы, DOWN=только output, горизонтальные
+  стороны=combined inventory. Обычные input inventories доступны на извлечение, но нижний
+  hopper физически не видит их. Живой сценарий подтвердил, что под дистиллятором забирается
+  только `mercury_shard`, а `bread` во входе остаётся.
+- `selection.rs` — общий перенос `SelectionBehaviour`: ПКМ/ЛКМ, сброс при смене предмета,
+  диапазоны 8/16, замена единственной target/result точки, Java `blockPos` NBT и запись
+  выбора при установке. Pending state изолирован по UUID игрока. `MercuryFluxEmitter`
+  отправляет ровно 10 flux каждые 20 тиков только выбранной точке; `Reformation` читает
+  только `sourcePedestals`/`targetPedestal`/`resultPedestal`, без поиска по миру.
+- `theurgy:tag` в incubation разрешается через первый зарегистрированный предмет в порядке
+  тега (`TagUtil`/`TagRecipeResult`), включая count/components; пустой тег даёт Java barrier,
+  а не молча пустой результат. Проверено производство `theurgy:sal_ammoniac_crystal`.
+- Нативный worldgen подключён через `chunk_load(new=true)` только в Overworld. Сломанная
+  ссылка dev-mod `theurgy:sal_ammoniac_ore` удалена из generator-facing datapack; вклад
+  выполняет `worldgen.rs` с ограниченными 20×9 попытками, world-seeded deterministic RNG,
+  tag-match replacement и записью только новых чанков. Обычная руда найдена в живом мире
+  и пережила reload без повторной генерации старых чанков.
+- `DivinationRodItem`/`Scanner`: attunement проверяет vanilla
+  `ToolMaterial.incorrectBlocksForDrops`; linked block раскрывается через первый непустой
+  `c:ores/...` (two-word name имеет приоритет) либо дополняется deepslate-вариантом. Скан
+  ограничен сферой Java range 96, выбирает ближайший результат по 3D, но записывает display
+  distance по 2D; `divination_pos` сохраняется как `BlockPos.CODEC` IntArray, промах даёт 7.0.
+
+Фактические проверки этой волны:
+
+- `node tools/native.mjs build-headless` — PASS, 18 modules / 15 injections, отдельный
+  `target/horizon-headless-cargo/fast/horizon-client.exe`; `node tools/native.mjs plan` — PASS.
+- `custom:review-fixes`: `THEURGY_CUSTOM_PASS`, 86 observations,
+  `runs/game-1794011604590/evidence.json`. Реальные ПКМ-инвентари без меню, top/bottom
+  hopper, tag-result, выбор/установка mercury и sulfuric emitters, запрет unselected target.
+- `custom:worldgen`: 15 observations, `runs/game-1794012874723/evidence.json`.
+  В pinned test terrain контрольный `find-block minecraft:deepslate` = 0, поэтому live
+  deepslate-target честно помечен `skipped`; подменять stone на deepslate-руду запрещено.
+  Правило обоих Java targets отдельно проверено unit-тестом worldgen.
+- Финальный binary: reformation 129 (`runs/game-1794011829744`), flux 33
+  (`runs/game-1794011781043`), all machines 66 (`runs/game-1794012127773`).
+- Дополнительно: machine scenarios 49 (`runs/game-1794012330177`), interactions 35
+  (`runs/game-1794011719881`), incubation chaos 7 (`runs/game-1794012408063`),
+  items 16 (`runs/game-1794011664163`). Divination 17 (`runs/game-1794011439287`)
+  отдельно доказывает поиск только deepslate-варианта после удаления исходной руды
+  и нулевой 2D-distance bucket при вертикальном смещении.
+- `npm test` 34/34; `npm run fast` 28/28 + policy tests; `npm run test:modules`
+  40/40 (logistics 21, worldgen 2, selection 3, interactions 2, items 5, registry 7).
+
+Это доказывает исправление перечисленных дивергенций в реальном Horizon, но не превращает
+их в полный Java differential всего мода. Полный parity остальных рендереров, внешних
+модов и всех item interactions по-прежнему требует отдельных сценариев/oracle.
 
 ## История matrix-кампании
 - Все 56 ролей завершены и имеют per-role journal: 24 builders, 24 chaos-testers, 8 reviewers.

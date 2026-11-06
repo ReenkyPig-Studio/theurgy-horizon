@@ -8,7 +8,19 @@ import {root,config} from './common.mjs';
 // exact declaration name in the generated TEST WRAPPER; the production file
 // is read, never modified, and every retained helper/test is its actual text.
 // Full-game evidence remains mandatory: this does not verify native hooks.
-const specs={logistics:[
+const specs={
+ worldgen:['chunk_load'],
+ selection:['sneaking','right_click','inventory_tick','left_click','placed'],
+ interactions:['accepts_input','entity_pos','right_click'],
+ items:[
+ 'upper_state','placed','component_string','component_bool','component_i32',
+ 'set_held_component','load_wire_endpoint','store_wire_endpoint',
+ 'clear_wire_endpoint','consume_one_wire','wire_use_on','attune_rod',
+ 'is_sneaking','wand_mode','block_facing','wand_use_on','mouse_scroll',
+ 'right_click_block','use_item','use_on','destroyed',
+ ],
+ registry:['tick'],
+ logistics:[
  'sync_filter_state','filter_use_on','facing_of','tick','wire_sneaking',
  'load_wire_endpoint','change_wire_component','store_wire_endpoint',
  'change_wire_count','find_wire','add_wire','remove_wire','wire_use_on',

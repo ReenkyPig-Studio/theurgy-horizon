@@ -26,6 +26,12 @@ capabilities = ["registries"]
 `);
 await copy(path.join(root,'upstream/theurgy/LICENSES'),path.join(dest,'LICENSES'));
 await fs.copyFile(path.join(root,'upstream/theurgy/REUSE.toml'),path.join(dest,'REUSE.toml'));
+// Horizon's generator catalog is built before dev-mod configured features are
+// visible. Do not leave a dangling placed-feature/biome-modifier reference:
+// native/theurgy/worldgen.rs applies this exact registered ore contribution on
+// first chunk load instead.
+await fs.rm(path.join(dest,'data/theurgy/worldgen'),{recursive:true,force:true});
+await fs.rm(path.join(dest,'data/theurgy/neoforge/biome_modifier/add_sal_ammoniac_ore.json'),{force:true});
 const be=new Set(['calcination_oven','pyromantic_brazier','liquefaction_cauldron','distiller','incubator',
  'incubator_mercury_vessel','incubator_salt_vessel','incubator_sulfur_vessel','sal_ammoniac_tank',
  'sal_ammoniac_accumulator','logistics_nexus','mercury_catalyst','mercury_capacitor','caloric_flux_emitter',
@@ -76,18 +82,9 @@ for(const id of blocks) {
  const d={template,item:id!=='sal_ammoniac',properties:{hardness:id.includes('ore')?3:1,
    explosion_resistance:id.includes('ore')?3:1,requires_tool:id.includes('ore')}};
  if(Object.keys(state_properties).length) {d.state_properties=state_properties;d.default_state=default_state;}
- // Model inventory contents and progress without borrowing vanilla machine state.
- if(['calcination_oven','liquefaction_cauldron','distiller','fermentation_vat','digestion_vat'].includes(id)) {
-   const slots=id==='fermentation_vat'||id==='digestion_vat'?4:2;
-   await fs.mkdir(path.join(dest,'data/theurgy/horizon/menu'),{recursive:true});
-   await fs.writeFile(path.join(dest,'data/theurgy/horizon/menu',id+'.json'),JSON.stringify({slots,data_slots:4,results:[slots-1]},null,2));
- }
- if(['pyromantic_brazier','incubator','incubator_mercury_vessel','incubator_salt_vessel','incubator_sulfur_vessel',
-   'reformation_source_pedestal','reformation_target_pedestal','reformation_result_pedestal','mercury_catalyst'].includes(id)) {
-   await fs.mkdir(path.join(dest,'data/theurgy/horizon/menu'),{recursive:true});
-   await fs.writeFile(path.join(dest,'data/theurgy/horizon/menu',id+'.json'),JSON.stringify({slots:1,data_slots:4,
-     results:id==='incubator'||id==='reformation_result_pedestal'?[0]:[]},null,2));
- }
+ // Theurgy 26.3 machines have no menu: their Java useItemOn behaviours move
+ // items directly. Native interactions live in interactions.rs; do not emit
+ // invented Horizon apparatus menus here.
  await fs.mkdir(path.join(dest,'data/theurgy/horizon/block'),{recursive:true});
  await fs.writeFile(path.join(dest,'data/theurgy/horizon/block',id+'.json'),JSON.stringify(d,null,2)+'\n');
 }
