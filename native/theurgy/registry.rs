@@ -142,17 +142,41 @@ pub fn container(block: &str) -> Option<ModContainer> {
             outputs,
         } => (slots, inputs, outputs),
     };
+    let input_count = inputs.len();
+    let mut faces: [Vec<usize>; 6] = std::array::from_fn(|_| (0..slots).collect());
+    if matches!(
+        block,
+        "theurgy:calcination_oven"
+            | "theurgy:distiller"
+            | "theurgy:liquefaction_cauldron"
+            | "theurgy:fermentation_vat"
+            | "theurgy:digestion_vat"
+    ) {
+        // CapabilityRegistry.register{CalcinationOven,Distiller,LiquefactionCauldron,
+        // FermentationVat,DigestionVat}: UP exposes only inputs and DOWN only
+        // the output. The combined inventory remains available horizontally.
+        // Direction's Horizon ordinals are down=0, up=1.
+        faces[0] = (input_count..slots).collect();
+        faces[1] = (0..input_count).collect();
+    }
+
+    // Java's ordinary input inventories permit extraction as well as insertion.
+    // `faces`, not an incomplete `outputs` list, is what confines a bottom hopper
+    // to the output slot. Result pedestals/incubator remain take-only because
+    // their `inputs` list is empty.
+    let outputs = match block {
+        "theurgy:incubator" | "theurgy:reformation_result_pedestal" => outputs,
+        _ => (0..slots).filter(|slot| inputs.contains(slot) || outputs.contains(slot)).collect(),
+    };
     Some(ModContainer {
         slots,
-        faces: std::array::from_fn(|_| (0..slots).collect()),
+        faces,
         inputs,
         outputs,
-        menu: Some(menu_id(block)),
+        // Theurgy 26.3 has no apparatus MenuProvider: items are moved by the
+        // block's useItemOn behaviours. Never open an invented machine screen.
+        menu: None,
     })
-}
-
-fn menu_id(block: &str) -> String {
-    format!("theurgy:{}", block.trim_start_matches("theurgy:"))
 }
 
 /// Fluid tanks for blocks that carry one (liquefaction cauldron, vats,
@@ -262,20 +286,27 @@ mod tests {
         let c = container("theurgy:distiller").expect("distiller container");
         assert_eq!(c.slots, 2);
         assert_eq!(c.inputs, vec![0]);
-        assert_eq!(c.outputs, vec![1]);
-        assert_eq!(c.menu.as_deref(), Some("theurgy:distiller"));
+        assert_eq!(c.outputs, vec![0, 1]);
+        assert_eq!(c.menu, None);
+        assert_eq!(c.faces[0], vec![1], "bottom is output-only");
+        assert_eq!(c.faces[1], vec![0], "top is input-only");
+        for face in 2..6 {
+            assert_eq!(c.faces[face], vec![0, 1], "horizontal combined inventory");
+        }
 
         let vat = container("theurgy:fermentation_vat").expect("vat container");
         assert_eq!(vat.slots, 4);
         assert_eq!(vat.inputs, vec![0, 1, 2]);
-        assert_eq!(vat.outputs, vec![3]);
+        assert_eq!(vat.outputs, vec![0, 1, 2, 3]);
+        assert_eq!(vat.faces[0], vec![3]);
+        assert_eq!(vat.faces[1], vec![0, 1, 2]);
     }
 
     #[test]
     fn single_slot_blocks_route_the_right_slot() {
         let catalyst = container("theurgy:mercury_catalyst").expect("catalyst");
         assert_eq!(catalyst.inputs, vec![0]);
-        assert!(catalyst.outputs.is_empty());
+        assert_eq!(catalyst.outputs, vec![0]);
 
         let result = container("theurgy:reformation_result_pedestal").expect("result pedestal");
         assert!(result.inputs.is_empty());
