@@ -112,6 +112,12 @@ name = "theurgy_worldgen"
 source = "worldgen.rs"
 
 [[module]]
+id = "model_data"
+file = "crates/horizon-client/src/game.rs"
+name = "theurgy_model_data"
+source = "model_data.rs"
+
+[[module]]
 id = "render"
 file = "crates/horizon-client/src/game.rs"
 name = "theurgy_render"
@@ -300,3 +306,43 @@ hook_version = 1
 kind = "HEAD"
 helper = "hooks/be_bounds.rs"
 bindings = [{ name = "pos", ty = "[i32; 3]", value = "pos" }, { name = "block", ty = "&str", value = "block" }, { name = "state", ty = "horizon_world::registry::BlockStateId", value = "state" }, { name = "entity", ty = "&horizon_client::containers::ModBlockEntity", value = "entity" }, { name = "bounds", ty = "&mut [f32; 6]", value = "bounds" }]
+
+[[injection]]
+id = "state_for_placement"
+hook = "state_for_placement"
+hook_version = 1
+kind = "HEAD"
+helper = "hooks/state_for_placement.rs"
+bindings = [{ name = "level", ty = "&crate::game::GameLevel<'_>", value = "&*self" }, { name = "state", ty = "horizon_world::registry::BlockStateId", value = "state" }, { name = "context", ty = "&horizon_world::level::PlacementContext", value = "context" }, { name = "fluid", ty = "horizon_world::fluid::FluidState", value = "fluid" }, { name = "answer", ty = "&mut Option<Option<horizon_world::registry::BlockStateId>>", value = "answer" }]
+
+[[injection]]
+id = "block_signal"
+hook = "block_signal"
+hook_version = 1
+kind = "HEAD"
+helper = "hooks/block_signal.rs"
+bindings = [{ name = "level", ty = "&crate::game::GameLevel<'_>", value = "&*self" }, { name = "_dimension", ty = "crate::game::LevelDimension", value = "dimension" }, { name = "pos", ty = "horizon_core::position::BlockPos", value = "pos" }, { name = "state", ty = "horizon_world::registry::BlockStateId", value = "state" }, { name = "face", ty = "horizon_core::geometry::Direction", value = "face" }, { name = "_direct", ty = "bool", value = "direct" }, { name = "signal", ty = "&mut i32", value = "signal" }]
+
+[[injection]]
+id = "is_signal_source"
+hook = "is_signal_source"
+hook_version = 1
+kind = "HEAD"
+helper = "hooks/is_signal_source.rs"
+bindings = [{ name = "level", ty = "&crate::game::GameLevel<'_>", value = "&*self" }, { name = "state", ty = "horizon_world::registry::BlockStateId", value = "state" }, { name = "source", ty = "&mut bool", value = "source" }]
+
+[[injection]]
+id = "has_analog_output"
+hook = "has_analog_output"
+hook_version = 1
+kind = "HEAD"
+helper = "hooks/has_analog_output.rs"
+bindings = [{ name = "level", ty = "&crate::game::GameLevel<'_>", value = "&*self" }, { name = "state", ty = "horizon_world::registry::BlockStateId", value = "state" }, { name = "output", ty = "&mut bool", value = "output" }]
+
+[[injection]]
+id = "analog_output"
+hook = "analog_output"
+hook_version = 1
+kind = "HEAD"
+helper = "hooks/analog_output.rs"
+bindings = [{ name = "level", ty = "&crate::game::GameLevel<'_>", value = "&*self" }, { name = "_dimension", ty = "crate::game::LevelDimension", value = "dimension" }, { name = "pos", ty = "horizon_core::position::BlockPos", value = "pos" }, { name = "state", ty = "horizon_world::registry::BlockStateId", value = "state" }, { name = "_face", ty = "horizon_core::geometry::Direction", value = "face" }, { name = "output", ty = "&mut i32", value = "output" }]

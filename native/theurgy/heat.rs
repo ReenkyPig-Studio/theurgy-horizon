@@ -69,7 +69,7 @@ pub fn tick(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut ModBlo
         }
     }
     let lit = remaining > 0;
-    host::set_int(&mut entity.nbt, "remainingLitTime", remaining);
+    entity.nbt.insert(JavaString::from("remainingLitTime"), horizon_world::nbt::Tag::Short(remaining as i16));
     if was_lit != lit || turned_on {
         game.native_set_block_property_with(pos, "lit", if lit { "true" } else { "false" }, 3);
         game.native_block_entity_sync(pos);
@@ -85,38 +85,28 @@ pub fn tick(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut ModBlo
 /// Java re-checks every 20 game ticks and caches; the cache is an
 /// optimisation, not different state, so the port reads the source of truth
 /// on every call. That also avoids a stale cache after a save/reload.
-pub fn heated(game: &crate::game::Game<'_>, pos: [i32; 3]) -> bool {
-    let below = [pos[0], pos[1] - 1, pos[2]];
-    if game.native_block(below) == BRAZIER
-        && let Some(BlockEntity::Mod(brazier)) = game.world.block_entities.get(&key(below))
-        && host::int(&brazier.nbt, "remainingLitTime", 0) > 0
-    {
-        return true;
-    }
+pub fn heated(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut ModBlockEntity) -> bool {
     let now = game.world.game_time;
-    let until = match game.world.block_entities.get(&key(pos)) {
-        Some(BlockEntity::Mod(entity)) => host::int(&entity.nbt, "hotUntil", 0),
-        _ => 0,
-    };
-    let _ = HEAT_CHECK_INTERVAL;
-    i64::from(until) > now
-}
+    if entity.data.len() < 7 {
+        entity.data.resize(7, 0);
+    }
+    if now % HEAT_CHECK_INTERVAL != 0 {
+        return entity.data[6] != 0;
+    }
 
-/// Extends the heat receiver at `pos` for the caloric flux emitter, Java's
-/// `CraftingHeatReceiver.setHotUntil(now + 20*6)`. The emitter pays 100 flux.
-pub fn set_hot_until(game: &crate::game::Game<'_>, pos: [i32; 3], until: i32) -> bool {
-    let Some(BlockEntity::Mod(_)) = game.world.block_entities.get(&key(pos)) else {
-        return false;
-    };
-    let Some(BlockEntity::Mod(entity)) = game.world.block_entities.get(&key(pos)) else {
-        return false;
-    };
-    let _ = entity;
-    // The world is read-only through `Game` in the tick context; the caller
-    // that owns `&mut Game` (flux) writes the field through
-    // `native_with_mod_block_entity`.
-    let _ = until;
-    true
+    let below = [pos[0], pos[1] - 1, pos[2]];
+    let below_hot = game.native_block(below) == BRAZIER
+        && (game.native_block_property(below, "lit").as_deref() == Some("true")
+            || game.world.block_entities.get(&key(below)).is_some_and(|block| {
+                matches!(block, BlockEntity::Mod(brazier) if host::int(&brazier.nbt, "remainingLitTime", 0) > 0)
+            }));
+    let hot = below_hot || i64::from(host::int(&entity.nbt, "hotUntil", 0)) > now;
+    let was_hot = entity.data[6] != 0;
+    entity.data[6] = i32::from(hot);
+    if was_hot != hot && game.native_block_property(pos, "lit").is_some() {
+        game.native_set_block_property_with(pos, "lit", if hot { "true" } else { "false" }, 3);
+    }
+    hot
 }
 
 /// The value a caloric flux emitter should write after a successful transfer.

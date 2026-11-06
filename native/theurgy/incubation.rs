@@ -220,7 +220,7 @@ fn tick_incubator(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut 
     let sulfur_stack = vessel_input(game, sulfur);
 
     let has_input = mercury_stack.is_some() && salt_stack.is_some() && sulfur_stack.is_some();
-    let is_heated = is_heated(game, pos);
+    let is_heated = is_heated(game, pos, entity);
 
     if !has_input {
         if state.stop() > 0 {
@@ -300,8 +300,8 @@ fn vessel_input(game: &mut crate::game::Game<'_>, at: [i32; 3]) -> Option<ItemSt
 
 /// Whether the incubator is currently heated (`HeatConsumerBehaviour.isHeated`).
 /// The brazier below and caloric-flux `hotUntil` state are both authoritative.
-fn is_heated(game: &crate::game::Game<'_>, pos: [i32; 3]) -> bool {
-    crate::game::theurgy_heat::heated(game, pos)
+fn is_heated(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut ModBlockEntity) -> bool {
+    crate::game::theurgy_heat::heated(game, pos, entity)
 }
 
 /// `TagRecipeResult.getStack`: resolve the first registered item in tag order,

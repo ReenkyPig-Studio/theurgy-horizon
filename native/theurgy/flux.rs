@@ -760,6 +760,7 @@ fn tick_caloric_emitter(game: &mut crate::game::Game<'_>, _pos: [i32; 3], entity
     let valid_target = game
         .native_with_mod_block_entity(target, |target_entity| {
             crate::game::theurgy_selection::heat_receiver(&target_entity.id)
+                && target_entity.data.get(4).copied().unwrap_or(0) == 0
         })
         .unwrap_or(false);
     if !valid_target {
