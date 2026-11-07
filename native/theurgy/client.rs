@@ -148,6 +148,7 @@ fn draw_lines(
 /// Opens the native Hermetica. False means the current platform cannot open a
 /// client screen (headless/server/already covered by another screen).
 pub fn open_book(game: &mut crate::game::Game<'_>) -> bool {
+    crate::game::theurgy_recipe_client::close();
     crate::game::theurgy_filter_client::close();
     if !game.native_mod_screen_open("theurgy") {
         return false;
@@ -181,6 +182,9 @@ pub fn render_post(
     screen: &NativeScreenView<'_>,
 ) {
     if screen.id != "mod" || game.native_mod_screen() != Some("theurgy") {
+        return;
+    }
+    if crate::game::theurgy_recipe_client::render(game, batch, screen) {
         return;
     }
     if crate::game::theurgy_filter_client::render(game, batch, screen) {
@@ -274,6 +278,9 @@ pub fn mouse_pressed(
     if screen.id != "mod" || game.native_mod_screen() != Some("theurgy") || button != 0 {
         return;
     }
+    if crate::game::theurgy_recipe_client::click(game, screen, button, canceled) {
+        return;
+    }
     if crate::game::theurgy_filter_client::click(game, screen, button, canceled) {
         return;
     }
@@ -333,6 +340,9 @@ pub fn mouse_scrolled(
     canceled: &mut bool,
 ) {
     if screen.id != "mod" || game.native_mod_screen() != Some("theurgy") {
+        return;
+    }
+    if crate::game::theurgy_recipe_client::scroll(game, screen, scroll[1], canceled) {
         return;
     }
     if crate::game::theurgy_filter_client::scroll(screen, game, scroll[1], canceled) {
@@ -443,6 +453,7 @@ pub fn mods(mods: &mut Vec<horizon_client::mod_api::NativeMod>) {
         keys: vec![
             ["change_item_mode".to_owned(), "key.theurgy.change_item_mode".to_owned(), String::new()],
             ["show_held_stack_fit_outline".to_owned(), "key.theurgy.show_held_stack_fit_outline".to_owned(), String::new()],
+            ["open_recipes".to_owned(), "Open Theurgy Recipes".to_owned(), "key.keyboard.r".to_owned()],
         ],
         ..Default::default()
     });
@@ -456,33 +467,73 @@ pub fn key(game: &mut crate::game::Game<'_>, key: &str, pressed: bool) {
     if !binding.is_empty() && binding == key {
         crate::game::theurgy_items::key_change_mode(game);
     }
+    let recipe_binding = game.native_mod_key("theurgy", "open_recipes", "key.keyboard.r");
+    if recipe_binding == key {
+        crate::game::theurgy_recipe_client::open(game);
+    }
 }
 
-/// ItemHUDProvider's wand text. Kept small and above the hotbar so it does
-/// not hide block-target tooltips or the minimap.
+/// ItemHUDProvider's wand text plus the native Jade-style target panel.
 pub fn hud(
     game: &mut crate::game::Game<'_>,
     batch: &mut HudBatch,
     corners: &mut horizon_client::extras_hud::Corners,
 ) {
-    let Some(stack) = game.native_carried_stack(game.selected as i32).cloned() else { return; };
-    if stack.item.as_ref() != "theurgy:mercurial_wand" {
+    let mut lines = Vec::new();
+    if let Some(stack) = game.native_carried_stack(game.selected as i32).cloned()
+        && stack.item.as_ref() == "theurgy:mercurial_wand"
+    {
+        let mode = crate::game::theurgy_items::wand_mode(game, &stack);
+        let mode_name = match mode {
+            0 => "Cycle selected direction",
+            1 => "Enable/Disable",
+            2 => "Select frequency",
+            3 => "Set selected frequency",
+            4 => "Cycle capacitor side",
+            _ => "Unknown mode",
+        };
+        let frequency = crate::game::theurgy_items::component_i32(game, &stack, "theurgy:selected_frequency").unwrap_or(0);
+        lines.push(mode_name.to_owned());
+        lines.push(format!("Frequency: {frequency}"));
+    }
+    if let Some(hit) = game.native_raycast(6.0)
+        && hit.block.starts_with("theurgy:")
+    {
+        lines.push(hit.block.clone());
+        let entity = game.native_with_mod_block_entity([hit.block_x, hit.block_y, hit.block_z], |entity| entity.nbt.clone());
+        if let Some(nbt) = entity {
+            let progress = crate::game::theurgy_host::int(&nbt, "progress", 0);
+            let total = crate::game::theurgy_host::int(&nbt, "totalTime", 0);
+            if total > 0 {
+                lines.push(format!("Progress: {progress} / {total}"));
+            }
+            if let Some(horizon_world::nbt::Tag::Compound(handler)) = nbt.get(&horizon_world::nbt::JavaString::from("mercuryFluxHandler")) {
+                let energy = crate::game::theurgy_host::int(handler, "energy", 0);
+                lines.push(format!("Mercury flux: {energy}"));
+            }
+            if let Some(horizon_world::nbt::Tag::List(fluids)) = nbt.get(&horizon_world::nbt::JavaString::from("fluids")) {
+                if let Some(horizon_world::nbt::Tag::Compound(tank)) = fluids.first() {
+                    let amount = crate::game::theurgy_host::int(tank, "Amount", 0);
+                    if amount > 0 {
+                        let fluid = match tank.get(&horizon_world::nbt::JavaString::from("Fluid")) {
+                            Some(horizon_world::nbt::Tag::String(id)) => id.to_string_lossy(),
+                            _ => "fluid".to_owned(),
+                        };
+                        lines.push(format!("{fluid}: {amount} mB"));
+                    }
+                }
+            }
+        }
+    }
+    if lines.is_empty() {
         return;
     }
-    let mode = crate::game::theurgy_items::wand_mode(game, &stack);
-    let mode_name = match mode {
-        0 => "Cycle selected direction",
-        1 => "Enable/Disable",
-        2 => "Select frequency",
-        3 => "Set selected frequency",
-        4 => "Cycle capacitor side",
-        _ => "Unknown mode",
-    };
-    let frequency = crate::game::theurgy_items::component_i32(game, &stack, "theurgy:selected_frequency").unwrap_or(0);
-    let (x, y) = corners.place(horizon_client::extras::Corner::TopLeft, 166.0, 27.0);
-    game.native_fill(batch, [x, y, 166.0, 27.0], 0x7800_0000);
-    game.native_text(batch, mode_name, [x + 4.0, y + 4.0], 0xE7D59A, false);
-    game.native_text(batch, &format!("Frequency: {frequency}"), [x + 4.0, y + 16.0], 0xFFFFFF, false);
+    let height = 7.0 + lines.len() as f32 * 10.0;
+    let (x, y) = corners.place(horizon_client::extras::Corner::TopLeft, 196.0, height);
+    game.native_fill(batch, [x, y, 196.0, height], 0x7800_0000);
+    for (index, line) in lines.iter().enumerate() {
+        game.native_text(batch, line, [x + 4.0, y + 4.0 + index as f32 * 10.0], if index == 0 { 0xE7D59A } else { 0xFFFFFF }, false);
+    }
 }
 
 #[cfg(test)]
