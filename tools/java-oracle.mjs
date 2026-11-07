@@ -148,10 +148,12 @@ if(trace) {
     passed:passed.length,failed,ids:passed,complete};
 }
 const passed=code===0&&(Boolean(passMatch)||genericPass)&&(!trace||traces.complete);
+const worldgenMarker=text.match(/THEURGY_WORLDGEN_TRACE=([^;]+);SEED=([^;]+);ORIGIN=([^;]+);COUNT=(\d+)/);
+const worldgen=worldgenMarker?{path:worldgenMarker[1],seed:worldgenMarker[2],origin:worldgenMarker[3],oreCount:Number(worldgenMarker[4])}:null;
 const result={status:passed?(trace?'JAVA_STATE_ORACLE_PASS':'JAVA_GAMETESTS_PASS'):'JAVA_GAMETESTS_FAIL',
   kind:trace?'real pinned Java per-tick block/BE/item state oracle; not Rust differential evidence':'upstream Java baseline, not Rust differential evidence',
   source:{tag:source.tag,revision:source.revision,minecraft:source.minecraft},command:'gradlew runGameTestServer --no-daemon --console=plain',
-  exitCode:code,signal,tests:passMatch?Number(passMatch[1]):null,log:logPath,markers,instrumented,traces};
+  exitCode:code,signal,tests:passMatch?Number(passMatch[1]):null,log:logPath,markers,instrumented,worldgen,traces};
 await fsp.writeFile(path.join(out,'result.json'),JSON.stringify(result,null,2));
 console.log(JSON.stringify(result,null,2));
 if(!passed)process.exitCode=1;

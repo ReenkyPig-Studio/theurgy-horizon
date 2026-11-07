@@ -57,7 +57,7 @@ if(!['plan','stage','check','build','check-headless','build-headless'].includes(
   throw new Error('plan | stage | check | build | check-headless | build-headless');
 const base=cmd.replace('-headless','');
 const headless=cmd.endsWith('-headless');
-const stage=path.join(root,'target/horizon-stage');
+const stage=path.join(root,'target/horizon-stages',String(process.pid));
 await fs.mkdir(path.join(root,'target'),{recursive:true});
 if(cmd==='plan') {
   await run(config.mixins,['plan','--workspace',config.horizonSource,'--mods',path.join(root,'native'),

@@ -92,7 +92,7 @@ async function call(args) {
 }
 
 async function launch() {
-  const args=['launch','--game',exe,'--world',spec.world,'--seed','42','--creative','--wait',
+  const args=['launch','--game',exe,'--world',spec.world,'--seed',process.env.THEURGY_WORLD_SEED??'42','--creative','--wait',
     '--resources',path.join(version,'.local/horizon-client/26.3'),
     '--game-dir',gameHome,'--home',gameHome,'--render-distance','2'];
   if(!spec.naturalTerrain)args.push('--test-terrain');
