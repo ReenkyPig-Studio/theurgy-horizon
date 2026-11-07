@@ -108,6 +108,7 @@ pub fn state_for_placement(
             | "theurgy:sulfuric_flux_emitter"
     );
     if connector {
+        let requested = descriptor.properties.get("facing").cloned();
         let mut facing = context.face;
         let neighbor = level.block_state(context.hit_pos);
         if level.registry.state(neighbor).is_some_and(|other| {
@@ -116,10 +117,21 @@ pub fn state_for_placement(
         }) {
             facing = facing.opposite();
         }
-        descriptor.properties.insert("facing".into(), facing_name(facing).into());
+        // An explicitly requested non-default state (commands/fixtures) must
+        // not be replaced by the click's default north face. Ordinary item
+        // placement still uses the clicked face, as Java getStateForPlacement.
+        let facing = requested.filter(|value| value != "north")
+            .unwrap_or_else(|| facing_name(facing).into());
+        descriptor.properties.insert("facing".into(), facing);
     } else if matches!(block, "theurgy:fermentation_vat" | "theurgy:digestion_vat") {
-        descriptor.properties.insert("facing".into(), horizontal_yaw(context.yaw).into());
-        descriptor.properties.insert("open".into(), "true".into());
+        let facing = descriptor.properties.get("facing").cloned()
+            .filter(|value| value != "north")
+            .unwrap_or_else(|| horizontal_yaw(context.yaw).into());
+        descriptor.properties.insert("facing".into(), facing);
+        let open = descriptor.properties.get("open").cloned()
+            .filter(|value| value == "false")
+            .unwrap_or_else(|| "true".into());
+        descriptor.properties.insert("open".into(), open);
     }
     if descriptor.properties.contains_key("waterlogged") {
         descriptor.properties.insert(
@@ -284,7 +296,7 @@ pub fn inventory_tick(game: &mut crate::game::Game<'_>, slot: i32) {
 }
 
 /// Read a registered native component from `stack` as a string.
-fn component_string(
+pub(crate) fn component_string(
     game: &crate::game::Game<'_>,
     stack: &ItemStack,
     id: &str,
@@ -307,7 +319,7 @@ fn component_bool(game: &crate::game::Game<'_>, stack: &ItemStack, id: &str) -> 
 }
 
 /// Read a registered native component as an integer.
-fn component_i32(game: &crate::game::Game<'_>, stack: &ItemStack, id: &str) -> Option<i32> {
+pub(crate) fn component_i32(game: &crate::game::Game<'_>, stack: &ItemStack, id: &str) -> Option<i32> {
     match game.native_component(stack, id).ok().flatten()? {
         Tag::Int(value) => Some(*value),
         Tag::Short(value) => Some(*value as i32),
@@ -607,7 +619,7 @@ const WAND_MODE_NAMES: [&str; 5] = [
     "cycle_direction", "switch_logistics_enabled", "select_frequency",
     "set_selected_frequency", "cycle_capacitor_side",
 ];
-fn wand_mode(game: &crate::game::Game<'_>, stack: &ItemStack) -> i32 {
+pub(crate) fn wand_mode(game: &crate::game::Game<'_>, stack: &ItemStack) -> i32 {
     // MercurialWandItemMode.Type.CODEC persists names, not ordinals. Accept
     // legacy integer stacks, but always write the Java string representation.
     if let Some(mode) = component_i32(game, stack, MERCURIAL_WAND_MODE) {
@@ -690,16 +702,39 @@ fn wand_use_on(game: &mut crate::game::Game<'_>, stack: &ItemStack, pos: [i32; 3
         _ => false,
     }
 }
-pub fn mouse_scroll(game: &mut crate::game::Game<'_>, _scroll: [f64; 2], accumulated: [i32; 2], canceled: &mut bool) {
-    if *canceled || !is_sneaking(game) || accumulated[1] == 0 { return; }
+fn change_wand_mode(game: &mut crate::game::Game<'_>, direction: i32) -> bool {
     let slot = game.selected as i32;
-    let Some(held) = game.native_carried_stack(slot).cloned() else { return; };
-    if held.item.as_ref() != MERCURIAL_WAND { return; }
+    let Some(held) = game.native_carried_stack(slot).cloned() else { return false; };
+    if held.item.as_ref() != MERCURIAL_WAND { return false; }
     let current = wand_mode(game, &held);
-    let next = if accumulated[1] > 0 { (current + 1).rem_euclid(5) } else { (current - 1).rem_euclid(5) };
+    let next = (current + direction).rem_euclid(5);
     set_held_component(game, MERCURIAL_WAND_MODE,
         Tag::String(JavaString::from(WAND_MODE_NAMES[next as usize])));
-    *canceled = true;
+    let frequency = horizon_client::text::Text::literal(
+        component_i32(game, &held, SELECTED_FREQUENCY).unwrap_or(0).to_string());
+    match next {
+        0 => overlay(game, "item.mode.theurgy.mercurial_wand.rotate_selected_direction", &[]),
+        1 => overlay(game, "item.mode.theurgy.mercurial_wand.switch_logistics_enabled", &[]),
+        2 => overlay(game, "item.mode.theurgy.mercurial_wand.select_frequency", &[frequency.clone()]),
+        3 => overlay(game, "item.mode.theurgy.mercurial_wand.set_selected_frequency", &[frequency]),
+        4 => overlay(game, "item.mode.theurgy.mercurial_wand.cycle_capacitor_side", &[]),
+        _ => {}
+    }
+    true
+}
+
+/// KeyMappingsRegistry.CHANGE_ITEM_MODE sends MessageSetMode(1), the same
+/// server-side transition as one positive mode-scroll step without sneaking.
+pub fn key_change_mode(game: &mut crate::game::Game<'_>) -> bool {
+    change_wand_mode(game, 1)
+}
+
+pub fn mouse_scroll(game: &mut crate::game::Game<'_>, _scroll: [f64; 2], accumulated: [i32; 2], canceled: &mut bool) {
+    if *canceled || !is_sneaking(game) || accumulated[1] == 0 { return; }
+    let direction = if accumulated[1] > 0 { 1 } else { -1 };
+    if change_wand_mode(game, direction) {
+        *canceled = true;
+    }
 }
 
 fn bucket_fluid(item: &str) -> Option<&'static str> {
@@ -884,6 +919,83 @@ pub fn right_click_block(
     }
 }
 
+fn translated_source_block(game: &crate::game::Game<'_>, source: &str) -> Option<String> {
+    if game.pack.assets.registry.default_state(source).is_some() {
+        return Some(source.to_owned());
+    }
+    let (namespace, path) = source.split_once(':')?;
+    let mut translated = path.to_owned();
+    for (needle, replacement) in [("raw_", ""), ("_nugget", ""), ("_ingot", ""), ("_dust", ""), ("_block", "")] {
+        if translated.contains(needle) {
+            translated = translated.replace(needle, replacement);
+            break;
+        }
+    }
+    if translated.contains("deepslate_") {
+        translated = translated.replace("deepslate_", "");
+    } else if translated.contains("_ore") {
+        translated = translated.replace("_ore", "");
+    }
+    translated.push_str("_ore");
+    let candidate = format!("{namespace}:{translated}");
+    game.pack.assets.registry.default_state(&candidate).map(|_| candidate)
+}
+
+fn translated_source_tag(game: &crate::game::Game<'_>, source: &str) -> Option<String> {
+    let exists = |tag: &str| game.res.items().block_tags.get(tag).is_some_and(|blocks| !blocks.is_empty());
+    if exists(source) {
+        return Some(source.to_owned());
+    }
+    if source == "minecraft:coals" {
+        return Some("c:ores/coal".to_owned());
+    }
+    let (namespace, path) = source.split_once(':')?;
+    let mut translated = path.to_owned();
+    for prefix in ["ingots/", "nuggets/", "raw_materials/", "dusts/", "storage_blocks/", "gems/"] {
+        if translated.contains(prefix) {
+            translated = translated.replace(prefix, "ores/");
+            break;
+        }
+    }
+    if translated.ends_with("/netherite") {
+        translated = translated.replace("/netherite", "/netherite_scrap");
+    }
+    let candidate = format!("{namespace}:{translated}");
+    exists(&candidate).then_some(candidate)
+}
+
+/// DivinationRodRecipe.assemble: copy the sulfur's source into the rod's
+/// linked block/tag components on the authoritative crafting result.
+pub fn prepare_item_craft(
+    game: &mut crate::game::Game<'_>,
+    result: &mut Option<ItemStack>,
+) {
+    let Some((recipe, _)) = game.craft_recipe() else { return; };
+    if !recipe.contains("sulfur_attuned_divination_rod") {
+        return;
+    }
+    let Some(result) = result else { return; };
+    if component_string(game, result, DIVINATION_LINKED_BLOCK).is_some()
+        || component_string(game, result, DIVINATION_LINKED_TAG).is_some()
+    {
+        return;
+    }
+    for stack in game.craft_grid.iter().flatten() {
+        if let Some(source) = component_string(game, stack, "theurgy:source_item") {
+            if let Some(block) = translated_source_block(game, &source) {
+                result.data_mut().set_other(DIVINATION_LINKED_BLOCK, Some(Tag::String(JavaString::from(block.as_str()))));
+                break;
+            }
+        }
+        if let Some(source) = component_string(game, stack, "theurgy:source_tag") {
+            if let Some(tag) = translated_source_tag(game, &source) {
+                result.data_mut().set_other(DIVINATION_LINKED_TAG, Some(Tag::String(JavaString::from(tag.as_str()))));
+                break;
+            }
+        }
+    }
+}
+
 /// Start the Java timed use. The actual scan and durability cost happen only
 /// when the full duration completes; an early release restores the old result.
 pub fn use_item(
@@ -892,6 +1004,13 @@ pub fn use_item(
     claimed: &mut bool,
 ) {
     if *claimed { return; }
+    if stack.item.as_ref() == "theurgy:the_hermetica" {
+        // TheHermeticaItem.use -> Modonomicon's client book. Headless and
+        // dedicated-server calls simply claim the use without a fake window.
+        let _ = crate::game::theurgy_client::open_book(game);
+        *claimed = true;
+        return;
+    }
     if stack.item.as_ref() == MERCURIAL_WAND && wand_mode(game, stack) == 2 {
         let frequency = component_i32(game, stack, SELECTED_FREQUENCY).unwrap_or(0) + 1;
         set_held_component(game, SELECTED_FREQUENCY, Tag::Int(frequency));
@@ -1140,6 +1259,39 @@ pub fn tooltip(
             _ => 1_000,
         };
         lines.push((horizon_client::text::Text::literal(format!("Mercury Flux: {stored} / {capacity}")), u32::MAX));
+    }
+    let sulfur = stack.item.starts_with("theurgy:alchemical_sulfur_");
+    let niter = stack.item.starts_with("theurgy:alchemical_niter_");
+    let salt = stack.item.starts_with("theurgy:alchemical_salt_");
+    if sulfur || niter || salt {
+        // AlchemicalDerivativeItem.getTooltipData and AlchemicalSaltItem:
+        // source name, [tier], then sulfur/niter type. The pinned lang has a
+        // `.source` entry for every generated derivative, including tag-based
+        // and direct-item sources.
+        let source_key = format!("item.{}.source", stack.item.replace(':', "."));
+        lines.push((horizon_client::text::Text::translate(&source_key, &[]), 0xFF55_FF55));
+        let tier = if niter {
+            ["abundant", "common", "commond", "rare", "precious"].into_iter()
+                .find(|tier| stack.item.ends_with(&format!("_{tier}")))
+                .map(|tier| if tier == "commond" { "common" } else { tier })
+        } else if sulfur {
+            ["abundant", "common", "rare", "precious"].into_iter().find(|tier| {
+                game.res.items().item_in_tag(&format!("theurgy:alchemical_sulfurs/{tier}"), &stack.item)
+            })
+        } else {
+            None
+        };
+        if let Some(tier) = tier {
+            lines.push((horizon_client::text::Text::translate(&format!("theurgytheurgy.alchemical_tier.{tier}"), &[]), 0xFFAA_AA00));
+        }
+        if niter {
+            lines.push((horizon_client::text::Text::translate("item.theurgy.alchemical_derivative.type.niter", &[]), 0xFF55_5555));
+        } else if sulfur {
+            let kind = ["animals", "crops", "earthen_matters", "gems", "logs", "metals", "mobs", "other_minerals"]
+                .into_iter().find(|kind| game.res.items().item_in_tag(&format!("theurgy:alchemical_sulfurs/{kind}"), &stack.item))
+                .unwrap_or("misc");
+            lines.push((horizon_client::text::Text::translate(&format!("theurgytheurgy.sulfur_type.{kind}"), &[]), 0xFF55_5555));
+        }
     }
     if !stack.item.contains("divination_rod") {
         return;

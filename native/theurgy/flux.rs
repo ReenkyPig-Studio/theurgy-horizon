@@ -464,7 +464,15 @@ fn save_catalyst_conversion(nbt: &mut Compound, state: &CatalystConversion) {
     );
 }
 
+fn sync_enabled_from_redstone(game: &mut crate::game::Game<'_>, pos: [i32; 3]) {
+    let enabled = game.native_neighbor_signal(game.dim.id(), pos) == 0;
+    if game.native_block_property(pos, "enabled").as_deref() != Some(if enabled { "true" } else { "false" }) {
+        game.native_set_block_property_with(pos, "enabled", if enabled { "true" } else { "false" }, 3);
+    }
+}
+
 fn tick_catalyst(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut ModBlockEntity) {
+    sync_enabled_from_redstone(game, pos);
     let mut conversion = load_catalyst_conversion(&entity.nbt);
     let stored_energy = tank_energy(&entity.nbt, "mercuryFluxHandler");
     // Non-receiving: only internal generation can fill this buffer.
@@ -514,9 +522,10 @@ fn tick_catalyst(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut M
     // Push flux out every PUSH_TICK_INTERVAL ticks when enabled.
     let game_time = game.world.game_time;
     if game_time % i64::from(PUSH_TICK_INTERVAL) == 0 {
-        let enabled = enabled(&entity.nbt);
+        let enabled = enabled(&entity.nbt)
+            && game.native_block_property(pos, "enabled").as_deref() != Some("false");
         if enabled {
-            push_flux(game, pos, entity, &mut buffer, &Direction::ALL);
+            push_flux(game, pos, entity, &mut buffer, &Direction::ALL, None);
             store_energy_child_or_discard(&mut entity.nbt, "mercuryFluxHandler", buffer.energy);
         }
     }
@@ -542,32 +551,64 @@ fn push_flux(
     entity: &mut ModBlockEntity,
     buffer: &mut SimpleMercuryFluxHandler,
     dirs: &[Direction],
+    modes: Option<&[(Direction, SideMode); 6]>,
 ) {
-    let mut targets: Vec<[i32; 3]> = Vec::new();
+    let mut directions: Vec<Direction> = Vec::new();
     for dir in dirs.iter().copied() {
+        if let Some(modes) = modes {
+            let mode = modes.iter().find(|(candidate, _)| *candidate == dir).map(|(_, mode)| *mode).unwrap_or(SideMode::None);
+            if !mode.can_extract() {
+                continue;
+            }
+        }
         let neighbor = dir.offset(pos);
-        if game.native_with_mod_block_entity(neighbor, |neighbor_entity| {
-            receiver_limits(&neighbor_entity.id).is_some()
-        }).unwrap_or(false) {
-            targets.push(neighbor);
+        let neighbor_enabled = game.native_block_property(neighbor, "enabled").as_deref() != Some("false");
+        let allowed = game.native_with_mod_block_entity(neighbor, |neighbor_entity| {
+            if receiver_limits(&neighbor_entity.id).is_none() {
+                return false;
+            }
+            if neighbor_entity.id == "theurgy:mercury_capacitor" {
+                if !neighbor_enabled || !enabled(&neighbor_entity.nbt) {
+                    return false;
+                }
+                let neighbor_modes = load_side_modes(&neighbor_entity.nbt);
+                let side_mode = neighbor_modes.iter().find(|(candidate, _)| *candidate == dir.opposite()).map(|(_, mode)| *mode).unwrap_or(SideMode::None);
+                if !side_mode.can_insert() {
+                    return false;
+                }
+            }
+            true
+        }).unwrap_or(false);
+        if allowed {
+            directions.push(dir);
         }
     }
-    if targets.is_empty() {
+    if directions.is_empty() {
         return;
     }
-    let total = total_to_push(buffer.energy, targets.len());
+    // Direction.allShuffled(level.random) for both catalyst and capacitor.
+    use horizon_core::random::RandomSource;
+    for index in (1..directions.len()).rev() {
+        let other = game.world.random.next_int_bound((index + 1) as i32).unwrap_or(0) as usize;
+        directions.swap(index, other);
+    }
+    let total = total_to_push(buffer.energy, directions.len());
     if total <= 0 {
         return;
     }
-    let shares = split_evenly(total, targets.len());
-    for (neighbor, share) in targets.iter().zip(shares.iter()) {
+    let shares = split_evenly(total, directions.len());
+    for (dir, share) in directions.iter().zip(shares.iter()) {
+        let neighbor = dir.offset(pos);
         if *share <= 0 {
             continue;
         }
-        let accepted = game.native_with_mod_block_entity(*neighbor, |neighbor_entity| {
+        let accepted = game.native_with_mod_block_entity(neighbor, |neighbor_entity| {
             let Some((capacity, max_insert)) = receiver_limits(&neighbor_entity.id) else {
                 return 0;
             };
+            if neighbor_entity.id == "theurgy:logistics_mercury_flux_connector" {
+                return crate::game::theurgy_logistics::receive_mercury_flux(neighbor_entity, *share);
+            }
             let mut neighbor_buffer = SimpleMercuryFluxHandler::with_energy(
                 capacity,
                 max_insert,
@@ -624,14 +665,14 @@ fn tick_capacitor(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut 
     save_side_modes(&mut entity.nbt, &modes);
 
     let game_time = game.world.game_time;
-    if game_time % i64::from(PUSH_TICK_INTERVAL) == 0 {
+    if game_time % i64::from(PUSH_TICK_INTERVAL) == 0 && game.native_block_property(pos, "enabled").as_deref() != Some("false") {
         let mut buffer = SimpleMercuryFluxHandler::with_energy(
             CAPACITOR_CAPACITY,
             CAPACITOR_CAPACITY,
             CAPACITOR_CAPACITY,
             energy,
         );
-        push_flux(game, pos, entity, &mut buffer, &[Direction::Up, Direction::Down]);
+        push_flux(game, pos, entity, &mut buffer, &Direction::ALL, Some(&modes));
         store_energy_child_or_discard(&mut entity.nbt, "mercuryFluxHandler", buffer.energy);
     }
 }
@@ -644,7 +685,9 @@ fn tick_mercury_emitter(game: &mut crate::game::Game<'_>, _pos: [i32; 3], entity
     let energy = tank_energy(&entity.nbt, "mercuryFluxHandler").clamp(0, MERCURY_EMITTER_CAPACITY);
 
     let game_time = game.world.game_time;
-    if game_time % i64::from(MERCURY_EMITTER_TICK_INTERVAL) != 0 || !enabled(&entity.nbt) {
+    if game_time % i64::from(MERCURY_EMITTER_TICK_INTERVAL) != 0
+        || !enabled(&entity.nbt)
+        || game.native_block_property(_pos, "enabled").as_deref() == Some("false") {
         store_energy_child_or_discard(&mut entity.nbt, "mercuryFluxHandler", energy);
         return;
     }
@@ -664,6 +707,9 @@ fn tick_mercury_emitter(game: &mut crate::game::Game<'_>, _pos: [i32; 3], entity
                 let Some((capacity, max_insert)) = receiver_limits(&target_entity.id) else {
                     return 0;
                 };
+                if target_entity.id == "theurgy:logistics_mercury_flux_connector" {
+                    return crate::game::theurgy_logistics::receive_mercury_flux(target_entity, MERCURY_EMITTER_FLUX_PER_TRANSFER);
+                }
                 let stored = tank_energy(&target_entity.nbt, "mercuryFluxHandler")
                     .clamp(0, capacity);
                 let mut receiver = SimpleMercuryFluxHandler::with_energy(
@@ -739,6 +785,7 @@ fn selected_target(nbt: &Compound) -> Option<[i32; 3]> {
 }
 
 fn tick_caloric_emitter(game: &mut crate::game::Game<'_>, _pos: [i32; 3], entity: &mut ModBlockEntity) {
+    sync_enabled_from_redstone(game, _pos);
     let energy = tank_energy(&entity.nbt, "mercuryFluxHandler").clamp(0, CALORIC_CAPACITY);
     store_energy_child_or_discard(&mut entity.nbt, "mercuryFluxHandler", energy);
 
@@ -746,7 +793,8 @@ fn tick_caloric_emitter(game: &mut crate::game::Game<'_>, _pos: [i32; 3], entity
     if game_time % i64::from(CALORIC_TICK_INTERVAL) != 0 {
         return;
     }
-    let enabled = enabled(&entity.nbt);
+    let enabled = enabled(&entity.nbt)
+        && game.native_block_property(_pos, "enabled").as_deref() != Some("false");
     if !enabled {
         return;
     }

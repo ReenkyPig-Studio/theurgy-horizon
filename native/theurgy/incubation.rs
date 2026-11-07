@@ -191,6 +191,17 @@ pub fn tick(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut ModBlo
     }
 }
 
+fn update_connections(game: &mut crate::game::Game<'_>, pos: [i32; 3], vessels: &Vessels) {
+    for (property, connected) in [
+        ("north", vessels.mercury.is_some()),
+        ("east", vessels.salt.is_some()),
+        ("south", vessels.sulfur.is_some()),
+        ("west", false),
+    ] {
+        game.native_set_block_property_with(pos, property, if connected { "true" } else { "false" }, 3);
+    }
+}
+
 fn tick_incubator(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut ModBlockEntity) {
     // Rediscover the vessels from the world each tick so a broken/replaced vessel is
     // noticed immediately (Java defers this to the next query, which a tick matches).
@@ -201,6 +212,7 @@ fn tick_incubator(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut 
         }
     }
     let vessels = classify_neighbours(neighbours.iter().map(|(id, at)| (id.as_str(), *at)));
+    update_connections(game, pos, &vessels);
 
     let mut state = crate::game::theurgy_host::crafting(entity);
 

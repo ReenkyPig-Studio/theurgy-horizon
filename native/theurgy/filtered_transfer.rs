@@ -90,6 +90,10 @@ pub(in crate::game) struct NativeAttributeFilter {
 }
 
 impl NativeAttributeFilter {
+    pub(in crate::game) fn is_valid(&self) -> bool {
+        !self.rules.iter().any(|rule| matches!(rule, NativeAttributeRule::Unknown))
+    }
+
     pub(in crate::game) fn allows_item(&self, stack: &ItemStack) -> bool {
         if self.rules.is_empty() {
             return true;
