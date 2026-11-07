@@ -1,5 +1,5 @@
 {
-  "template": "minecraft:chest",
+  "template": "minecraft:stone",
   "item": true,
   "properties": {
     "hardness": 1,

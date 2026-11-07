@@ -1,9 +1,27 @@
 {
-  "template": "minecraft:barrel",
+  "template": "minecraft:stone",
   "item": true,
   "properties": {
     "hardness": 1,
     "explosion_resistance": 1,
     "requires_tool": false
+  },
+  "state_properties": {
+    "facing": {
+      "type": "enum",
+      "values": [
+        "north",
+        "south",
+        "east",
+        "west"
+      ]
+    },
+    "open": {
+      "type": "boolean"
+    }
+  },
+  "default_state": {
+    "facing": "north",
+    "open": "true"
   }
 }

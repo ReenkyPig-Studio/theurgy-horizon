@@ -1,5 +1,5 @@
 {
-  "template": "minecraft:chest",
+  "template": "minecraft:stone",
   "item": true,
   "properties": {
     "hardness": 1,
@@ -27,5 +27,11 @@
       ]
     }
   },
-  "default_state": {}
+  "default_state": {
+    "north": "false",
+    "east": "false",
+    "south": "false",
+    "west": "false",
+    "half": "lower"
+  }
 }

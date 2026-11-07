@@ -1,5 +1,5 @@
 {
-  "template": "minecraft:barrel",
+  "template": "minecraft:stone",
   "item": true,
   "properties": {
     "hardness": 1,
@@ -7,9 +7,23 @@
     "requires_tool": false
   },
   "state_properties": {
+    "facing": {
+      "type": "enum",
+      "values": [
+        "down",
+        "up",
+        "north",
+        "south",
+        "west",
+        "east"
+      ]
+    },
     "enabled": {
       "type": "boolean"
     }
   },
-  "default_state": {}
+  "default_state": {
+    "facing": "north",
+    "enabled": "true"
+  }
 }

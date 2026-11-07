@@ -1,4 +1,6 @@
 {
   "template": "minecraft:diamond",
-  "components": {}
+  "components": {
+    "theurgy:source_item": "minecraft:dark_oak_log"
+  }
 }

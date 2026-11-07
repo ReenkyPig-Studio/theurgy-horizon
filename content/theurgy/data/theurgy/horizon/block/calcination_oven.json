@@ -15,5 +15,7 @@
       ]
     }
   },
-  "default_state": {}
+  "default_state": {
+    "half": "lower"
+  }
 }

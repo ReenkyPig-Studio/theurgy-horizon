@@ -1,5 +1,5 @@
 {
-  "template": "minecraft:chest",
+  "template": "minecraft:stone",
   "item": true,
   "properties": {
     "hardness": 1,
@@ -11,5 +11,7 @@
       "type": "boolean"
     }
   },
-  "default_state": {}
+  "default_state": {
+    "enabled": "true"
+  }
 }
