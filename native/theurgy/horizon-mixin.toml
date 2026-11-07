@@ -410,6 +410,22 @@ helper = "hooks/be_bounds.rs"
 bindings = [{ name = "pos", ty = "[i32; 3]", value = "pos" }, { name = "block", ty = "&str", value = "block" }, { name = "state", ty = "horizon_world::registry::BlockStateId", value = "state" }, { name = "entity", ty = "&horizon_client::containers::ModBlockEntity", value = "entity" }, { name = "bounds", ty = "&mut [f32; 6]", value = "bounds" }]
 
 [[injection]]
+id = "screen_key_pressed"
+hook = "screen_key_pressed_pre"
+hook_version = 1
+kind = "HEAD"
+helper = "hooks/screen_key_pressed.rs"
+bindings = [{ name = "game", ty = "&crate::game::Game<'_>", value = "&*self" }, { name = "screen", ty = "&horizon_client::mod_api::NativeScreenView<'_>", value = "screen" }, { name = "key", ty = "&str", value = "key" }, { name = "_repeat", ty = "bool", value = "repeat" }, { name = "_modifiers", ty = "u32", value = "modifiers" }, { name = "canceled", ty = "&mut bool", value = "canceled" }]
+
+[[injection]]
+id = "screen_char_typed"
+hook = "screen_char_typed_pre"
+hook_version = 1
+kind = "HEAD"
+helper = "hooks/screen_char_typed.rs"
+bindings = [{ name = "game", ty = "&crate::game::Game<'_>", value = "&*self" }, { name = "screen", ty = "&horizon_client::mod_api::NativeScreenView<'_>", value = "screen" }, { name = "c", ty = "char", value = "c" }, { name = "_modifiers", ty = "u32", value = "modifiers" }, { name = "canceled", ty = "&mut bool", value = "canceled" }]
+
+[[injection]]
 id = "screen_render_post"
 hook = "screen_render_post"
 hook_version = 1
