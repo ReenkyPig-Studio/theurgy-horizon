@@ -113,6 +113,76 @@ public final class TraceGameTests {
     private static JsonArray doubleArray(double... values) {
         JsonArray out = new JsonArray(); for (double value : values) out.add(value); return out;
     }
+    /** Additional semantic state for recipe-only tests with no block/entity snapshot. */
+    public static synchronized void recordStack(ItemStack stack) {
+        try {
+            if (writer == null) {
+                Path dir = Path.of(System.getProperty("theurgy.trace.dir", "run/theurgy-trace"));
+                Files.createDirectories(dir);
+                writer = Files.newBufferedWriter(dir.resolve("traces.jsonl"), StandardCharsets.UTF_8,
+                        StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+                Runtime.getRuntime().addShutdownHook(new Thread(TraceGameTests::close));
+            }
+            JsonObject root = new JsonObject();
+            root.addProperty("phase", "stack");
+            root.addProperty("method", Thread.currentThread().getStackTrace()[2].getMethodName());
+            root.addProperty("stack", ItemStack.OPTIONAL_CODEC.encodeStart(NbtOps.INSTANCE, stack).getOrThrow().toString());
+            writer.write(GSON.toJson(root));
+            writer.newLine();
+            writer.flush();
+        } catch (Throwable error) {
+            throw new IllegalStateException("Theurgy Java stack trace failed", error);
+        }
+    }
+
+    /** Numeric semantic state (capability capacities) absent from persisted NBT. */
+    public static synchronized void recordValue(int value) {
+        try {
+            if (writer == null) {
+                Path dir = Path.of(System.getProperty("theurgy.trace.dir", "run/theurgy-trace"));
+                Files.createDirectories(dir);
+                writer = Files.newBufferedWriter(dir.resolve("traces.jsonl"), StandardCharsets.UTF_8,
+                        StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+                Runtime.getRuntime().addShutdownHook(new Thread(TraceGameTests::close));
+            }
+            JsonObject root = new JsonObject();
+            var caller = Thread.currentThread().getStackTrace()[2];
+            root.addProperty("phase", "value");
+            root.addProperty("class", caller.getClassName());
+            root.addProperty("method", caller.getMethodName());
+            root.addProperty("value", value);
+            writer.write(GSON.toJson(root));
+            writer.newLine();
+            writer.flush();
+        } catch (Throwable error) {
+            throw new IllegalStateException("Theurgy Java value trace failed", error);
+        }
+    }
+
+    /** String semantic state (UUID/network values) absent from persisted NBT. */
+    public static synchronized void recordText(String value) {
+        try {
+            if (writer == null) {
+                Path dir = Path.of(System.getProperty("theurgy.trace.dir", "run/theurgy-trace"));
+                Files.createDirectories(dir);
+                writer = Files.newBufferedWriter(dir.resolve("traces.jsonl"), StandardCharsets.UTF_8,
+                        StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+                Runtime.getRuntime().addShutdownHook(new Thread(TraceGameTests::close));
+            }
+            JsonObject root = new JsonObject();
+            var caller = Thread.currentThread().getStackTrace()[2];
+            root.addProperty("phase", "text");
+            root.addProperty("class", caller.getClassName());
+            root.addProperty("method", caller.getMethodName());
+            root.addProperty("value", value);
+            writer.write(GSON.toJson(root));
+            writer.newLine();
+            writer.flush();
+        } catch (Throwable error) {
+            throw new IllegalStateException("Theurgy Java text trace failed", error);
+        }
+    }
+
     private static synchronized void close() {
         if (writer != null) try { writer.close(); } catch (IOException ignored) {} finally { writer = null; }
     }

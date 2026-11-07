@@ -21,6 +21,8 @@
     "game:all": "node tools/game.mjs all",
     "game:interactions": "node tools/headless.mjs interactions --no-build",
     "java:oracle": "node tools/java-oracle.mjs",
+    "differential": "node tools/differential.mjs",
+    "multiplayer": "node tools/multiplayer.mjs",
     "game:headless": "node tools/headless.mjs all",
     "game:headless:cached": "node tools/headless.mjs all --no-build",
     "game:chaos": "node tools/game.mjs chaos",
@@ -29,6 +31,7 @@
     "secure:auto": "node matrix/secure.mjs auto --live --run runs/secure-auto",
     "fleet": "node matrix/fleet.mjs",
     "content": "node tools/build-content.mjs && node tools/content-check.mjs",
+    "package": "node tools/package.mjs",
     "providers:probe": "node matrix/provider-probe.mjs"
   }
 }

@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "file": "artifacts/theurgy-26.3-1.120.1-rust-horizon.hmod",
+  "sha256": "934667df9a6d15160846105fabdfe3b0fa5ea727446afec8b7081b99cbde3ca9",
+  "bytes": 5251789,
+  "entries": 3416,
+  "nativeFiles": 87,
+  "nativeBytes": 912843,
+  "manifests": {
+    "horizon": "294448014fba585f8d5d09dd8886f482493b6417",
+    "mixins": "ddd9700b21997c95d95ac6ee5ecafe3830cf622a",
+    "minecraft": "26.3",
+    "theurgy": "1.120.1"
+  }
+}

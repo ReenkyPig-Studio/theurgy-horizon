@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generatedAt": "2026-11-07T03:27:00.967Z",
+  "generatedAt": "2026-11-07T15:16:34.599Z",
   "source": {
     "revision": "33b959c9ed0da1de2aff649e9728c1a03470b1bd",
     "tag": "release/v26.3-1.120.1",
@@ -16851,1582 +16851,1582 @@
       {
         "source": "assets/theurgy/items/alchemical_niter_animals_abundant.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_niter_animals_common.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_niter_animals_rare.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_niter_crops_abundant.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_niter_earthen_matters_abundant.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_niter_earthen_matters_common.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_niter_gems_abundant.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_niter_gems_common.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_niter_gems_precious.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_niter_gems_rare.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_niter_logs_abundant.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_niter_metals_abundant.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_niter_metals_common.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_niter_metals_precious.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_niter_metals_rare.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_niter_mobs_abundant.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_niter_mobs_commond.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_niter_mobs_precious.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_niter_mobs_rare.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_niter_other_minerals_abundant.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_niter_other_minerals_common.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_niter_other_minerals_precious.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_niter_other_minerals_rare.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_salt_creature.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_salt_mineral.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_salt_plant.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_salt_strata.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_acacia_log.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_allthemodium.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_almond.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_aluminum.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_amethyst.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_andesite.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_antimony.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_apatite.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_apple.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_apricot.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_archwood.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_armadillo_scute.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_arrow.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_artichoke.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_ashen.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_asparagus.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_aurum.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_avocado.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_azalea.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_azure_silver.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_banana.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_barley.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_basalt.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_basil.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_bauxite.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_beef.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_beetroot.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_bellpepper.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_birch_log.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_blackbean.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_blackberry.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_blackstone.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_blaze_rod.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_blueberry.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_bluebright.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_bone.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_broccoli.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_cabbage.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_calorite.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_canopy_tree.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_cantaloupe.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_carrot.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_cashew.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_cauliflower.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_celery.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_certus_quartz.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_cherry.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_cherry_log.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_chicken.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_chile_pepper.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_chimerite.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_cinnabar.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_cinnamon.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_clay_ball.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_coals.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_coarse_dirt.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_cobbled_deepslate.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_cocoa_beans.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_coconut.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_cod.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_coffee_beans.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_colorless.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_comet.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_copper.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_corn.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_cranberry.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_crimson_iron.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_crimson_nylium.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_crimson_stem.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_crops_fig.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_crying_obsidian.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_crystallized.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_crystallized_lava.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_crystallized_water.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_cucumber.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_currant.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_dark.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_darkwood.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_dark_oak_log.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_date.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_dead.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_deepslate.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_demonite.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_desh.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_diamond.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_diorite.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_dirt.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_dragonfruit.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_dragon_egg.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_dreamwood.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_dusk.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_echo.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_egg.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_eggplant.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_elderberry.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_elytra.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_emerald.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_ender_pearl.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_end_stone.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_feather.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_fir.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_flax.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_fluix.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_fluorite.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_frostbright.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_garlic.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_ghast_tear.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_ginger.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_glacian.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_glimmering_dreamwood.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_glimmering_livingwood.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_glowstone.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_glow_ink_sac.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_gold.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_golden_oak.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_granite.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_grape.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_grapefruit.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_grass_block.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_gravel.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_greenbean.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_greenonion.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_grongle.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_gunpowder.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_heart_of_the_sea.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_hellbark.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_honeydew.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_hops.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_ice.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_iesnium.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_illwood.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_infested.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_infested_stone.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_ink_sac.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_iridium.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_iron.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_jacaranda.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_jungle_log.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_juniper.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_kale.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_kiwi.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_kumquat.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_lapis.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_lead.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_leather.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_leek.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_lemon.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_lettuce.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_lignite_coal.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_lime.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_livingwood.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_logs_fig.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_lunar.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_magic.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_magma_block.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_magma_cream.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_mahogany.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_mandarin.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_mango.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_mangrove_log.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_maple.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_menril.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_minewood.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_mithril.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_monazite.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_mossy.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_moss_block.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_mud.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_muddy_mangrove_roots.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_mustard.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_mutton.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_mycelium.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_nectarine.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_netherite.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_netherrack.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_netherwood.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_nether_star.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_nether_wart.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_nickel.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_niter.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_normal.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_nutmeg.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_oak_log.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_oat.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_obsidian.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_olive.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_onion.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_orange.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_osmium.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_ostrum.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_otherworld.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_palm.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_peach.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_peanut.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_pear.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_pecan.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_pepper.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_peridot.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_persimmon.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_phantom_membrane.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_pineapple.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_platinum.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_plum.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_podzol.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_porkchop.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_potato.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_prismarine.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_prismarine_shard.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_pufferfish.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_purpur_block.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_quartz.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_rabbit.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_rabbit_foot.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_rabbit_hide.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_radish.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_raspberry.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_red.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_redstone.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_redwood.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_red_sandstone.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_rhubarb.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_rice.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_rooted_dirt.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_rotten_flesh.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_rowan.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_rubberwood.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_ruby.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_rutabaga.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_saguaro.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_salmon.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_sal_ammoniac.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_sandstone.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_sapphire.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_shulker_shell.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_silver.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_skeleton_skull.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_skyroot.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_slime_ball.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_smogstem.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_snowball.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_sortingwood.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_soul_sand.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_soul_soil.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_soybean.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_spider_eye.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_spinach.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_spruce_log.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_squash.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_starlit.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_stellarite.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_stone.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_strawberry.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_string.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_sulfur.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_sweetpotato.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_tea_leaves.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_terracotta.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_timewood.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_tin.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_titanium.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_tomatillo.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_tomato.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_transwood.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_tropical_fish.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_trumpet.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_tungsten.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_turmeric.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_turnip.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_turtle_scute.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_twilight_oak.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_umbran.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_undead.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_unobtainium.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_uraninite.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_uranium.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_vanilla.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_vibranium.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_walnut.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_warped_nylium.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_warped_stem.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_wheat.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_white_wool.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_wigglewood.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_willow.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_wither_skeleton_skull.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_wolfberry.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_yam.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_zinc.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/alchemical_sulfur_zucchini.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/amethyst_divination_rod.json",
@@ -19760,7 +19760,324 @@
       }
     ],
     "missing": [],
-    "changed": []
+    "changed": [
+      "assets/theurgy/items/alchemical_niter_animals_abundant.json",
+      "assets/theurgy/items/alchemical_niter_animals_common.json",
+      "assets/theurgy/items/alchemical_niter_animals_rare.json",
+      "assets/theurgy/items/alchemical_niter_crops_abundant.json",
+      "assets/theurgy/items/alchemical_niter_earthen_matters_abundant.json",
+      "assets/theurgy/items/alchemical_niter_earthen_matters_common.json",
+      "assets/theurgy/items/alchemical_niter_gems_abundant.json",
+      "assets/theurgy/items/alchemical_niter_gems_common.json",
+      "assets/theurgy/items/alchemical_niter_gems_precious.json",
+      "assets/theurgy/items/alchemical_niter_gems_rare.json",
+      "assets/theurgy/items/alchemical_niter_logs_abundant.json",
+      "assets/theurgy/items/alchemical_niter_metals_abundant.json",
+      "assets/theurgy/items/alchemical_niter_metals_common.json",
+      "assets/theurgy/items/alchemical_niter_metals_precious.json",
+      "assets/theurgy/items/alchemical_niter_metals_rare.json",
+      "assets/theurgy/items/alchemical_niter_mobs_abundant.json",
+      "assets/theurgy/items/alchemical_niter_mobs_commond.json",
+      "assets/theurgy/items/alchemical_niter_mobs_precious.json",
+      "assets/theurgy/items/alchemical_niter_mobs_rare.json",
+      "assets/theurgy/items/alchemical_niter_other_minerals_abundant.json",
+      "assets/theurgy/items/alchemical_niter_other_minerals_common.json",
+      "assets/theurgy/items/alchemical_niter_other_minerals_precious.json",
+      "assets/theurgy/items/alchemical_niter_other_minerals_rare.json",
+      "assets/theurgy/items/alchemical_salt_creature.json",
+      "assets/theurgy/items/alchemical_salt_mineral.json",
+      "assets/theurgy/items/alchemical_salt_plant.json",
+      "assets/theurgy/items/alchemical_salt_strata.json",
+      "assets/theurgy/items/alchemical_sulfur_acacia_log.json",
+      "assets/theurgy/items/alchemical_sulfur_allthemodium.json",
+      "assets/theurgy/items/alchemical_sulfur_almond.json",
+      "assets/theurgy/items/alchemical_sulfur_aluminum.json",
+      "assets/theurgy/items/alchemical_sulfur_amethyst.json",
+      "assets/theurgy/items/alchemical_sulfur_andesite.json",
+      "assets/theurgy/items/alchemical_sulfur_antimony.json",
+      "assets/theurgy/items/alchemical_sulfur_apatite.json",
+      "assets/theurgy/items/alchemical_sulfur_apple.json",
+      "assets/theurgy/items/alchemical_sulfur_apricot.json",
+      "assets/theurgy/items/alchemical_sulfur_archwood.json",
+      "assets/theurgy/items/alchemical_sulfur_armadillo_scute.json",
+      "assets/theurgy/items/alchemical_sulfur_arrow.json",
+      "assets/theurgy/items/alchemical_sulfur_artichoke.json",
+      "assets/theurgy/items/alchemical_sulfur_ashen.json",
+      "assets/theurgy/items/alchemical_sulfur_asparagus.json",
+      "assets/theurgy/items/alchemical_sulfur_aurum.json",
+      "assets/theurgy/items/alchemical_sulfur_avocado.json",
+      "assets/theurgy/items/alchemical_sulfur_azalea.json",
+      "assets/theurgy/items/alchemical_sulfur_azure_silver.json",
+      "assets/theurgy/items/alchemical_sulfur_banana.json",
+      "assets/theurgy/items/alchemical_sulfur_barley.json",
+      "assets/theurgy/items/alchemical_sulfur_basalt.json",
+      "assets/theurgy/items/alchemical_sulfur_basil.json",
+      "assets/theurgy/items/alchemical_sulfur_bauxite.json",
+      "assets/theurgy/items/alchemical_sulfur_beef.json",
+      "assets/theurgy/items/alchemical_sulfur_beetroot.json",
+      "assets/theurgy/items/alchemical_sulfur_bellpepper.json",
+      "assets/theurgy/items/alchemical_sulfur_birch_log.json",
+      "assets/theurgy/items/alchemical_sulfur_blackbean.json",
+      "assets/theurgy/items/alchemical_sulfur_blackberry.json",
+      "assets/theurgy/items/alchemical_sulfur_blackstone.json",
+      "assets/theurgy/items/alchemical_sulfur_blaze_rod.json",
+      "assets/theurgy/items/alchemical_sulfur_blueberry.json",
+      "assets/theurgy/items/alchemical_sulfur_bluebright.json",
+      "assets/theurgy/items/alchemical_sulfur_bone.json",
+      "assets/theurgy/items/alchemical_sulfur_broccoli.json",
+      "assets/theurgy/items/alchemical_sulfur_cabbage.json",
+      "assets/theurgy/items/alchemical_sulfur_calorite.json",
+      "assets/theurgy/items/alchemical_sulfur_canopy_tree.json",
+      "assets/theurgy/items/alchemical_sulfur_cantaloupe.json",
+      "assets/theurgy/items/alchemical_sulfur_carrot.json",
+      "assets/theurgy/items/alchemical_sulfur_cashew.json",
+      "assets/theurgy/items/alchemical_sulfur_cauliflower.json",
+      "assets/theurgy/items/alchemical_sulfur_celery.json",
+      "assets/theurgy/items/alchemical_sulfur_certus_quartz.json",
+      "assets/theurgy/items/alchemical_sulfur_cherry.json",
+      "assets/theurgy/items/alchemical_sulfur_cherry_log.json",
+      "assets/theurgy/items/alchemical_sulfur_chicken.json",
+      "assets/theurgy/items/alchemical_sulfur_chile_pepper.json",
+      "assets/theurgy/items/alchemical_sulfur_chimerite.json",
+      "assets/theurgy/items/alchemical_sulfur_cinnabar.json",
+      "assets/theurgy/items/alchemical_sulfur_cinnamon.json",
+      "assets/theurgy/items/alchemical_sulfur_clay_ball.json",
+      "assets/theurgy/items/alchemical_sulfur_coals.json",
+      "assets/theurgy/items/alchemical_sulfur_coarse_dirt.json",
+      "assets/theurgy/items/alchemical_sulfur_cobbled_deepslate.json",
+      "assets/theurgy/items/alchemical_sulfur_cocoa_beans.json",
+      "assets/theurgy/items/alchemical_sulfur_coconut.json",
+      "assets/theurgy/items/alchemical_sulfur_cod.json",
+      "assets/theurgy/items/alchemical_sulfur_coffee_beans.json",
+      "assets/theurgy/items/alchemical_sulfur_colorless.json",
+      "assets/theurgy/items/alchemical_sulfur_comet.json",
+      "assets/theurgy/items/alchemical_sulfur_copper.json",
+      "assets/theurgy/items/alchemical_sulfur_corn.json",
+      "assets/theurgy/items/alchemical_sulfur_cranberry.json",
+      "assets/theurgy/items/alchemical_sulfur_crimson_iron.json",
+      "assets/theurgy/items/alchemical_sulfur_crimson_nylium.json",
+      "assets/theurgy/items/alchemical_sulfur_crimson_stem.json",
+      "assets/theurgy/items/alchemical_sulfur_crops_fig.json",
+      "assets/theurgy/items/alchemical_sulfur_crying_obsidian.json",
+      "assets/theurgy/items/alchemical_sulfur_crystallized.json",
+      "assets/theurgy/items/alchemical_sulfur_crystallized_lava.json",
+      "assets/theurgy/items/alchemical_sulfur_crystallized_water.json",
+      "assets/theurgy/items/alchemical_sulfur_cucumber.json",
+      "assets/theurgy/items/alchemical_sulfur_currant.json",
+      "assets/theurgy/items/alchemical_sulfur_dark.json",
+      "assets/theurgy/items/alchemical_sulfur_darkwood.json",
+      "assets/theurgy/items/alchemical_sulfur_dark_oak_log.json",
+      "assets/theurgy/items/alchemical_sulfur_date.json",
+      "assets/theurgy/items/alchemical_sulfur_dead.json",
+      "assets/theurgy/items/alchemical_sulfur_deepslate.json",
+      "assets/theurgy/items/alchemical_sulfur_demonite.json",
+      "assets/theurgy/items/alchemical_sulfur_desh.json",
+      "assets/theurgy/items/alchemical_sulfur_diamond.json",
+      "assets/theurgy/items/alchemical_sulfur_diorite.json",
+      "assets/theurgy/items/alchemical_sulfur_dirt.json",
+      "assets/theurgy/items/alchemical_sulfur_dragonfruit.json",
+      "assets/theurgy/items/alchemical_sulfur_dragon_egg.json",
+      "assets/theurgy/items/alchemical_sulfur_dreamwood.json",
+      "assets/theurgy/items/alchemical_sulfur_dusk.json",
+      "assets/theurgy/items/alchemical_sulfur_echo.json",
+      "assets/theurgy/items/alchemical_sulfur_egg.json",
+      "assets/theurgy/items/alchemical_sulfur_eggplant.json",
+      "assets/theurgy/items/alchemical_sulfur_elderberry.json",
+      "assets/theurgy/items/alchemical_sulfur_elytra.json",
+      "assets/theurgy/items/alchemical_sulfur_emerald.json",
+      "assets/theurgy/items/alchemical_sulfur_ender_pearl.json",
+      "assets/theurgy/items/alchemical_sulfur_end_stone.json",
+      "assets/theurgy/items/alchemical_sulfur_feather.json",
+      "assets/theurgy/items/alchemical_sulfur_fir.json",
+      "assets/theurgy/items/alchemical_sulfur_flax.json",
+      "assets/theurgy/items/alchemical_sulfur_fluix.json",
+      "assets/theurgy/items/alchemical_sulfur_fluorite.json",
+      "assets/theurgy/items/alchemical_sulfur_frostbright.json",
+      "assets/theurgy/items/alchemical_sulfur_garlic.json",
+      "assets/theurgy/items/alchemical_sulfur_ghast_tear.json",
+      "assets/theurgy/items/alchemical_sulfur_ginger.json",
+      "assets/theurgy/items/alchemical_sulfur_glacian.json",
+      "assets/theurgy/items/alchemical_sulfur_glimmering_dreamwood.json",
+      "assets/theurgy/items/alchemical_sulfur_glimmering_livingwood.json",
+      "assets/theurgy/items/alchemical_sulfur_glowstone.json",
+      "assets/theurgy/items/alchemical_sulfur_glow_ink_sac.json",
+      "assets/theurgy/items/alchemical_sulfur_gold.json",
+      "assets/theurgy/items/alchemical_sulfur_golden_oak.json",
+      "assets/theurgy/items/alchemical_sulfur_granite.json",
+      "assets/theurgy/items/alchemical_sulfur_grape.json",
+      "assets/theurgy/items/alchemical_sulfur_grapefruit.json",
+      "assets/theurgy/items/alchemical_sulfur_grass_block.json",
+      "assets/theurgy/items/alchemical_sulfur_gravel.json",
+      "assets/theurgy/items/alchemical_sulfur_greenbean.json",
+      "assets/theurgy/items/alchemical_sulfur_greenonion.json",
+      "assets/theurgy/items/alchemical_sulfur_grongle.json",
+      "assets/theurgy/items/alchemical_sulfur_gunpowder.json",
+      "assets/theurgy/items/alchemical_sulfur_heart_of_the_sea.json",
+      "assets/theurgy/items/alchemical_sulfur_hellbark.json",
+      "assets/theurgy/items/alchemical_sulfur_honeydew.json",
+      "assets/theurgy/items/alchemical_sulfur_hops.json",
+      "assets/theurgy/items/alchemical_sulfur_ice.json",
+      "assets/theurgy/items/alchemical_sulfur_iesnium.json",
+      "assets/theurgy/items/alchemical_sulfur_illwood.json",
+      "assets/theurgy/items/alchemical_sulfur_infested.json",
+      "assets/theurgy/items/alchemical_sulfur_infested_stone.json",
+      "assets/theurgy/items/alchemical_sulfur_ink_sac.json",
+      "assets/theurgy/items/alchemical_sulfur_iridium.json",
+      "assets/theurgy/items/alchemical_sulfur_iron.json",
+      "assets/theurgy/items/alchemical_sulfur_jacaranda.json",
+      "assets/theurgy/items/alchemical_sulfur_jungle_log.json",
+      "assets/theurgy/items/alchemical_sulfur_juniper.json",
+      "assets/theurgy/items/alchemical_sulfur_kale.json",
+      "assets/theurgy/items/alchemical_sulfur_kiwi.json",
+      "assets/theurgy/items/alchemical_sulfur_kumquat.json",
+      "assets/theurgy/items/alchemical_sulfur_lapis.json",
+      "assets/theurgy/items/alchemical_sulfur_lead.json",
+      "assets/theurgy/items/alchemical_sulfur_leather.json",
+      "assets/theurgy/items/alchemical_sulfur_leek.json",
+      "assets/theurgy/items/alchemical_sulfur_lemon.json",
+      "assets/theurgy/items/alchemical_sulfur_lettuce.json",
+      "assets/theurgy/items/alchemical_sulfur_lignite_coal.json",
+      "assets/theurgy/items/alchemical_sulfur_lime.json",
+      "assets/theurgy/items/alchemical_sulfur_livingwood.json",
+      "assets/theurgy/items/alchemical_sulfur_logs_fig.json",
+      "assets/theurgy/items/alchemical_sulfur_lunar.json",
+      "assets/theurgy/items/alchemical_sulfur_magic.json",
+      "assets/theurgy/items/alchemical_sulfur_magma_block.json",
+      "assets/theurgy/items/alchemical_sulfur_magma_cream.json",
+      "assets/theurgy/items/alchemical_sulfur_mahogany.json",
+      "assets/theurgy/items/alchemical_sulfur_mandarin.json",
+      "assets/theurgy/items/alchemical_sulfur_mango.json",
+      "assets/theurgy/items/alchemical_sulfur_mangrove_log.json",
+      "assets/theurgy/items/alchemical_sulfur_maple.json",
+      "assets/theurgy/items/alchemical_sulfur_menril.json",
+      "assets/theurgy/items/alchemical_sulfur_minewood.json",
+      "assets/theurgy/items/alchemical_sulfur_mithril.json",
+      "assets/theurgy/items/alchemical_sulfur_monazite.json",
+      "assets/theurgy/items/alchemical_sulfur_mossy.json",
+      "assets/theurgy/items/alchemical_sulfur_moss_block.json",
+      "assets/theurgy/items/alchemical_sulfur_mud.json",
+      "assets/theurgy/items/alchemical_sulfur_muddy_mangrove_roots.json",
+      "assets/theurgy/items/alchemical_sulfur_mustard.json",
+      "assets/theurgy/items/alchemical_sulfur_mutton.json",
+      "assets/theurgy/items/alchemical_sulfur_mycelium.json",
+      "assets/theurgy/items/alchemical_sulfur_nectarine.json",
+      "assets/theurgy/items/alchemical_sulfur_netherite.json",
+      "assets/theurgy/items/alchemical_sulfur_netherrack.json",
+      "assets/theurgy/items/alchemical_sulfur_netherwood.json",
+      "assets/theurgy/items/alchemical_sulfur_nether_star.json",
+      "assets/theurgy/items/alchemical_sulfur_nether_wart.json",
+      "assets/theurgy/items/alchemical_sulfur_nickel.json",
+      "assets/theurgy/items/alchemical_sulfur_niter.json",
+      "assets/theurgy/items/alchemical_sulfur_normal.json",
+      "assets/theurgy/items/alchemical_sulfur_nutmeg.json",
+      "assets/theurgy/items/alchemical_sulfur_oak_log.json",
+      "assets/theurgy/items/alchemical_sulfur_oat.json",
+      "assets/theurgy/items/alchemical_sulfur_obsidian.json",
+      "assets/theurgy/items/alchemical_sulfur_olive.json",
+      "assets/theurgy/items/alchemical_sulfur_onion.json",
+      "assets/theurgy/items/alchemical_sulfur_orange.json",
+      "assets/theurgy/items/alchemical_sulfur_osmium.json",
+      "assets/theurgy/items/alchemical_sulfur_ostrum.json",
+      "assets/theurgy/items/alchemical_sulfur_otherworld.json",
+      "assets/theurgy/items/alchemical_sulfur_palm.json",
+      "assets/theurgy/items/alchemical_sulfur_peach.json",
+      "assets/theurgy/items/alchemical_sulfur_peanut.json",
+      "assets/theurgy/items/alchemical_sulfur_pear.json",
+      "assets/theurgy/items/alchemical_sulfur_pecan.json",
+      "assets/theurgy/items/alchemical_sulfur_pepper.json",
+      "assets/theurgy/items/alchemical_sulfur_peridot.json",
+      "assets/theurgy/items/alchemical_sulfur_persimmon.json",
+      "assets/theurgy/items/alchemical_sulfur_phantom_membrane.json",
+      "assets/theurgy/items/alchemical_sulfur_pineapple.json",
+      "assets/theurgy/items/alchemical_sulfur_platinum.json",
+      "assets/theurgy/items/alchemical_sulfur_plum.json",
+      "assets/theurgy/items/alchemical_sulfur_podzol.json",
+      "assets/theurgy/items/alchemical_sulfur_porkchop.json",
+      "assets/theurgy/items/alchemical_sulfur_potato.json",
+      "assets/theurgy/items/alchemical_sulfur_prismarine.json",
+      "assets/theurgy/items/alchemical_sulfur_prismarine_shard.json",
+      "assets/theurgy/items/alchemical_sulfur_pufferfish.json",
+      "assets/theurgy/items/alchemical_sulfur_purpur_block.json",
+      "assets/theurgy/items/alchemical_sulfur_quartz.json",
+      "assets/theurgy/items/alchemical_sulfur_rabbit.json",
+      "assets/theurgy/items/alchemical_sulfur_rabbit_foot.json",
+      "assets/theurgy/items/alchemical_sulfur_rabbit_hide.json",
+      "assets/theurgy/items/alchemical_sulfur_radish.json",
+      "assets/theurgy/items/alchemical_sulfur_raspberry.json",
+      "assets/theurgy/items/alchemical_sulfur_red.json",
+      "assets/theurgy/items/alchemical_sulfur_redstone.json",
+      "assets/theurgy/items/alchemical_sulfur_redwood.json",
+      "assets/theurgy/items/alchemical_sulfur_red_sandstone.json",
+      "assets/theurgy/items/alchemical_sulfur_rhubarb.json",
+      "assets/theurgy/items/alchemical_sulfur_rice.json",
+      "assets/theurgy/items/alchemical_sulfur_rooted_dirt.json",
+      "assets/theurgy/items/alchemical_sulfur_rotten_flesh.json",
+      "assets/theurgy/items/alchemical_sulfur_rowan.json",
+      "assets/theurgy/items/alchemical_sulfur_rubberwood.json",
+      "assets/theurgy/items/alchemical_sulfur_ruby.json",
+      "assets/theurgy/items/alchemical_sulfur_rutabaga.json",
+      "assets/theurgy/items/alchemical_sulfur_saguaro.json",
+      "assets/theurgy/items/alchemical_sulfur_salmon.json",
+      "assets/theurgy/items/alchemical_sulfur_sal_ammoniac.json",
+      "assets/theurgy/items/alchemical_sulfur_sandstone.json",
+      "assets/theurgy/items/alchemical_sulfur_sapphire.json",
+      "assets/theurgy/items/alchemical_sulfur_shulker_shell.json",
+      "assets/theurgy/items/alchemical_sulfur_silver.json",
+      "assets/theurgy/items/alchemical_sulfur_skeleton_skull.json",
+      "assets/theurgy/items/alchemical_sulfur_skyroot.json",
+      "assets/theurgy/items/alchemical_sulfur_slime_ball.json",
+      "assets/theurgy/items/alchemical_sulfur_smogstem.json",
+      "assets/theurgy/items/alchemical_sulfur_snowball.json",
+      "assets/theurgy/items/alchemical_sulfur_sortingwood.json",
+      "assets/theurgy/items/alchemical_sulfur_soul_sand.json",
+      "assets/theurgy/items/alchemical_sulfur_soul_soil.json",
+      "assets/theurgy/items/alchemical_sulfur_soybean.json",
+      "assets/theurgy/items/alchemical_sulfur_spider_eye.json",
+      "assets/theurgy/items/alchemical_sulfur_spinach.json",
+      "assets/theurgy/items/alchemical_sulfur_spruce_log.json",
+      "assets/theurgy/items/alchemical_sulfur_squash.json",
+      "assets/theurgy/items/alchemical_sulfur_starlit.json",
+      "assets/theurgy/items/alchemical_sulfur_stellarite.json",
+      "assets/theurgy/items/alchemical_sulfur_stone.json",
+      "assets/theurgy/items/alchemical_sulfur_strawberry.json",
+      "assets/theurgy/items/alchemical_sulfur_string.json",
+      "assets/theurgy/items/alchemical_sulfur_sulfur.json",
+      "assets/theurgy/items/alchemical_sulfur_sweetpotato.json",
+      "assets/theurgy/items/alchemical_sulfur_tea_leaves.json",
+      "assets/theurgy/items/alchemical_sulfur_terracotta.json",
+      "assets/theurgy/items/alchemical_sulfur_timewood.json",
+      "assets/theurgy/items/alchemical_sulfur_tin.json",
+      "assets/theurgy/items/alchemical_sulfur_titanium.json",
+      "assets/theurgy/items/alchemical_sulfur_tomatillo.json",
+      "assets/theurgy/items/alchemical_sulfur_tomato.json",
+      "assets/theurgy/items/alchemical_sulfur_transwood.json",
+      "assets/theurgy/items/alchemical_sulfur_tropical_fish.json",
+      "assets/theurgy/items/alchemical_sulfur_trumpet.json",
+      "assets/theurgy/items/alchemical_sulfur_tungsten.json",
+      "assets/theurgy/items/alchemical_sulfur_turmeric.json",
+      "assets/theurgy/items/alchemical_sulfur_turnip.json",
+      "assets/theurgy/items/alchemical_sulfur_turtle_scute.json",
+      "assets/theurgy/items/alchemical_sulfur_twilight_oak.json",
+      "assets/theurgy/items/alchemical_sulfur_umbran.json",
+      "assets/theurgy/items/alchemical_sulfur_undead.json",
+      "assets/theurgy/items/alchemical_sulfur_unobtainium.json",
+      "assets/theurgy/items/alchemical_sulfur_uraninite.json",
+      "assets/theurgy/items/alchemical_sulfur_uranium.json",
+      "assets/theurgy/items/alchemical_sulfur_vanilla.json",
+      "assets/theurgy/items/alchemical_sulfur_vibranium.json",
+      "assets/theurgy/items/alchemical_sulfur_walnut.json",
+      "assets/theurgy/items/alchemical_sulfur_warped_nylium.json",
+      "assets/theurgy/items/alchemical_sulfur_warped_stem.json",
+      "assets/theurgy/items/alchemical_sulfur_wheat.json",
+      "assets/theurgy/items/alchemical_sulfur_white_wool.json",
+      "assets/theurgy/items/alchemical_sulfur_wigglewood.json",
+      "assets/theurgy/items/alchemical_sulfur_willow.json",
+      "assets/theurgy/items/alchemical_sulfur_wither_skeleton_skull.json",
+      "assets/theurgy/items/alchemical_sulfur_wolfberry.json",
+      "assets/theurgy/items/alchemical_sulfur_yam.json",
+      "assets/theurgy/items/alchemical_sulfur_zinc.json",
+      "assets/theurgy/items/alchemical_sulfur_zucchini.json"
+    ]
   },
   "features": {
     "rows": [
@@ -22204,6 +22521,325 @@
       ]
     }
   },
+  "differential": {
+    "summary": {
+      "expected": 152,
+      "selected": 152,
+      "matched": 73,
+      "missing": 52,
+      "mismatched": 27,
+      "complete": false
+    },
+    "matched": [
+      "theurgy:calcination_oven_be_only_lower",
+      "theurgy:calcination_oven_blocked_output_does_not_consume_input",
+      "theurgy:calcination_oven_break_lower_destroys_upper",
+      "theurgy:calcination_oven_break_upper_destroys_lower",
+      "theurgy:calcination_oven_drops_items_when_broken",
+      "theurgy:calcination_oven_extract_output",
+      "theurgy:calcination_oven_input_consumed_output_produced",
+      "theurgy:calcination_oven_insert_input",
+      "theurgy:calcination_oven_lit_during_processing",
+      "theurgy:calcination_oven_placement",
+      "theurgy:calcination_oven_processing_starts",
+      "theurgy:calcination_oven_stops_without_heat",
+      "theurgy:calcination_oven_stops_without_input",
+      "theurgy:caloric_flux_emitter_placement",
+      "theurgy:digestion_vat_drops_items",
+      "theurgy:digestion_vat_extract_output",
+      "theurgy:digestion_vat_facing",
+      "theurgy:digestion_vat_insert_fluid",
+      "theurgy:digestion_vat_insert_input",
+      "theurgy:digestion_vat_placement",
+      "theurgy:distiller_be_only_lower",
+      "theurgy:distiller_break_lower_destroys_upper",
+      "theurgy:distiller_break_upper_destroys_lower",
+      "theurgy:distiller_drops_items_when_broken",
+      "theurgy:distiller_extract_output",
+      "theurgy:distiller_input_consumed_output_produced",
+      "theurgy:distiller_insert_input",
+      "theurgy:distiller_lit_during_processing",
+      "theurgy:distiller_placement",
+      "theurgy:distiller_processing_starts",
+      "theurgy:distiller_stops_without_heat",
+      "theurgy:divination_rod_craft_t1",
+      "theurgy:fermentation_vat_drops_items",
+      "theurgy:fermentation_vat_extract_output",
+      "theurgy:fermentation_vat_facing",
+      "theurgy:fermentation_vat_has_output_false",
+      "theurgy:fermentation_vat_has_output_true",
+      "theurgy:fermentation_vat_insert_fluid",
+      "theurgy:fermentation_vat_insert_input",
+      "theurgy:fermentation_vat_placement",
+      "theurgy:incubator_placement",
+      "theurgy:lc_block_entity_only_on_lower_half",
+      "theurgy:lc_breaking_lower_destroys_upper",
+      "theurgy:lc_breaking_upper_destroys_lower",
+      "theurgy:lc_drops_items_when_broken",
+      "theurgy:lc_extract_output_item",
+      "theurgy:lc_extract_solvent_fluid",
+      "theurgy:lc_input_consumed_output_produced",
+      "theurgy:lc_insert_input_item",
+      "theurgy:lc_insert_solvent_fluid",
+      "theurgy:lc_lit_state_true_during_processing",
+      "theurgy:lc_placement_creates_two_block_structure",
+      "theurgy:lc_processing_requires_input",
+      "theurgy:lc_processing_requires_solvent",
+      "theurgy:lc_processing_starts",
+      "theurgy:lc_processing_stops_when_heat_removed",
+      "theurgy:logistics_capability_proxy_placement",
+      "theurgy:logistics_node_placement",
+      "theurgy:mercury_capacitor_has_correct_capacity",
+      "theurgy:mercury_capacitor_placement",
+      "theurgy:mercury_capacitor_starts_empty",
+      "theurgy:mercury_flux_connector_exposes_capability",
+      "theurgy:reformation_result_extract",
+      "theurgy:reformation_source_insert",
+      "theurgy:reformation_source_placement",
+      "theurgy:reformation_source_rejects_invalid_held_item",
+      "theurgy:reformation_target_insert",
+      "theurgy:sal_ammoniac_accumulator_insert_item",
+      "theurgy:sal_ammoniac_accumulator_insert_water",
+      "theurgy:sal_ammoniac_tank_extract_fluid",
+      "theurgy:sal_ammoniac_tank_insert_fluid",
+      "theurgy:sal_ammoniac_tank_persistence",
+      "theurgy:sal_ammoniac_tank_placement"
+    ],
+    "mismatched": [
+      {
+        "id": "theurgy:caloric_flux_emitter_enabled",
+        "differences": [
+          "property facing: expected up, got north"
+        ]
+      },
+      {
+        "id": "theurgy:caloric_flux_emitter_energy",
+        "differences": [
+          "property facing: expected up, got north"
+        ]
+      },
+      {
+        "id": "theurgy:digestion_vat_blocked_output_does_not_consume_inputs",
+        "differences": [
+          "totalTime: expected 200, got 0"
+        ]
+      },
+      {
+        "id": "theurgy:digestion_vat_lid_closes",
+        "differences": [
+          "property open: expected false, got true"
+        ]
+      },
+      {
+        "id": "theurgy:divination_rod_craft_abundant_copper_sulfur",
+        "differences": [
+          "outputStack.components.theurgy:divination_linked_tag: missing"
+        ]
+      },
+      {
+        "id": "theurgy:divination_rod_craft_abundant_dirt_sulfur",
+        "differences": [
+          "outputStack.components.theurgy:divination_linked_block: missing"
+        ]
+      },
+      {
+        "id": "theurgy:fermentation_vat_blocked_output_does_not_consume_inputs",
+        "differences": [
+          "totalTime: expected 200, got 0"
+        ]
+      },
+      {
+        "id": "theurgy:fermentation_vat_lid_closes",
+        "differences": [
+          "property open: expected false, got true"
+        ]
+      },
+      {
+        "id": "theurgy:incubator_connection_states_default_false",
+        "differences": [
+          "missing block probe [2,3,2] (theurgy:incubator)"
+        ]
+      },
+      {
+        "id": "theurgy:logistics_extractor_placement",
+        "differences": [
+          "missing block probe [4,2,2] (theurgy:logistics_item_extractor)",
+          "unexpected block theurgy:logistics_item_extractor at [2,2,2]"
+        ]
+      },
+      {
+        "id": "theurgy:logistics_inserter_placement",
+        "differences": [
+          "missing block probe [3,2,2] (theurgy:logistics_item_inserter)",
+          "unexpected block theurgy:logistics_item_inserter at [2,2,2]"
+        ]
+      },
+      {
+        "id": "theurgy:mercury_capacitor_side_modes",
+        "differences": [
+          "sideModes.EAST: expected 1, got 2"
+        ]
+      },
+      {
+        "id": "theurgy:mercury_catalyst_placement",
+        "differences": [
+          "missing block probe [2,1,2] (theurgy:mercury_catalyst)",
+          "unexpected block theurgy:mercury_catalyst at [2,2,2]"
+        ]
+      },
+      {
+        "id": "theurgy:mercury_flux_connector_buffer_empty",
+        "differences": [
+          "targets: expected 0, got 1"
+        ]
+      },
+      {
+        "id": "theurgy:mercury_flux_connector_placement",
+        "differences": [
+          "targets: expected 0, got 1"
+        ]
+      },
+      {
+        "id": "theurgy:mercury_flux_emitter_energy",
+        "differences": [
+          "property enabled: expected true, got undefined",
+          "property facing: expected up, got north"
+        ]
+      },
+      {
+        "id": "theurgy:mercury_flux_emitter_placement",
+        "differences": [
+          "property enabled: expected true, got undefined"
+        ]
+      },
+      {
+        "id": "theurgy:pyromantic_brazier_placement",
+        "differences": [
+          "missing block probe [2,1,2] (theurgy:pyromantic_brazier)",
+          "unexpected block theurgy:pyromantic_brazier at [2,2,2]"
+        ]
+      },
+      {
+        "id": "theurgy:reformation_result_placement",
+        "differences": [
+          "missing block probe [4,2,2] (theurgy:reformation_result_pedestal)",
+          "unexpected block theurgy:reformation_result_pedestal at [2,2,2]"
+        ]
+      },
+      {
+        "id": "theurgy:reformation_source_extract",
+        "differences": [
+          "items: expected [], got [{\"Slot\":0,\"id\":\"theurgy:alchemical_sulfur_bone\",\"count\":1,\"components\":{}}]"
+        ]
+      },
+      {
+        "id": "theurgy:reformation_target_placement",
+        "differences": [
+          "missing block probe [3,2,2] (theurgy:reformation_target_pedestal)",
+          "unexpected block theurgy:reformation_target_pedestal at [2,2,2]"
+        ]
+      },
+      {
+        "id": "theurgy:sal_ammoniac_accumulator_placement",
+        "differences": [
+          "totalTime: expected 0, got undefined"
+        ]
+      },
+      {
+        "id": "theurgy:sulfuric_flux_emitter_energy",
+        "differences": [
+          "unexpected block theurgy:sulfuric_flux_emitter at [2,2,2]"
+        ]
+      },
+      {
+        "id": "theurgy:sulfuric_flux_emitter_insufficient_mercury_flux",
+        "differences": [
+          "unexpected block theurgy:sulfuric_flux_emitter at [2,1,2]",
+          "unexpected block theurgy:reformation_target_pedestal at [2,1,0]",
+          "unexpected block theurgy:reformation_source_pedestal at [0,1,0]",
+          "unexpected block theurgy:reformation_result_pedestal at [4,1,0]"
+        ]
+      },
+      {
+        "id": "theurgy:sulfuric_flux_emitter_linking",
+        "differences": [
+          "unexpected block theurgy:sulfuric_flux_emitter at [2,1,2]",
+          "unexpected block theurgy:reformation_target_pedestal at [2,1,0]",
+          "unexpected block theurgy:reformation_source_pedestal at [0,1,0]",
+          "unexpected block theurgy:reformation_result_pedestal at [4,1,0]"
+        ]
+      },
+      {
+        "id": "theurgy:sulfuric_flux_emitter_placement",
+        "differences": [
+          "unexpected block theurgy:sulfuric_flux_emitter at [2,2,2]"
+        ]
+      },
+      {
+        "id": "theurgy:sulfuric_flux_emitter_processing",
+        "differences": [
+          "unexpected block theurgy:sulfuric_flux_emitter at [2,1,2]",
+          "unexpected block theurgy:reformation_target_pedestal at [2,1,0]",
+          "unexpected block theurgy:reformation_source_pedestal at [0,1,0]",
+          "unexpected block theurgy:reformation_result_pedestal at [4,1,0]"
+        ]
+      }
+    ],
+    "missing": [
+      "theurgy:caloric_flux_emitter_redstone",
+      "theurgy:incubator_blocked_output_does_not_consume_vessel_inputs",
+      "theurgy:incubator_break_lower_destroys_upper",
+      "theurgy:incubator_break_upper_destroys_lower",
+      "theurgy:incubator_extract_items",
+      "theurgy:incubator_extract_output",
+      "theurgy:incubator_inputs_consumed_output_produced",
+      "theurgy:incubator_insert_mercury",
+      "theurgy:incubator_insert_salt",
+      "theurgy:incubator_insert_sulfur",
+      "theurgy:incubator_mercury_vessel_connection",
+      "theurgy:incubator_processing_starts",
+      "theurgy:incubator_removing_vessel_connection",
+      "theurgy:incubator_salt_vessel_connection",
+      "theurgy:incubator_stops_without_heat",
+      "theurgy:incubator_sulfur_vessel_connection",
+      "theurgy:incubator_valid_multiblock",
+      "theurgy:logistics_capability_proxy_fluid_forwarding",
+      "theurgy:logistics_capability_proxy_fluid_round_robin",
+      "theurgy:logistics_fluid_connector_restores_attached_target_on_load",
+      "theurgy:logistics_fluid_extracts_world_source",
+      "theurgy:logistics_item_connector_restores_attached_target_on_load",
+      "theurgy:logistics_item_extractor_targets_in_any_registration_order",
+      "theurgy:logistics_item_extractor_targets_in_any_registration_order_reversed",
+      "theurgy:logistics_item_extractor_transfers_items",
+      "theurgy:logistics_nexus_be_accepts_item_uuid",
+      "theurgy:logistics_nexus_pairs_across_placement",
+      "theurgy:logistics_node_only_connects_when_attached_to_nexus",
+      "theurgy:mercury_capacitor_disabled_does_not_receive_flux",
+      "theurgy:mercury_capacitor_no_ping_pong",
+      "theurgy:mercury_capacitor_receives_flux",
+      "theurgy:mercury_catalyst_disabled_still_generates_flux",
+      "theurgy:mercury_catalyst_rejected_placeable_dont_duplicate",
+      "theurgy:mercury_catalyst_shard_generates_flux",
+      "theurgy:mercury_catalyst_shard_is_consumed",
+      "theurgy:mercury_flux_connector_forwards_flux",
+      "theurgy:mercury_flux_connector_forwards_to_multiple",
+      "theurgy:mercury_flux_emitter_flux_transfer",
+      "theurgy:mercury_flux_emitter_linking",
+      "theurgy:pyromantic_brazier_drops_items_when_broken",
+      "theurgy:pyromantic_brazier_fuel_consumed",
+      "theurgy:pyromantic_brazier_fuel_leaves_remainder",
+      "theurgy:pyromantic_brazier_heat_calcination_oven",
+      "theurgy:pyromantic_brazier_heat_distiller",
+      "theurgy:pyromantic_brazier_heat_liquefaction_cauldron",
+      "theurgy:pyromantic_brazier_insert_fuel",
+      "theurgy:pyromantic_brazier_lit_state_updates",
+      "theurgy:pyromantic_brazier_rejected_placeable_dont_duplicate",
+      "theurgy:pyromantic_brazier_rejects_non_burnable",
+      "theurgy:pyromantic_brazier_remove_fuel",
+      "theurgy:pyromantic_brazier_stacked_fuel_shrinks",
+      "theurgy:pyromantic_brazier_stops_heat_no_fuel"
+    ]
+  },
   "javaOracle": [
     {
       "file": "runs/java-oracle-2026-11-07T01-38-34.014Z/result.json",
@@ -22218,6 +22854,41 @@
       "passed": 151,
       "total": 152,
       "sha256": "eb3dab3505a375f5296ad42f5de24df00822142a56e591e9469209462189f6a7"
+    },
+    {
+      "file": "runs/java-oracle-2026-11-07T05-40-09.710Z/result.json",
+      "status": "JAVA_GAMETESTS_FAIL",
+      "passed": 152,
+      "total": 152,
+      "sha256": "95ad0da8d120cef26ba012cda92e8a848ca6c0bd8e0cd4a5468d069a147fe8ba"
+    },
+    {
+      "file": "runs/java-oracle-2026-11-07T10-22-38.837Z/result.json",
+      "status": "JAVA_STATE_ORACLE_PASS",
+      "passed": 153,
+      "total": 152,
+      "sha256": "5ddd453bead697872e859490e1a2ce82ed320a33eb8fd4395486910bb71b835d"
+    },
+    {
+      "file": "runs/java-oracle-2026-11-07T11-36-03.819Z/result.json",
+      "status": "JAVA_STATE_ORACLE_PASS",
+      "passed": 153,
+      "total": 152,
+      "sha256": "8a792bbeb1b3537ec0faf590cc0e628ad6cfa814b1be59aba4c790269101586b"
+    },
+    {
+      "file": "runs/java-oracle-2026-11-07T12-47-51.761Z/result.json",
+      "status": "JAVA_STATE_ORACLE_PASS",
+      "passed": 153,
+      "total": 152,
+      "sha256": "1f5f87cbadf18edc859c18460bb6c74baed0018cffe7cb067ef4d3393c09a438"
+    },
+    {
+      "file": "runs/java-oracle-2026-11-07T12-52-30.730Z/result.json",
+      "status": "JAVA_STATE_ORACLE_PASS",
+      "passed": 153,
+      "total": 152,
+      "sha256": "8d17b7d20c2ce0b313c3e09f66c21f4ab1afcdc50325cf2f45a89c801c503231"
     }
   ],
   "placeholders": [],
