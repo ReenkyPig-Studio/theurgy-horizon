@@ -1,5 +1,5 @@
 const FILTER='theurgy:attribute_filter',EXTRACTOR='theurgy:logistics_item_extractor',INSERTER='theurgy:logistics_item_inserter';
-const SRC=[50,80,50],EX=[51,80,50],IN=[54,80,50],DST=[55,80,50],NEX=[52,80,52];const s=p=>p.map(String);
+const SRC=[52,80,50],EX=[51,80,50],IN=[54,80,50],DST=[53,80,50],NEX=[52,80,52];const s=p=>p.map(String);
 function count(r,id){return (r?.slots??[]).reduce((n,v)=>{const x=v?.item&&typeof v.item==='object'?v.item:v;return n+(x?.id===id||x?.item===id?Number(x.count??v.count??0):0);},0);}
 const cases=[
  ['placeable','minecraft:oak_planks','minecraft:apple'],
@@ -28,8 +28,8 @@ for(const [kind,yes,no] of cases){
  await step('configure '+kind,['command','item modify entity @s weapon.mainhand {"type":"minecraft:set_components","components":{"codedefinedgui:attribute_filter_config":'+config+'}}']);
  await click('attach '+kind,EX);
  const yesId=yes.split('[')[0],noId=no.split('[')[0];
- await step('accepted fixture '+kind,['command','item replace block 50 80 50 container.0 with '+yes+' 1']);
- await step('rejected fixture '+kind,['command','item replace block 50 80 50 container.1 with '+no+' 1']);
+ await step('accepted fixture '+kind,['command','item replace block 52 80 50 container.0 with '+yes+' 1']);
+ await step('rejected fixture '+kind,['command','item replace block 52 80 50 container.1 with '+no+' 1']);
  await step('wait '+kind,['wait','30']);
  assert.ok(count(await step('accepted '+kind,['container',...s(DST)]),yesId)>=1,kind+' must accept '+yesId);
  assert.equal(count(await step('rejected '+kind,['container',...s(SRC)]),noId),1,kind+' must reject '+noId);

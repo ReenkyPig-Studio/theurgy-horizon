@@ -4,7 +4,7 @@
 const WIRE='theurgy:copper_wire';
 const EXTRACTOR='theurgy:logistics_item_extractor';
 const INSERTER='theurgy:logistics_item_inserter';
-const SOURCE=[40,80,40], EX=[41,80,40], IN=[47,80,40], DEST=[48,80,40];
+const SOURCE=[42,80,40], EX=[41,80,40], IN=[47,80,40], DEST=[46,80,40];
 const s=p=>p.map(String);
 function slots(reply){return Array.isArray(reply?.slots)?reply.slots:[];}
 function countAt(reply,i){const v=slots(reply)[i];if(!v)return 0;const inner=v.item&&typeof v.item==='object'?v.item:v;return Number(inner.count??v.count??0);}

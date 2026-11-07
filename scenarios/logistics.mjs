@@ -8,10 +8,10 @@ const ITEM_SINK = 'theurgy:logistics_item_inserter';
 const FLUID_SOURCE = 'theurgy:logistics_fluid_extractor';
 const FLUID_SINK = 'theurgy:logistics_fluid_inserter';
 const NEXUS = 'theurgy:logistics_nexus';
-const SRC_CHEST = [10, 80, 10], ITEM_EX = [11, 80, 10];
-const ITEM_IN = [14, 80, 10], DST_CHEST = [15, 80, 10], ITEM_NEXUS = [12, 80, 12];
-const SRC_TANK = [10, 80, 20], FLUID_EX = [11, 80, 20];
-const FLUID_IN = [14, 80, 20], DST_TANK = [15, 80, 20], FLUID_NEXUS = [12, 80, 22];
+const SRC_CHEST = [12, 80, 10], ITEM_EX = [11, 80, 10];
+const ITEM_IN = [14, 80, 10], DST_CHEST = [13, 80, 10], ITEM_NEXUS = [12, 80, 12];
+const SRC_TANK = [12, 80, 20], FLUID_EX = [11, 80, 20];
+const FLUID_IN = [14, 80, 20], DST_TANK = [13, 80, 20], FLUID_NEXUS = [12, 80, 22];
 
 function nbtText(reply) {
   if (Array.isArray(reply?.chat)) return reply.chat.join('\n');

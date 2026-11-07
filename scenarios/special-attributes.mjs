@@ -1,5 +1,5 @@
 const FILTER='theurgy:attribute_filter',EXTRACTOR='theurgy:logistics_item_extractor',INSERTER='theurgy:logistics_item_inserter';
-const SRC=[70,80,70],EX=[71,80,70],IN=[74,80,70],DST=[75,80,70],NEX=[72,80,72];const s=p=>p.map(String);
+const SRC=[72,80,70],EX=[71,80,70],IN=[74,80,70],DST=[73,80,70],NEX=[72,80,72];const s=p=>p.map(String);
 function count(r,id){return (r?.slots??[]).reduce((n,v)=>{const x=v?.item&&typeof v.item==='object'?v.item:v;return n+(x?.id===id||x?.item===id?Number(x.count??v.count??0):0);},0);}
 const cases=[
  ['added_by','theurgy','theurgy:mercury_shard','minecraft:apple'],
@@ -17,7 +17,7 @@ for(const [kind,value,yes,no] of cases){
  const config=JSON.stringify({mode:'match_any',rules:[{type:'codedefinedgui:'+kind,payload,inverted:false}]});
  await step('configure '+kind,['command','item modify entity @s weapon.mainhand {"type":"minecraft:set_components","components":{"codedefinedgui:attribute_filter_config":'+config+'}}']);
  await click('attach '+kind,EX);const yesId=yes.split('[')[0],noId=no.split('[')[0];
- await step('accepted '+kind,['command','item replace block 70 80 70 container.0 with '+yes+' 1']);await step('rejected '+kind,['command','item replace block 70 80 70 container.1 with '+no+' 1']);await step('wait '+kind,['wait','30']);
+ await step('accepted '+kind,['command','item replace block 72 80 70 container.0 with '+yes+' 1']);await step('rejected '+kind,['command','item replace block 72 80 70 container.1 with '+no+' 1']);await step('wait '+kind,['wait','30']);
  assert.ok(count(await step('accepted destination '+kind,['container',...s(DST)]),yesId)>=1,kind+' accepts');assert.equal(count(await step('rejected source '+kind,['container',...s(SRC)]),noId),1,kind+' rejects');await click('remove '+kind,EX,true);
 }
 return results;}

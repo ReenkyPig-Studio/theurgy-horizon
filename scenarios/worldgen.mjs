@@ -20,19 +20,11 @@ export async function runCustom(call, assert) {
   const deep = await step('deepslate ore', ['find-block', 'theurgy:deepslate_sal_ammoniac_ore', '64']);
   const vanillaDeep = await step('vanilla deepslate probe', ['find-block', 'minecraft:deepslate', '64']);
   await step('vanilla stone probe', ['find-block', 'minecraft:stone', '64']);
-  let deepFirst = null;
-  if (vanillaDeep.count > 0) {
-    assert.ok(deep.count > 0, JSON.stringify(deep));
-    deepFirst = deep.nearest[0].pos;
-    assert.equal((await step('deep ore before', ['block', ...deepFirst.map(String)])).block,
-      'theurgy:deepslate_sal_ammoniac_ore');
-  } else {
-    // The pinned Horizon generator has no deepslate blocks at all in this
-    // terrain. Record an explicit environment skip, never manufacture the
-    // deepslate target by replacing stone contrary to ConfiguredFeatures.
-    results.push({name: 'deepslate target unavailable in Horizon terrain', skipped: true,
-      vanillaDeepslateCount: vanillaDeep.count});
-  }
+  assert.ok(vanillaDeep.count > 0, 'Horizon terrain must expose a real deepslate band for parity: '+JSON.stringify(vanillaDeep));
+  assert.ok(deep.count > 0, JSON.stringify(deep));
+  const deepFirst = deep.nearest[0].pos;
+  assert.equal((await step('deep ore before', ['block', ...deepFirst.map(String)])).block,
+    'theurgy:deepslate_sal_ammoniac_ore');
 
   await step('reload', ['reload']);
   await step('loaded', ['wait', '40']);
