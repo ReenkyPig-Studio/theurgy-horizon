@@ -1,9 +1,6 @@
 {
   "model": {
-    "type": "minecraft:special",
-    "base": "theurgy:item/derivative_base",
-    "model": {
-      "type": "theurgy:alchemical_salt"
-    }
+    "type": "minecraft:model",
+    "model": "theurgy:item/salt_icon"
   }
 }
