@@ -190,6 +190,17 @@
   Теперь delivery — отдельный tool-free one-request сеанс после bounded research;
   placeholders отвергаются структурным gate. Research quota exhaustion сохраняется отдельно.
 
+## Текущие проверенные результаты (pin 26.3)
+
+- `runs/java-oracle-2026-11-07T12-52-30.730Z`: **JAVA_STATE_ORACLE_PASS**, 153/153 traced tests (152 behaviour + worldgen index), 0 failed. Включает block/BE/item traces, recipe outputs, UUID и capability capacities.
+- `runs/game-1794065368573`: **THEURGY_CUSTOM_PASS `custom:filter-ui`**, 30 observations. List/attribute filter screens, ghost item add/remove, mode/component changes, server-authoritative SelectedItem NBT.
+- `runs/game-1794064883182`: **THEURGY_CUSTOM_PASS `custom:differential-distiller`**, 11 observations; все 11 distiller behaviours отмечены `MATCH` в `artifacts/differential.json`.
+- `runs/game-1794061635832`: **THEURGY_CUSTOM_PASS `custom:differential-liquefaction`**, 15 observations; все 15 behaviours отмечены `MATCH`.
+- `runs/game-1794060708456`: **THEURGY_CUSTOM_PASS `custom:differential-calcination`**, 13 observations; все 13 behaviours отмечены `MATCH`.
+- `runs/game-1794060926105`: **THEURGY_CUSTOM_PASS `custom:differential-pedestals`**, 8 observations; reformation pedestal/emitter behaviours отмечены `MATCH`.
+
+Остальные группы ещё проходят проверку. Эти записи не означают завершение `todo.md` целиком и не отмечают последний пункт.
+
 ## Не проверено / не сделано
 - Полная компиляция horizon-client с glue и игровой bootstrap: не завершена этим сетапом.
 - Весь рой 32 ролей: конфигурация готова, в smoke запускалась пара, не все 32.
