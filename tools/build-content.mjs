@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import {root,config} from './common.mjs';
 import {applyRecipeConditions} from './recipe-conditions.mjs';
+import {readZipEntries} from './zip.mjs';
 const source=path.join(root,'upstream/theurgy/src');
 const dest=path.join(root,'content/theurgy');
 await fs.rm(dest,{recursive:true,force:true});
@@ -27,6 +28,7 @@ capabilities = ["registries"]
 `);
 await copy(path.join(root,'upstream/theurgy/LICENSES'),path.join(dest,'LICENSES'));
 await fs.copyFile(path.join(root,'upstream/theurgy/REUSE.toml'),path.join(dest,'REUSE.toml'));
+await fs.copyFile(path.join(root,'THIRD_PARTY_NOTICES.md'),path.join(dest,'THIRD_PARTY_NOTICES.md'));
 // Horizon's generator catalog is built before dev-mod configured features are
 // visible. Do not leave a dangling placed-feature/biome-modifier reference:
 // native/theurgy/worldgen.rs applies this exact registered ore contribution on
@@ -48,16 +50,18 @@ const props={
  distiller:[bool('lit'),['half',{type:'enum',values:['lower','upper']}]],
  incubator:['north','east','south','west'].map(bool).concat([['half',{type:'enum',values:['lower','upper']}]]),
  logistics_nexus:['up','down','north','south','east','west'].map(bool),
- logistics_connector_node:['up','down','north','south','east','west'].map(bool),
+ logistics_connector_node:['up','down','north','south','east','west'].map(bool).concat([['facing',{type:'enum',values:['down','up','north','south','west','east']}]]),
+ logistics_capability_proxy:[['facing',{type:'enum',values:['down','up','north','south','west','east']}]],
+ logistics_capability_probe:[['facing',{type:'enum',values:['down','up','north','south','west','east']}]],
  mercury_catalyst:[bool('enabled')],mercury_capacitor:[bool('enabled')],
  caloric_flux_emitter:[['facing',{type:'enum',values:['down','up','north','south','west','east']}],bool('enabled')],
  sulfuric_flux_emitter:[['facing',{type:'enum',values:['down','up','north','south','west','east']}]],
  mercury_flux_emitter:[['facing',{type:'enum',values:['down','up','north','south','west','east']}]],
  fermentation_vat:[['facing',{type:'enum',values:['north','south','east','west']}],bool('open'),bool('has_output')],
  digestion_vat:[['facing',{type:'enum',values:['north','south','east','west']}],bool('open')],
- logistics_item_inserter:[bool('has_filter')],logistics_item_extractor:[bool('has_filter')],
- logistics_fluid_inserter:[bool('has_filter'),bool('waterlogged')],logistics_fluid_extractor:[bool('has_filter'),bool('waterlogged')],
- logistics_mercury_flux_connector:[bool('has_filter')]
+ logistics_item_inserter:[['facing',{type:'enum',values:['down','up','north','south','west','east']}],bool('has_filter')],logistics_item_extractor:[['facing',{type:'enum',values:['down','up','north','south','west','east']}],bool('has_filter')],
+ logistics_fluid_inserter:[['facing',{type:'enum',values:['down','up','north','south','west','east']}],bool('has_filter'),bool('waterlogged')],logistics_fluid_extractor:[['facing',{type:'enum',values:['down','up','north','south','west','east']}],bool('has_filter'),bool('waterlogged')],
+ logistics_mercury_flux_connector:[['facing',{type:'enum',values:['down','up','north','south','west','east']}],bool('has_filter')]
 };
 const defaults={lit:'false',half:'lower',open:'true',has_output:'false',enabled:'true',has_filter:'false',
  waterlogged:'false',north:'false',south:'false',east:'false',west:'false',up:'false',down:'false',facing:'north'};
@@ -65,11 +69,11 @@ const templateFor=id=>{
  if(id==='sal_ammoniac_ore')return 'minecraft:iron_ore';
  if(id==='deepslate_sal_ammoniac_ore')return 'minecraft:deepslate_iron_ore';
  if(id==='sal_ammoniac')return 'minecraft:water';
- if(id.startsWith('logistics_')&&id!=='logistics_nexus')return 'minecraft:barrel';
+ if(id.startsWith('logistics_')&&id!=='logistics_nexus')return 'minecraft:stone';
  if(!be.has(id))return 'minecraft:stone';
- if(['fermentation_vat','digestion_vat','caloric_flux_emitter','sulfuric_flux_emitter','mercury_flux_emitter'].includes(id))return 'minecraft:barrel';
+ if(['fermentation_vat','digestion_vat','caloric_flux_emitter','sulfuric_flux_emitter','mercury_flux_emitter'].includes(id))return 'minecraft:stone';
  if(['calcination_oven','liquefaction_cauldron','distiller'].includes(id))return 'minecraft:furnace';
- return 'minecraft:chest';
+ return 'minecraft:stone';
 };
 const known={stone:[],iron_ore:[],deepslate_iron_ore:[],water:['level'],chest:['facing','waterlogged'],
  barrel:['facing','open'],furnace:['facing','lit']};
@@ -78,7 +82,7 @@ const blocks=(await fs.readdir(blockDir)).filter(f=>f.endsWith('.json')).map(f=>
 for(const id of blocks) {
  const template=templateFor(id),short=template.split(':')[1];
  const state_properties=Object.fromEntries((props[id]??[]).filter(([n])=>!known[short].includes(n)));
- const default_state=Object.fromEntries(Object.entries(props[id]??[]).map(([n])=>[n,defaults[n]??'false'])
+ const default_state=Object.fromEntries((props[id]??[]).map(([n])=>[n,defaults[n]??'false'])
    .filter(([n])=>state_properties[n]));
  const d={template,item:id!=='sal_ammoniac',properties:{hardness:id.includes('ore')?3:1,
    explosion_resistance:id.includes('ore')?3:1,requires_tool:id.includes('ore')}};
@@ -96,6 +100,32 @@ async function files(dir) {
 const itemRoot=path.join(source,'generated/resources/assets/theurgy/items');
 const items=(await files(itemRoot)).filter(f=>f.endsWith('.json')).map(f=>path.relative(itemRoot,f).replaceAll('\\','/').slice(0,-5)).sort();
 const blockSet=new Set(blocks);
+// Default SOURCE_ITEM/SOURCE_TAG components from SulfurRegistry. Besides
+// automatic derivative names/icons, DivinationRodRecipe consumes these exact
+// components when it links a sulfur-attuned rod to a block or ore tag.
+const sulfurSource=path.join(source,'main/java/com/klikli_dev/theurgy/registry/SulfurRegistry.java');
+const sulfurJava=await fs.readFile(sulfurSource,'utf8');
+const itemTagJava=await fs.readFile(path.join(source,'main/java/com/klikli_dev/theurgy/registry/ItemTagRegistry.java'),'utf8');
+const customTags={};
+for(const match of itemTagJava.matchAll(/(?:public|private)\s+static\s+final\s+TagKey<Item>\s+(\w+)\s*=\s*tag\("([^"]+)"\)/g))customTags[match[1]]='theurgy:'+match[2];
+const conventionTag=token=>{
+ if(token==='ItemTags.COALS')return 'minecraft:coals';
+ if(token.startsWith('ItemTagRegistry.'))return customTags[token.slice('ItemTagRegistry.'.length)];
+ if(!token.startsWith('Tags.Items.'))return null;
+ const name=token.slice('Tags.Items.'.length).toLowerCase();
+ const prefix=['storage_blocks','raw_materials','ingots','nuggets','gems','dusts','ores'].find(prefix=>name.startsWith(prefix+'_'));
+ return prefix?'c:'+prefix+'/'+name.slice(prefix.length+1):'c:'+name;
+};
+const sulfurComponents={};
+for(const match of sulfurJava.matchAll(/DeferredItem<AlchemicalSulfurItem>\s+(\w+)\s*=\s*registerForSource(Item|Tag)\(([^,]+),/g)) {
+ const name=match[1].toLowerCase(),kind=match[2],argument=match[3].trim();
+ if(kind==='Tag') {
+  const tag=conventionTag(argument);
+  if(tag)sulfurComponents['alchemical_sulfur_'+name]={tag};
+ } else if(argument.startsWith('Items.')) {
+  sulfurComponents['alchemical_sulfur_'+name]={item:'minecraft:'+argument.slice('Items.'.length).toLowerCase()};
+ }
+}
 // DataComponentRegistry defaults for the tool items. The native component
 // types are registered by native/theurgy/registry.rs before content loads.
 const rodSpecs={
@@ -127,6 +157,9 @@ for(const id of items) {
    d.components['theurgy:divination_settings_max_damage']=rod.damage;
    d.components['theurgy:divination_settings_allow_attuning']=rod.attune;
  }
+ const sulfur=sulfurComponents[id];
+ if(sulfur?.item)d.components['theurgy:source_item']=sulfur.item;
+ if(sulfur?.tag)d.components['theurgy:source_tag']=sulfur.tag;
  if(id==='mercurial_wand'){
    d.max_stack_size=1;
    d.components['theurgy:mercurial_wand_item_mode']='cycle_direction';
@@ -141,6 +174,19 @@ async function locateNeoforgeJar() {
  for(const file of await files(base))if(file.endsWith('neoforge-26.3.0.76-universal.jar'))return file;
  throw new Error('Pinned NeoForge universal jar not found offline');
 }
+const neoforgeJar=await locateNeoforgeJar();
+// NeoForge's ingredient tags are runtime data, not merely recipe-condition
+// evidence. Carry the small JSON tag definitions (with attribution) so #c:*
+// ingredients such as cobblestones/ores actually resolve in Horizon.
+let neoforgeTagFiles=0;
+for(const [name,bytes] of readZipEntries(neoforgeJar,'data/')) {
+ if(!/^data\/c\/tags\/(?:item|block)\/.+\.json$/.test(name))continue;
+ const target=path.join(dest,name);
+ try {await fs.access(target);continue;} catch{}
+ await fs.mkdir(path.dirname(target),{recursive:true});
+ await fs.writeFile(target,bytes);
+ neoforgeTagFiles++;
+}
 // Resolve `not(tag_empty)` before Horizon loads recipes. Its loader does not
 // know NeoForge tag conditions and would otherwise drop all conditioned files.
 // Unknown external-mod tags/items fail closed, while vanilla/Theurgy tags keep
@@ -150,7 +196,7 @@ const conditionReport=await applyRecipeConditions({
  dest,
  sources:[path.join(dest,'data'),path.join(prepared,'data')],
  itemAssets:[path.join(source,'main/resources'),path.join(source,'generated/resources'),prepared],
- neoforgeJar:await locateNeoforgeJar(),
+ neoforgeJar,
  reportFile:path.join(root,'artifacts/recipe-conditions.json'),
 });
 console.log(JSON.stringify({recipeConditions:conditionReport}));
@@ -179,4 +225,60 @@ await fs.mkdir(path.join(dest,'data/theurgy/horizon/creative_tab'),{recursive:tr
 await fs.writeFile(path.join(dest,'data/theurgy/horizon/creative_tab/theurgy.json'),JSON.stringify({
  title:'itemGroup.theurgy',icon:'theurgy:empty_jar_icon',items:items.filter(id=>!id.endsWith('_icon')).map(id=>'theurgy:'+id)
 },null,2)+'\n');
-console.log(JSON.stringify({blocks:blocks.length,items:items.length,blockEntities:be.size,resources:'main + generated, generated wins'},null,2));
+// Register every GeckoLib texture in the model atlas. The actual bone
+// geometry is submitted by native/theurgy/render.rs; these small cube models
+// are only atlas sources used by `native_standalone_models`.
+for(const id of ['calcination_oven','distiller','incubator_vessel_iron','incubator_vessel_gold',
+ 'incubator_vessel_bronze','logistics_nexus','sal_ammoniac_accumulator','sal_ammoniac_tank']) {
+ const modelDir=path.join(dest,'assets/theurgy/models/block/geckolib_atlas');
+ await fs.mkdir(modelDir,{recursive:true});
+ await fs.writeFile(path.join(modelDir,id+'.json',),JSON.stringify({parent:'minecraft:block/cube_all',textures:{all:'theurgy:block/'+id}},null,2)+'\n');
+}
+// GeckoLib special item renderers are implemented by the native item
+// decoration hook. Give each derivative a valid visible base model instead
+// of leaving Horizon's loader on the unknown `theurgy:*` special model type.
+for(const id of items) {
+ const base=id.startsWith('alchemical_niter_')?'empty_ceramic_jar_icon'
+  :id.startsWith('alchemical_sulfur_')?'empty_jar_icon'
+  :id.startsWith('alchemical_salt_')?'salt_icon':null;
+ if(!base)continue;
+ await fs.writeFile(path.join(dest,'assets/theurgy/items',id+'.json'),JSON.stringify({
+  model:{type:'minecraft:model',model:'theurgy:item/'+base}
+ },null,2)+'\n');
+}
+// Flatten the complete Modonomicon book into one runtime data file for the
+// native Hermetica screen. This preserves every category, entry, page type,
+// recipe/link id and image path; no upstream book content is discarded.
+const hermeticaRoot=path.join(dest,'data/theurgy/modonomicon/books/the_hermetica');
+const readJson=async file=>JSON.parse(await fs.readFile(file,'utf8'));
+const hermeticaCategories=[];
+for(const file of await files(path.join(hermeticaRoot,'categories'))) {
+ if(!file.endsWith('.json'))continue;
+ const id=path.basename(file,'.json');
+ hermeticaCategories.push({id,...await readJson(file)});
+}
+hermeticaCategories.sort((a,b)=>(a.sort_number??0)-(b.sort_number??0)||a.id.localeCompare(b.id));
+const hermeticaEntries=[];
+const hermeticaEntryRoot=path.join(hermeticaRoot,'entries');
+for(const file of await files(hermeticaEntryRoot)) {
+ const relative=path.relative(hermeticaEntryRoot,file).replaceAll('\\','/');
+ if(!file.endsWith('.json')||relative.split('/').length!==2)continue;
+ const entry=await readJson(file);
+ const pages=[];
+ const pageRoot=file.slice(0,-5)+'/pages';
+ try {
+  for(const pageFile of await files(pageRoot)) {
+   if(!pageFile.endsWith('.json'))continue;
+   pages.push({id:path.basename(pageFile,'.json'),...await readJson(pageFile)});
+  }
+ } catch(error) {if(error.code!=='ENOENT')throw error;}
+ pages.sort((a,b)=>(a.sort_number??0)-(b.sort_number??0)||a.id.localeCompare(b.id));
+ hermeticaEntries.push({...entry,pages});
+}
+hermeticaEntries.sort((a,b)=>String(a.category).localeCompare(String(b.category))||(a.sort_number??0)-(b.sort_number??0)||String(a.id).localeCompare(String(b.id)));
+const hermetica={book:await readJson(path.join(hermeticaRoot,'book.json')),categories:hermeticaCategories,
+ entries:hermeticaEntries,translations:await readJson(path.join(dest,'assets/theurgy/lang/en_us.json'))};
+await fs.writeFile(path.join(dest,'data/theurgy/hermetica.json'),JSON.stringify(hermetica)+'\n');
+console.log(JSON.stringify({blocks:blocks.length,items:items.length,blockEntities:be.size,
+ hermeticaCategories:hermeticaCategories.length,hermeticaEntries:hermeticaEntries.length,
+ hermeticaPages:hermeticaEntries.reduce((n,e)=>n+e.pages.length,0),neoforgeTagFiles,resources:'main + generated, generated wins'},null,2));

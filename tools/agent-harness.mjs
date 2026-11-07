@@ -10,7 +10,7 @@ const mode=process.argv[2]??'all';
 // Wheel input is a real window event in Horizon (`scroll-at` has no headless
 // fallback). Wand verification therefore uses the renderer explicitly; every
 // other scenario remains headless by default.
-const gui=mode==='wand'||mode==='custom:render'||mode==='custom:client'||process.env.THEURGY_GUI==='1';
+const gui=mode==='wand'||mode==='custom:render'||mode==='custom:client'||mode==='custom:book'||mode==='custom:filter-ui'||mode==='custom:differential-divination-recipes'||process.env.THEURGY_GUI==='1';
 const matrixRoot=process.env.THEURGY_MATRIX_ROOT??root;
 const target=process.env.THEURGY_CARGO_TARGET??path.join(matrixRoot,'target/native-agent-cache');
 const binary=path.join(target,'fast/horizon-client.exe');
@@ -49,7 +49,7 @@ async function release() {
 await acquire();
 async function exists(file){if(!file)return false;try{await fs.access(file);return true;}catch{return false;}}
 try {
-  if(mode==='items'||mode==='wand'||mode==='custom:wire-graph'||mode==='filters') {
+  if(mode==='items'||mode==='wand'||mode==='custom:wire-graph'||mode==='filters'||mode==='custom:book'||mode==='custom:client'||mode==='custom:filter-ui') {
     await run(process.execPath,['tools/build-content.mjs'],{env:{...rustEnv}});
     await run(process.execPath,['tools/content-check.mjs'],{env:{...rustEnv}});
   }
@@ -58,11 +58,11 @@ try {
   } else {
   console.log('[agent-harness] locked; checking real native proposal for',mode);
   await run(process.execPath,['tools/native.mjs',gui?'check':'check-headless'],{
-    env:{...rustEnv,THEURGY_CARGO_TARGET:target},
+    env:{...rustEnv,THEURGY_CARGO_TARGET:target,THEURGY_NATIVE_LOCK_TOKEN:token,THEURGY_NATIVE_LOCK_ROOT:matrixRoot},
   });
   console.log(`[agent-harness] check passed; building ${gui?'GUI':'headless'} native binary`);
   await run(process.execPath,['tools/native.mjs',gui?'build':'build-headless'],{
-    env:{...rustEnv,THEURGY_CARGO_TARGET:target},
+    env:{...rustEnv,THEURGY_CARGO_TARGET:target,THEURGY_NATIVE_LOCK_TOKEN:token,THEURGY_NATIVE_LOCK_ROOT:matrixRoot},
   });
   if(cached){await fs.mkdir(path.dirname(cached),{recursive:true});await fs.copyFile(binary,cached);console.log('[agent-harness] cached approved binary');}
   }

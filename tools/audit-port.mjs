@@ -61,6 +61,8 @@ const javaOracle=[];
 for(const file of javaTraceResults){try{const j=JSON.parse(await read(file));if(j.traces)javaOracle.push({file:slash(path.relative(root,file)),status:j.status,passed:j.traces.passed,total:j.instrumented?.totalBehaviourTests??151,sha256:j.traces.sha256});}catch{}}
 javaOracle.sort((a,b)=>a.file.localeCompare(b.file));
 const nativeFiles=(await files(path.join(root,'native/theurgy'))).filter(f=>f.endsWith('.rs'));
+const differentialPath=path.join(root,'artifacts/differential.json');
+const differential=await exists(differentialPath)?JSON.parse(await read(differentialPath)):null;
 const placeholders=[];
 for(const file of nativeFiles){const text=await read(file);for(const [i,line] of text.split(/\r?\n/).entries())if(/todo!\s*\(|unimplemented!\s*\(|PLACEHOLDER/i.test(line))placeholders.push({file:slash(path.relative(root,file)),line:i+1,text:line.trim()});}
 const missingInstances=tests.filter(t=>!t.unregistered&&!t.hasInstance).map(t=>t.id);
@@ -73,6 +75,9 @@ const report={
  recipes:{types:recipeTypes,rows:recipeRows,available:recipeRows.filter(r=>r.present).length,conditionallyDisabled:[...conditionallyDisabled],missing:recipeRows.filter(r=>!r.present&&!conditionallyDisabled.has(r.id+'.json')).map(r=>r.id),changed:recipeRows.filter(r=>r.present&&r.sourceSha256!==r.portedSha256).map(r=>r.id)},
  assets:{rows:assetRows,missing:assetRows.filter(r=>!r.present).map(r=>r.source),changed:assetRows.filter(r=>r.present&&!r.sameHash).map(r=>r.source)},
  features:{rows:featureRows,byStatus:Object.groupBy(featureRows,r=>r.status)},
+ differential:differential?{summary:differential.summary,matched:differential.rows.filter(r=>r.status==='MATCH').map(r=>r.id),
+  mismatched:differential.rows.filter(r=>r.status==='MISMATCH').map(r=>({id:r.id,differences:r.differences})),
+  missing:differential.rows.filter(r=>r.status==='MISSING_RUST').map(r=>r.id)}:null,
  javaOracle,placeholders,
  notes:['MAPPED files and proposals are not parity evidence. GameTest rows require a real Java trace and a linked real Horizon differential result.',
   'Recipe hash changes are audited transformations, not automatic failures: conditions and Horizon custom-type conversions require semantic comparison.',
