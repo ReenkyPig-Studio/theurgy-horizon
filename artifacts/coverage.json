@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generatedAt": "2026-11-07T15:16:34.599Z",
+  "generatedAt": "2026-11-07T16:27:51.048Z",
   "source": {
     "revision": "33b959c9ed0da1de2aff649e9728c1a03470b1bd",
     "tag": "release/v26.3-1.120.1",
@@ -21003,10 +21003,10 @@
         "line": 237,
         "id": "LOG-14",
         "behaviour": "filters: `ListFilter` (items + fluids, deny-list, respect data components), `AttributeFilter` (+6 attributes), `EmptyFilter`, mode (`FilterMode`), filter item UI, `FilterBehaviour.useItemOn` drop/filter apply",
-        "status": "UNPORTED",
+        "status": "PARTIAL",
         "java": "`content/behaviour/filter/*.java`, `content/behaviour/filter/attribute/*.java`",
-        "rust": "`native/theurgy/items.rs`",
-        "evidence": "EV=NOT EXECUTED"
+        "rust": "`native/theurgy/{filter.rs,filter_client.rs,filtered_transfer.rs}`",
+        "evidence": "EV=`runs/game-1794065368573`: real GUI list/attribute edits, ghost add/remove, authoritative NBT; advanced attribute browser remains"
       },
       {
         "line": 238,
@@ -22074,15 +22074,6 @@
           "evidence": "EV=NOT EXECUTED"
         },
         {
-          "line": 237,
-          "id": "LOG-14",
-          "behaviour": "filters: `ListFilter` (items + fluids, deny-list, respect data components), `AttributeFilter` (+6 attributes), `EmptyFilter`, mode (`FilterMode`), filter item UI, `FilterBehaviour.useItemOn` drop/filter apply",
-          "status": "UNPORTED",
-          "java": "`content/behaviour/filter/*.java`, `content/behaviour/filter/attribute/*.java`",
-          "rust": "`native/theurgy/items.rs`",
-          "evidence": "EV=NOT EXECUTED"
-        },
-        {
           "line": 245,
           "id": "ITM-01",
           "behaviour": "`DivinationRodItem`: defaults `NOT_FOUND=7.0f`, `SEARCHING=8.0f` as item-property floats; per-rod tier/allowed-tag/disallowed-tag/range/duration/durability/allowAttuning",
@@ -22371,6 +22362,15 @@
           "java": "`CraftingBehaviour.java:80-100`",
           "rust": "`native/theurgy/host.rs::{crafting,save_crafting}`",
           "evidence": "EV=NOT EXECUTED"
+        },
+        {
+          "line": 237,
+          "id": "LOG-14",
+          "behaviour": "filters: `ListFilter` (items + fluids, deny-list, respect data components), `AttributeFilter` (+6 attributes), `EmptyFilter`, mode (`FilterMode`), filter item UI, `FilterBehaviour.useItemOn` drop/filter apply",
+          "status": "PARTIAL",
+          "java": "`content/behaviour/filter/*.java`, `content/behaviour/filter/attribute/*.java`",
+          "rust": "`native/theurgy/{filter.rs,filter_client.rs,filtered_transfer.rs}`",
+          "evidence": "EV=`runs/game-1794065368573`: real GUI list/attribute edits, ghost add/remove, authoritative NBT; advanced attribute browser remains"
         }
       ],
       "N/A-CLIENT": [
@@ -22524,106 +22524,27 @@
   "differential": {
     "summary": {
       "expected": 152,
-      "selected": 152,
-      "matched": 73,
-      "missing": 52,
-      "mismatched": 27,
+      "selected": 18,
+      "matched": 12,
+      "missing": 4,
+      "mismatched": 2,
       "complete": false
     },
     "matched": [
-      "theurgy:calcination_oven_be_only_lower",
-      "theurgy:calcination_oven_blocked_output_does_not_consume_input",
-      "theurgy:calcination_oven_break_lower_destroys_upper",
-      "theurgy:calcination_oven_break_upper_destroys_lower",
-      "theurgy:calcination_oven_drops_items_when_broken",
-      "theurgy:calcination_oven_extract_output",
-      "theurgy:calcination_oven_input_consumed_output_produced",
-      "theurgy:calcination_oven_insert_input",
-      "theurgy:calcination_oven_lit_during_processing",
-      "theurgy:calcination_oven_placement",
-      "theurgy:calcination_oven_processing_starts",
-      "theurgy:calcination_oven_stops_without_heat",
-      "theurgy:calcination_oven_stops_without_input",
-      "theurgy:caloric_flux_emitter_placement",
+      "theurgy:digestion_vat_blocked_output_does_not_consume_inputs",
       "theurgy:digestion_vat_drops_items",
       "theurgy:digestion_vat_extract_output",
-      "theurgy:digestion_vat_facing",
       "theurgy:digestion_vat_insert_fluid",
       "theurgy:digestion_vat_insert_input",
-      "theurgy:digestion_vat_placement",
-      "theurgy:distiller_be_only_lower",
-      "theurgy:distiller_break_lower_destroys_upper",
-      "theurgy:distiller_break_upper_destroys_lower",
-      "theurgy:distiller_drops_items_when_broken",
-      "theurgy:distiller_extract_output",
-      "theurgy:distiller_input_consumed_output_produced",
-      "theurgy:distiller_insert_input",
-      "theurgy:distiller_lit_during_processing",
-      "theurgy:distiller_placement",
-      "theurgy:distiller_processing_starts",
-      "theurgy:distiller_stops_without_heat",
-      "theurgy:divination_rod_craft_t1",
+      "theurgy:fermentation_vat_blocked_output_does_not_consume_inputs",
       "theurgy:fermentation_vat_drops_items",
       "theurgy:fermentation_vat_extract_output",
-      "theurgy:fermentation_vat_facing",
       "theurgy:fermentation_vat_has_output_false",
       "theurgy:fermentation_vat_has_output_true",
       "theurgy:fermentation_vat_insert_fluid",
-      "theurgy:fermentation_vat_insert_input",
-      "theurgy:fermentation_vat_placement",
-      "theurgy:incubator_placement",
-      "theurgy:lc_block_entity_only_on_lower_half",
-      "theurgy:lc_breaking_lower_destroys_upper",
-      "theurgy:lc_breaking_upper_destroys_lower",
-      "theurgy:lc_drops_items_when_broken",
-      "theurgy:lc_extract_output_item",
-      "theurgy:lc_extract_solvent_fluid",
-      "theurgy:lc_input_consumed_output_produced",
-      "theurgy:lc_insert_input_item",
-      "theurgy:lc_insert_solvent_fluid",
-      "theurgy:lc_lit_state_true_during_processing",
-      "theurgy:lc_placement_creates_two_block_structure",
-      "theurgy:lc_processing_requires_input",
-      "theurgy:lc_processing_requires_solvent",
-      "theurgy:lc_processing_starts",
-      "theurgy:lc_processing_stops_when_heat_removed",
-      "theurgy:logistics_capability_proxy_placement",
-      "theurgy:logistics_node_placement",
-      "theurgy:mercury_capacitor_has_correct_capacity",
-      "theurgy:mercury_capacitor_placement",
-      "theurgy:mercury_capacitor_starts_empty",
-      "theurgy:mercury_flux_connector_exposes_capability",
-      "theurgy:reformation_result_extract",
-      "theurgy:reformation_source_insert",
-      "theurgy:reformation_source_placement",
-      "theurgy:reformation_source_rejects_invalid_held_item",
-      "theurgy:reformation_target_insert",
-      "theurgy:sal_ammoniac_accumulator_insert_item",
-      "theurgy:sal_ammoniac_accumulator_insert_water",
-      "theurgy:sal_ammoniac_tank_extract_fluid",
-      "theurgy:sal_ammoniac_tank_insert_fluid",
-      "theurgy:sal_ammoniac_tank_persistence",
-      "theurgy:sal_ammoniac_tank_placement"
+      "theurgy:fermentation_vat_insert_input"
     ],
     "mismatched": [
-      {
-        "id": "theurgy:caloric_flux_emitter_enabled",
-        "differences": [
-          "property facing: expected up, got north"
-        ]
-      },
-      {
-        "id": "theurgy:caloric_flux_emitter_energy",
-        "differences": [
-          "property facing: expected up, got north"
-        ]
-      },
-      {
-        "id": "theurgy:digestion_vat_blocked_output_does_not_consume_inputs",
-        "differences": [
-          "totalTime: expected 200, got 0"
-        ]
-      },
       {
         "id": "theurgy:digestion_vat_lid_closes",
         "differences": [
@@ -22631,213 +22552,19 @@
         ]
       },
       {
-        "id": "theurgy:divination_rod_craft_abundant_copper_sulfur",
-        "differences": [
-          "outputStack.components.theurgy:divination_linked_tag: missing"
-        ]
-      },
-      {
-        "id": "theurgy:divination_rod_craft_abundant_dirt_sulfur",
-        "differences": [
-          "outputStack.components.theurgy:divination_linked_block: missing"
-        ]
-      },
-      {
-        "id": "theurgy:fermentation_vat_blocked_output_does_not_consume_inputs",
-        "differences": [
-          "totalTime: expected 200, got 0"
-        ]
-      },
-      {
         "id": "theurgy:fermentation_vat_lid_closes",
         "differences": [
-          "property open: expected false, got true"
-        ]
-      },
-      {
-        "id": "theurgy:incubator_connection_states_default_false",
-        "differences": [
-          "missing block probe [2,3,2] (theurgy:incubator)"
-        ]
-      },
-      {
-        "id": "theurgy:logistics_extractor_placement",
-        "differences": [
-          "missing block probe [4,2,2] (theurgy:logistics_item_extractor)",
-          "unexpected block theurgy:logistics_item_extractor at [2,2,2]"
-        ]
-      },
-      {
-        "id": "theurgy:logistics_inserter_placement",
-        "differences": [
-          "missing block probe [3,2,2] (theurgy:logistics_item_inserter)",
-          "unexpected block theurgy:logistics_item_inserter at [2,2,2]"
-        ]
-      },
-      {
-        "id": "theurgy:mercury_capacitor_side_modes",
-        "differences": [
-          "sideModes.EAST: expected 1, got 2"
-        ]
-      },
-      {
-        "id": "theurgy:mercury_catalyst_placement",
-        "differences": [
-          "missing block probe [2,1,2] (theurgy:mercury_catalyst)",
-          "unexpected block theurgy:mercury_catalyst at [2,2,2]"
-        ]
-      },
-      {
-        "id": "theurgy:mercury_flux_connector_buffer_empty",
-        "differences": [
-          "targets: expected 0, got 1"
-        ]
-      },
-      {
-        "id": "theurgy:mercury_flux_connector_placement",
-        "differences": [
-          "targets: expected 0, got 1"
-        ]
-      },
-      {
-        "id": "theurgy:mercury_flux_emitter_energy",
-        "differences": [
-          "property enabled: expected true, got undefined",
-          "property facing: expected up, got north"
-        ]
-      },
-      {
-        "id": "theurgy:mercury_flux_emitter_placement",
-        "differences": [
-          "property enabled: expected true, got undefined"
-        ]
-      },
-      {
-        "id": "theurgy:pyromantic_brazier_placement",
-        "differences": [
-          "missing block probe [2,1,2] (theurgy:pyromantic_brazier)",
-          "unexpected block theurgy:pyromantic_brazier at [2,2,2]"
-        ]
-      },
-      {
-        "id": "theurgy:reformation_result_placement",
-        "differences": [
-          "missing block probe [4,2,2] (theurgy:reformation_result_pedestal)",
-          "unexpected block theurgy:reformation_result_pedestal at [2,2,2]"
-        ]
-      },
-      {
-        "id": "theurgy:reformation_source_extract",
-        "differences": [
-          "items: expected [], got [{\"Slot\":0,\"id\":\"theurgy:alchemical_sulfur_bone\",\"count\":1,\"components\":{}}]"
-        ]
-      },
-      {
-        "id": "theurgy:reformation_target_placement",
-        "differences": [
-          "missing block probe [3,2,2] (theurgy:reformation_target_pedestal)",
-          "unexpected block theurgy:reformation_target_pedestal at [2,2,2]"
-        ]
-      },
-      {
-        "id": "theurgy:sal_ammoniac_accumulator_placement",
-        "differences": [
-          "totalTime: expected 0, got undefined"
-        ]
-      },
-      {
-        "id": "theurgy:sulfuric_flux_emitter_energy",
-        "differences": [
-          "unexpected block theurgy:sulfuric_flux_emitter at [2,2,2]"
-        ]
-      },
-      {
-        "id": "theurgy:sulfuric_flux_emitter_insufficient_mercury_flux",
-        "differences": [
-          "unexpected block theurgy:sulfuric_flux_emitter at [2,1,2]",
-          "unexpected block theurgy:reformation_target_pedestal at [2,1,0]",
-          "unexpected block theurgy:reformation_source_pedestal at [0,1,0]",
-          "unexpected block theurgy:reformation_result_pedestal at [4,1,0]"
-        ]
-      },
-      {
-        "id": "theurgy:sulfuric_flux_emitter_linking",
-        "differences": [
-          "unexpected block theurgy:sulfuric_flux_emitter at [2,1,2]",
-          "unexpected block theurgy:reformation_target_pedestal at [2,1,0]",
-          "unexpected block theurgy:reformation_source_pedestal at [0,1,0]",
-          "unexpected block theurgy:reformation_result_pedestal at [4,1,0]"
-        ]
-      },
-      {
-        "id": "theurgy:sulfuric_flux_emitter_placement",
-        "differences": [
-          "unexpected block theurgy:sulfuric_flux_emitter at [2,2,2]"
-        ]
-      },
-      {
-        "id": "theurgy:sulfuric_flux_emitter_processing",
-        "differences": [
-          "unexpected block theurgy:sulfuric_flux_emitter at [2,1,2]",
-          "unexpected block theurgy:reformation_target_pedestal at [2,1,0]",
-          "unexpected block theurgy:reformation_source_pedestal at [0,1,0]",
-          "unexpected block theurgy:reformation_result_pedestal at [4,1,0]"
+          "property open: expected false, got true",
+          "items: expected [{\"Slot\":0,\"id\":\"minecraft:oak_log\",\"count\":1,\"components\":{}}], got []",
+          "fluids: expected [{\"id\":\"theurgy:sal_ammoniac\",\"amount\":1000}], got []"
         ]
       }
     ],
     "missing": [
-      "theurgy:caloric_flux_emitter_redstone",
-      "theurgy:incubator_blocked_output_does_not_consume_vessel_inputs",
-      "theurgy:incubator_break_lower_destroys_upper",
-      "theurgy:incubator_break_upper_destroys_lower",
-      "theurgy:incubator_extract_items",
-      "theurgy:incubator_extract_output",
-      "theurgy:incubator_inputs_consumed_output_produced",
-      "theurgy:incubator_insert_mercury",
-      "theurgy:incubator_insert_salt",
-      "theurgy:incubator_insert_sulfur",
-      "theurgy:incubator_mercury_vessel_connection",
-      "theurgy:incubator_processing_starts",
-      "theurgy:incubator_removing_vessel_connection",
-      "theurgy:incubator_salt_vessel_connection",
-      "theurgy:incubator_stops_without_heat",
-      "theurgy:incubator_sulfur_vessel_connection",
-      "theurgy:incubator_valid_multiblock",
-      "theurgy:logistics_capability_proxy_fluid_forwarding",
-      "theurgy:logistics_capability_proxy_fluid_round_robin",
-      "theurgy:logistics_fluid_connector_restores_attached_target_on_load",
-      "theurgy:logistics_fluid_extracts_world_source",
-      "theurgy:logistics_item_connector_restores_attached_target_on_load",
-      "theurgy:logistics_item_extractor_targets_in_any_registration_order",
-      "theurgy:logistics_item_extractor_targets_in_any_registration_order_reversed",
-      "theurgy:logistics_item_extractor_transfers_items",
-      "theurgy:logistics_nexus_be_accepts_item_uuid",
-      "theurgy:logistics_nexus_pairs_across_placement",
-      "theurgy:logistics_node_only_connects_when_attached_to_nexus",
-      "theurgy:mercury_capacitor_disabled_does_not_receive_flux",
-      "theurgy:mercury_capacitor_no_ping_pong",
-      "theurgy:mercury_capacitor_receives_flux",
-      "theurgy:mercury_catalyst_disabled_still_generates_flux",
-      "theurgy:mercury_catalyst_rejected_placeable_dont_duplicate",
-      "theurgy:mercury_catalyst_shard_generates_flux",
-      "theurgy:mercury_catalyst_shard_is_consumed",
-      "theurgy:mercury_flux_connector_forwards_flux",
-      "theurgy:mercury_flux_connector_forwards_to_multiple",
-      "theurgy:mercury_flux_emitter_flux_transfer",
-      "theurgy:mercury_flux_emitter_linking",
-      "theurgy:pyromantic_brazier_drops_items_when_broken",
-      "theurgy:pyromantic_brazier_fuel_consumed",
-      "theurgy:pyromantic_brazier_fuel_leaves_remainder",
-      "theurgy:pyromantic_brazier_heat_calcination_oven",
-      "theurgy:pyromantic_brazier_heat_distiller",
-      "theurgy:pyromantic_brazier_heat_liquefaction_cauldron",
-      "theurgy:pyromantic_brazier_insert_fuel",
-      "theurgy:pyromantic_brazier_lit_state_updates",
-      "theurgy:pyromantic_brazier_rejected_placeable_dont_duplicate",
-      "theurgy:pyromantic_brazier_rejects_non_burnable",
-      "theurgy:pyromantic_brazier_remove_fuel",
-      "theurgy:pyromantic_brazier_stacked_fuel_shrinks",
-      "theurgy:pyromantic_brazier_stops_heat_no_fuel"
+      "theurgy:digestion_vat_facing",
+      "theurgy:digestion_vat_placement",
+      "theurgy:fermentation_vat_facing",
+      "theurgy:fermentation_vat_placement"
     ]
   },
   "javaOracle": [
@@ -22889,6 +22616,27 @@
       "passed": 153,
       "total": 152,
       "sha256": "8d17b7d20c2ce0b313c3e09f66c21f4ab1afcdc50325cf2f45a89c801c503231"
+    },
+    {
+      "file": "runs/java-oracle-2026-11-07T16-05-04.530Z/result.json",
+      "status": "JAVA_STATE_ORACLE_PASS",
+      "passed": 153,
+      "total": 152,
+      "sha256": "f54caa9a6fd22d96935d823574eec87c4a9434e456944c094fe4a1cbe8d50d89"
+    },
+    {
+      "file": "runs/java-oracle-2026-11-07T16-20-36.214Z/result.json",
+      "status": "JAVA_GAMETESTS_FAIL",
+      "passed": 152,
+      "total": 152,
+      "sha256": "10b663be59d555d7203fc3316a3081e66757bf54e24f226a3de1f42be8728a52"
+    },
+    {
+      "file": "runs/java-oracle-2026-11-07T16-25-03.711Z/result.json",
+      "status": "JAVA_GAMETESTS_FAIL",
+      "passed": 152,
+      "total": 152,
+      "sha256": "18a253ae2e7a0a60255891b5d4b238035fd6e3887af6ab1c0a4712d5549b8bfa"
     }
   ],
   "placeholders": [],

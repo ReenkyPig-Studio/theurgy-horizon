@@ -72,6 +72,20 @@ Ctrl+C/SIGTERM сохраняет interrupted checkpoint. Изменение sch
    Это настоящий vanilla game/control stability test, не проверка машин Theurgy и не автоисполнение agent code.
    Одновременно запускается один игровой процесс; 32 — лимит LLM, не 32 копии Minecraft.
 
+## Дополнительная приёмочная проверка
+
+```powershell
+node tools/java-oracle.mjs --trace
+node tools/differential.mjs --all
+node tools/multiplayer.mjs
+node tools/agent-harness.mjs custom:filter-ui
+node tools/agent-harness.mjs custom:recipes
+node tools/agent-harness.mjs custom:render
+node tools/package.mjs
+```
+
+`tools/differential.mjs` читает реальные Java traces и только `diff:`-probes из изолированных Horizon миров. `--allow-partial` предназначен исключительно для разработки и не является приёмочным критерием. `tools/multiplayer.mjs` создаёт отдельные LAN host/guest homes и не использует реальные сохранения игрока.
+
 ## Интеграция proposals
 node tools/proposal.mjs runs/<run>/checkpoint.json crafting
 Проверить код и независимое review. Затем:

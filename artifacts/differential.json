@@ -2,15 +2,20 @@
   "schema": 1,
   "kind": "pinned Java 26.3 to real Horizon Rust state differential",
   "java": {
-    "run": "runs/java-oracle-2026-11-07T12-52-30.730Z",
+    "run": "runs/java-oracle-2026-11-07T16-43-41.576Z",
     "source": {
       "tag": "release/v26.3-1.120.1",
       "revision": "33b959c9ed0da1de2aff649e9728c1a03470b1bd",
       "minecraft": "26.3"
     },
-    "traceSha256": "8d17b7d20c2ce0b313c3e09f66c21f4ab1afcdc50325cf2f45a89c801c503231"
+    "traceSha256": "935e69930cb71de978e82f501b874d25f7e1548dd2682819c8a53264366963c4"
   },
   "rustEvidence": [
+    "runs/game-1794068661229",
+    "runs/game-1794067711730",
+    "runs/game-1794066115095",
+    "runs/game-1794065784564",
+    "runs/game-1794065368573",
     "runs/game-1794064883182",
     "runs/game-1794062149299",
     "runs/game-1794061635832",
@@ -284,9 +289,9 @@
   "summary": {
     "expected": 152,
     "selected": 152,
-    "matched": 73,
+    "matched": 75,
     "missing": 52,
-    "mismatched": 27,
+    "mismatched": 25,
     "complete": false
   },
   "rows": [
@@ -399,23 +404,21 @@
     },
     {
       "id": "theurgy:digestion_vat_blocked_output_does_not_consume_inputs",
-      "status": "MISMATCH",
-      "differences": [
-        "totalTime: expected 200, got 0"
-      ],
-      "evidence": "runs/game-1794058793156"
+      "status": "MATCH",
+      "differences": [],
+      "evidence": "runs/game-1794067711730"
     },
     {
       "id": "theurgy:digestion_vat_drops_items",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794058793156"
+      "evidence": "runs/game-1794067711730"
     },
     {
       "id": "theurgy:digestion_vat_extract_output",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794058793156"
+      "evidence": "runs/game-1794067711730"
     },
     {
       "id": "theurgy:digestion_vat_facing",
@@ -427,13 +430,13 @@
       "id": "theurgy:digestion_vat_insert_fluid",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794058793156"
+      "evidence": "runs/game-1794067711730"
     },
     {
       "id": "theurgy:digestion_vat_insert_input",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794058793156"
+      "evidence": "runs/game-1794067711730"
     },
     {
       "id": "theurgy:digestion_vat_lid_closes",
@@ -441,7 +444,7 @@
       "differences": [
         "property open: expected false, got true"
       ],
-      "evidence": "runs/game-1794058793156"
+      "evidence": "runs/game-1794067711730"
     },
     {
       "id": "theurgy:digestion_vat_placement",
@@ -539,23 +542,21 @@
     },
     {
       "id": "theurgy:fermentation_vat_blocked_output_does_not_consume_inputs",
-      "status": "MISMATCH",
-      "differences": [
-        "totalTime: expected 200, got 0"
-      ],
-      "evidence": "runs/game-1794058793156"
+      "status": "MATCH",
+      "differences": [],
+      "evidence": "runs/game-1794067711730"
     },
     {
       "id": "theurgy:fermentation_vat_drops_items",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794058793156"
+      "evidence": "runs/game-1794067711730"
     },
     {
       "id": "theurgy:fermentation_vat_extract_output",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794058793156"
+      "evidence": "runs/game-1794067711730"
     },
     {
       "id": "theurgy:fermentation_vat_facing",
@@ -567,33 +568,35 @@
       "id": "theurgy:fermentation_vat_has_output_false",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794058793156"
+      "evidence": "runs/game-1794067711730"
     },
     {
       "id": "theurgy:fermentation_vat_has_output_true",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794058793156"
+      "evidence": "runs/game-1794067711730"
     },
     {
       "id": "theurgy:fermentation_vat_insert_fluid",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794058793156"
+      "evidence": "runs/game-1794067711730"
     },
     {
       "id": "theurgy:fermentation_vat_insert_input",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794058793156"
+      "evidence": "runs/game-1794067711730"
     },
     {
       "id": "theurgy:fermentation_vat_lid_closes",
       "status": "MISMATCH",
       "differences": [
-        "property open: expected false, got true"
+        "property open: expected false, got true",
+        "items: expected [{\"Slot\":0,\"id\":\"minecraft:oak_log\",\"count\":1,\"components\":{}}], got []",
+        "fluids: expected [{\"id\":\"theurgy:sal_ammoniac\",\"amount\":1000}], got []"
       ],
-      "evidence": "runs/game-1794058793156"
+      "evidence": "runs/game-1794067711730"
     },
     {
       "id": "theurgy:fermentation_vat_placement",

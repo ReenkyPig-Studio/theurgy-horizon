@@ -2,6 +2,9 @@
 package com.klikli_dev.theurgy.gametest;
 
 import net.minecraft.core.registries.Registries;
+import net.minecraft.world.level.levelgen.LegacyRandomSource;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.biome.BiomeGenerationSettings;
@@ -47,8 +50,33 @@ public final class WorldgenTraceGameTests {
     private static void writeOreTrace(GameTestHelper helper) {
         try {
             var level = helper.getLevel();
-            var origin = helper.getTestOrigin();
+            var origin = helper.testInfo.getTestOrigin();
+            var key = ResourceKey.create(Registries.PLACED_FEATURE, Theurgy.loc("sal_ammoniac_ore"));
+            var placed = level.getServer().registryAccess().lookupOrThrow(Registries.PLACED_FEATURE).getOrThrow(key);
             var ores = new JsonArray();
+            for (int attempt = 0; attempt < 16 && ores.isEmpty(); attempt++) {
+                origin = origin.east(attempt == 0 ? 0 : 16);
+            for (int x = origin.getX() - 8; x <= origin.getX() + 8; x++) {
+                for (int z = origin.getZ() - 8; z <= origin.getZ() + 8; z++) {
+                    for (int y = 0; y <= 15; y++) {
+                        level.setBlock(new BlockPos(x, y, z), (y < 8 ? Blocks.DEEPSLATE : Blocks.STONE).defaultBlockState(), 3);
+                    }
+                }
+            }
+            var seed = level.getSeed();
+            var decorationRandom = new LegacyRandomSource(seed);
+            long xScale = decorationRandom.nextLong() | 1;
+            long zScale = decorationRandom.nextLong() | 1;
+            long decorationSeed = ((long) (origin.getX() >> 4) * xScale + (long) (origin.getZ() >> 4) * zScale) ^ seed;
+            var random = new LegacyRandomSource(decorationSeed + 34 + 60000);
+            var feature = level.getServer().registryAccess().lookupOrThrow(Registries.FEATURE)
+                    .getOrThrow(ResourceKey.create(Registries.FEATURE, Theurgy.loc("sal_ammoniac_ore")));
+            for (int i = 0; i < 20; i++) {
+                int x = (origin.getX() >> 4 << 4) + random.nextInt(16);
+                int z = (origin.getZ() >> 4 << 4) + random.nextInt(16);
+                int y = (random.nextInt(265) - 64 + random.nextInt(265) - 64) / 2;
+                feature.value().place(level, level.getChunkSource().getGenerator(), random, new BlockPos(x, y, z));
+            }
             for (int x = origin.getX() - 24; x <= origin.getX() + 24; x++) {
                 for (int z = origin.getZ() - 24; z <= origin.getZ() + 24; z++) {
                     for (int y = -64; y <= 200; y++) {
@@ -57,10 +85,15 @@ public final class WorldgenTraceGameTests {
                         if (!state.is(BlockRegistry.DEEPSLATE_SAL_AMMONIAC_ORE.get()) && !state.is(BlockRegistry.SAL_AMMONIAC_ORE.get())) continue;
                         var ore = new JsonObject();
                         ore.addProperty("id", BuiltInRegistries.BLOCK.getKey(state.getBlock()).toString());
-                        ore.add("pos", intArray(x, y, z));
+                        var position = new JsonArray();
+                        position.add(x);
+                        position.add(y);
+                        position.add(z);
+                        ore.add("pos", position);
                         ores.add(ore);
                     }
                 }
+            }
             }
             var root = new JsonObject();
             root.addProperty("seed", level.getSeed());

@@ -193,6 +193,7 @@
 ## Текущие проверенные результаты (pin 26.3)
 
 - `runs/java-oracle-2026-11-07T12-52-30.730Z`: **JAVA_STATE_ORACLE_PASS**, 153/153 traced tests (152 behaviour + worldgen index), 0 failed. Включает block/BE/item traces, recipe outputs, UUID и capability capacities.
+- `runs/multiplayer-1794068703456`: **THEURGY_MULTIPLAYER_PASS**, 17 observations. Isolated LAN host + guest; guest filter edit is authoritative on host, invalid rule rejected, operator probe remains unavailable with cheats disabled.
 - `runs/game-1794065368573`: **THEURGY_CUSTOM_PASS `custom:filter-ui`**, 30 observations. List/attribute filter screens, ghost item add/remove, mode/component changes, server-authoritative SelectedItem NBT.
 - `runs/game-1794064883182`: **THEURGY_CUSTOM_PASS `custom:differential-distiller`**, 11 observations; все 11 distiller behaviours отмечены `MATCH` в `artifacts/differential.json`.
 - `runs/game-1794061635832`: **THEURGY_CUSTOM_PASS `custom:differential-liquefaction`**, 15 observations; все 15 behaviours отмечены `MATCH`.

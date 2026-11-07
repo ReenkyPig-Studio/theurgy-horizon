@@ -36,8 +36,8 @@ export async function setblock(call, pos, id) {
   // placement is preceded by a real teleport/chunk-load, not an air reply.
   await call(['tp', String(pos[0]), String(pos[1] + 2), String(pos[2] - 2)]);
   await wait(call, 2);
-  const reply = await call(['setblock', ...pos.map(String), id]);
   const state = /^([^[]+)\[(.+)\]$/.exec(id);
+  const reply = await call(['setblock', ...pos.map(String), state?.[1] ?? id]);
   if (state) {
     for (const pair of state[2].split(',')) {
       const [key, value] = pair.split('=');

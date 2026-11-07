@@ -41,7 +41,7 @@ async function launchHost() {
   await call('host',['wait-ready','180']);
 }
 async function launchGuest() {
-  await call('guest',['launch','--game',exe,'--wait','--resources',path.join(version,'.local/horizon-client/26.3'),
+  await call('guest',['launch','--game',exe,'--resources',path.join(version,'.local/horizon-client/26.3'),
     '--game-dir',guestHome,'--home',guestHome,'--render-distance','2','--headless','--dev-mod',path.join(root,'content/theurgy')]);
 }
 let hostUp=false,guestUp=false;
@@ -59,7 +59,7 @@ try {
   await call('guest',['connect','localhost:'+port]);
   await call('guest',['wait-ready','180']);
   const guests=await call('host',['lan','status']);
-  const guest=guests.guests?.[0]??{};
+  const guest=guests.guests?.find(candidate=>candidate.name!==guests.host)??{};
   const name=guest.name??guest.player?.name??guest.username;
   if(!name)throw new Error('guest name not found: '+JSON.stringify(guests));
 
@@ -70,14 +70,13 @@ try {
   await call('guest',['command','theurgy_filter','main','mode','deny']);
   await call('guest',['command','theurgy_filter','main','add','auto']);
   await call('guest',['command','theurgy_filter','main','components','true']);
-  const edited=await call('guest',['command','data','get','entity','@s','SelectedItem']);
-  const editedText=JSON.stringify(edited);
+  const hostView=await call('host',['command','data','get','entity',name,'SelectedItem']);
+  const editedText=JSON.stringify(hostView);
   if(!editedText.includes('deny')||!editedText.includes('minecraft:apple')||!editedText.includes('respect_data_components'))
     throw new Error('guest filter edit did not reach the authoritative stack: '+editedText);
-  const hostView=await call('host',['command','data','get','entity',name,'SelectedItem']);
-  if(!JSON.stringify(hostView).includes('minecraft:apple'))throw new Error('host does not see guest filter contents');
+  if(!editedText.includes('minecraft:apple'))throw new Error('host does not see guest filter contents');
   await call('guest',['command','theurgy_filter','main','rule_add','codedefinedgui:standard','{"value":"definitely_not_a_real_attribute"}']);
-  const rejected=await call('guest',['command','data','get','entity','@s','SelectedItem']);
+  const rejected=await call('host',['command','data','get','entity',name,'SelectedItem']);
   if(JSON.stringify(rejected).includes('definitely_not_a_real_attribute'))throw new Error('invalid attribute rule was accepted');
   // Operator-only probes stay unavailable to a guest with commands disabled.
   const probe=await call('guest',['command','theurgy_probe','0','80','0'],true);
