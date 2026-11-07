@@ -9,7 +9,7 @@ import {root,config} from './common.mjs';
 // is read, never modified, and every retained helper/test is its actual text.
 // Full-game evidence remains mandatory: this does not verify native hooks.
 const specs={
- worldgen:['chunk_load'],
+ worldgen:['chunk_load','place_ore_feature','any_ocean_floor_at_least','ocean_floor_heights'],
  selection:['sneaking','right_click','inventory_tick','left_click','placed'],
  interactions:['accepts_input','entity_pos','right_click'],
  items:[
@@ -17,10 +17,12 @@ const specs={
  'set_held_component','load_wire_endpoint','store_wire_endpoint',
  'clear_wire_endpoint','consume_one_wire','wire_use_on','attune_rod',
  'is_sneaking','wand_mode','block_facing','wand_use_on','mouse_scroll',
+ 'change_wand_mode','key_change_mode',
  'right_click_block','use_item','use_on','destroyed',
  'acting_position','play_tuning_fork','overlay','held_distance','scan_rod',
  'uuid_from_random','uuid_text','apply_block_item_components','inventory_tick',
  'replace_held','fluid_use_on','state_for_placement','use_duration',
+ 'translated_source_block','translated_source_tag','prepare_item_craft',
  'release_using','finish_using','tooltip',
  ],
  registry:['tick'],
@@ -29,12 +31,15 @@ const specs={
  'load_wire_endpoint','change_wire_component','store_wire_endpoint',
  'change_wire_count','find_wire','add_wire','remove_wire','wire_use_on',
  'wire_network','collect_network','tick_connector',
+ 'probe_insert_targets','probe_nexus_partners','proxy_fluid_target',
+ 'proxy_read_fluid','proxy_drain_fluid','restore_attached_target_if_empty',
+ 'fill_mod_tank','drain_mod_tank',
 ]};
 const name=process.argv[2]??'';
 if(!specs[name])throw new Error('module-tests: '+Object.keys(specs).join(' | '));
 const source=await fs.readFile(path.join(root,'native/theurgy',name+'.rs'),'utf8');
 function stripFunction(source,name) {
- const match=new RegExp(`^(?:pub\\s+)?fn\\s+${name}\\s*\\(`,'m').exec(source);
+ const match=new RegExp(`^(?:(?:pub(?:\\(crate\\))?)\\s+)?fn\\s+${name}\\s*\\(`,'m').exec(source);
  if(!match)throw new Error('missing production helper: '+name);
  const open=source.indexOf('{',match.index);if(open<0)throw new Error('malformed '+name);
  let depth=0,quote=false,escape=false,lineComment=false,blockComment=0;
