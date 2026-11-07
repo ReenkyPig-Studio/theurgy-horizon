@@ -63,9 +63,11 @@ fn read_slot(entity: &ModBlockEntity, index: usize) -> Option<&ItemStack> {
 /// The real max stack of a live stack, resolved from the host's item table.
 /// Falls back to the recipe-independent default when the item is unknown.
 fn slot_max_stack(game: &crate::game::Game<'_>, stack: &ItemStack) -> u32 {
-    let _ = game;
-    let _ = stack;
-    FALLBACK_MAX_STACK
+    game.native_max_stack_size(&stack.item).unwrap_or(FALLBACK_MAX_STACK)
+}
+
+fn same_resource(a: &ItemStack, b: &ItemStack) -> bool {
+    a.item == b.item && a.damage == b.damage && a.extra == b.extra
 }
 
 /// Snapshot of the item slots as the engine sees them (id + count + real max
@@ -87,6 +89,25 @@ fn read_items(
         .collect()
 }
 
+fn input_signature(entity: &ModBlockEntity, kind: &str, recipe_id: &str) -> u64 {
+    let mut hash = 0xcbf2_9ce4_8422_2325u64;
+    for byte in kind.bytes().chain(recipe_id.bytes()) {
+        hash ^= u64::from(byte);
+        hash = hash.wrapping_mul(0x0000_0100_0000_01b3);
+    }
+    for slot in &entity.items {
+        if let Some(stack) = slot {
+            for byte in format!("{:?}|{:?}|{:?}", stack.item, stack.damage, stack.extra).bytes() {
+                hash ^= u64::from(byte);
+                hash = hash.wrapping_mul(0x0000_0100_0000_01b3);
+            }
+        }
+        hash ^= 0xff;
+        hash = hash.wrapping_mul(0x0000_0100_0000_01b3);
+    }
+    hash
+}
+
 /// Applies the craft plan mutations back to `entity.items`. Only counts are
 /// changed on existing stacks (a decrement or an output + count); the
 /// components of consumed/kept stacks are never touched, and the output stack
@@ -99,6 +120,7 @@ fn apply_plan_to_items(
     game: &crate::game::Game<'_>,
     entity: &mut ModBlockEntity,
     plan: &CraftPlan,
+    assembled: Option<&ItemStack>,
 ) -> bool {
     // Re-check fit against the live stacks (component-aware max stack).
     if let Some((slot, result)) = &plan.output {
@@ -106,6 +128,7 @@ fn apply_plan_to_items(
             None => result.count <= result.max_stack,
             Some(old) => {
                 old.item.as_ref() == result.id.as_str()
+                    && assembled.is_none_or(|result_stack| same_resource(old, result_stack))
                     && u64::from(old.count) + u64::from(result.count)
                         <= u64::from(slot_max_stack(game, old).min(result.max_stack))
             }
@@ -139,7 +162,7 @@ fn apply_plan_to_items(
                 }
             }
             Some(slot_ref) => {
-                *slot_ref = Some(ItemStack::new(&result.id, result.count));
+                *slot_ref = Some(assembled.cloned().unwrap_or_else(|| ItemStack::new(&result.id, result.count)));
             }
             None => return false,
         }
@@ -290,7 +313,7 @@ fn recipe_time(json: &Value) -> i32 {
     json.get("time")
         .and_then(Value::as_i64)
         .unwrap_or(100)
-        .max(0) as i32
+        .clamp(0, i64::from(i32::MAX)) as i32
 }
 
 fn matches_ingredient(
@@ -332,14 +355,17 @@ pub fn tick(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut ModBlo
     };
     let mut state = theurgy_host::crafting(entity);
     let old_state = state.clone();
+    let mut current_signature = 0u64;
 
     // Heat consumers gate on the actual heat source at the machine's position;
     // fermentation/digestion run while the vat is not OPEN.
     let can_process = if is_heat_consumer(kind) {
-        crate::game::theurgy_heat::heated(game, pos)
+        crate::game::theurgy_heat::heated(game, pos, entity)
     } else {
         !vat_is_open(game, pos)
     };
+    let was_open = !is_heat_consumer(kind) && vat_is_open(game, pos);
+    let mut selected_can_craft = false;
 
     let recipe_snapshot: Vec<RecipeSnapshot> = game
         .native_recipes_of_type(kind)
@@ -357,6 +383,14 @@ pub fn tick(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut ModBlo
         let parts = ingredient_parts(kind, &snap.json);
         if parts.is_empty() {
             continue;
+        }
+        if matches!(kind, "theurgy:fermentation" | "theurgy:digestion") {
+            let filled = input_slots.iter().filter(|slot| {
+                items.get(**slot).is_some_and(Option::is_some)
+            }).count();
+            if filled != parts.len() {
+                continue;
+            }
         }
         let mut ok = true;
         let mut used: Vec<bool> = vec![false; items.len()];
@@ -416,7 +450,13 @@ pub fn tick(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut ModBlo
                 json: &snap.json,
                 time: snap.time,
             };
-            if state.total_time != recipe.time {
+            let signature = input_signature(entity, kind, &snap.id);
+            current_signature = signature;
+            let previous = ((entity.data.get(8).copied().unwrap_or(0) as u32 as u64) << 32)
+                | entity.data.get(7).copied().unwrap_or(0) as u32 as u64;
+            if previous != 0 && previous != signature {
+                state.input_changed(recipe.time);
+            } else if state.total_time != recipe.time {
                 state.input_changed(recipe.time);
             }
             let mut matcher =
@@ -428,13 +468,25 @@ pub fn tick(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut ModBlo
                 let mut sim_items = items.clone();
                 let mut sim_tanks = tanks.clone();
                 can_craft = commit_plan(&mut sim_items, &mut sim_tanks, plan_ref);
+            selected_can_craft = can_craft;
+            }
+            let result_json = recipe.json.get("result");
+            let assembled = result_json.and_then(|json| game.native_recipe_result(json));
+            let output_index = layout(kind).map(|value| value.output).unwrap_or(0);
+            if let Some(result_stack) = assembled.as_ref() {
+                if let Some(old) = read_slot(entity, output_index) {
+                    if !same_resource(old, result_stack) {
+                        can_craft = false;
+                        selected_can_craft = false;
+                    }
+                }
             }
             let effects = state.tick(can_process, true, can_craft, recipe.time);
             let did_craft = if effects.craft_attempt && can_craft {
                 plan.as_ref()
                     .map(|plan| {
                         if commit_plan(&mut items, &mut tanks, plan)
-                            && apply_plan_to_items(game, entity, plan)
+                            && apply_plan_to_items(game, entity, plan, assembled.as_ref())
                         {
                             true
                         } else {
@@ -461,6 +513,7 @@ pub fn tick(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut ModBlo
     theurgy_host::save_crafting(entity, &state);
     // Menu data slots: progress, total time, fluid amount, capacity. The
     // screen reads these as i32 and clamps them itself.
+    let heat_cache = entity.data.get(6).copied().unwrap_or(0);
     entity.data.clear();
     entity.data.extend([
         state.progress.max(0),
@@ -469,7 +522,36 @@ pub fn tick(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut ModBlo
         tanks.first().map_or(0, |tank| tank.capacity.max(0)),
         i32::from(state.is_processing),
         i32::from(state.could_craft_last_tick),
+        heat_cache,
+        current_signature as u32 as i32,
+        (current_signature >> 32) as u32 as i32,
     ]);
+    if !is_heat_consumer(kind) {
+        let facing = game.native_block_property(pos, "facing").unwrap_or_else(|| "north".into());
+        let _ = facing;
+        let offset_key = JavaString::from("randomSlowTickOffset");
+        if !entity.nbt.contains_key(&offset_key) {
+            use horizon_core::random::RandomSource;
+            let offset = game.world.random.next_int_bound(20).unwrap_or(0);
+            entity.nbt.insert(offset_key, Tag::Int(offset));
+        }
+        let offset = theurgy_host::int(&entity.nbt, "randomSlowTickOffset", 0);
+        if was_open && selected_can_craft
+            && (game.world.game_time + i64::from(offset)) % 20 == 0
+            && game.native_neighbor_signal(game.dim.id(), pos) > 0
+        {
+            game.native_set_block_property_with(pos, "open", "false", 2);
+        }
+        if !state.is_processing && !was_open {
+            game.native_set_block_property_with(pos, "open", "true", 2);
+        }
+        if kind == "theurgy:fermentation" {
+            let has_output = read_slot(entity, 3).is_some_and(|stack| stack.count > 0);
+            if game.native_block_property(pos, "has_output").as_deref() != Some(if has_output { "true" } else { "false" }) {
+                game.native_set_block_property_with(pos, "has_output", if has_output { "true" } else { "false" }, 3);
+            }
+        }
+    }
     if result.state_changed || result.crafted {
         game.native_block_entity_sync(pos);
     }
@@ -483,6 +565,90 @@ fn vat_is_open(game: &mut crate::game::Game<'_>, pos: [i32; 3]) -> bool {
         Some(value) => value == "true",
         None => false,
     }
+}
+
+fn vat_block(state: horizon_world::registry::BlockStateId, level: &crate::game::GameLevel<'_>) -> Option<&'static str> {
+    let state = level.registry.state(state)?;
+    match state.name.as_str() {
+        "theurgy:fermentation_vat" => Some("theurgy:fermentation_vat"),
+        "theurgy:digestion_vat" => Some("theurgy:digestion_vat"),
+        _ => None,
+    }
+}
+
+/// `VatRedstoneHasOutputBehaviour`: only the block's front emits 15.
+pub fn block_signal(
+    level: &crate::game::GameLevel<'_>,
+    pos: horizon_core::position::BlockPos,
+    state: horizon_world::registry::BlockStateId,
+    face: horizon_core::geometry::Direction,
+    signal: &mut i32,
+) {
+    let Some(_) = vat_block(state, level) else { return; };
+    let facing = level.registry.state(state)
+        .and_then(|descriptor| descriptor.properties.get("facing"))
+        .and_then(|value| crate::game::theurgy_logistics::facing_name_to_dir(value))
+        .unwrap_or(2);
+    let face_id = match face {
+        horizon_core::geometry::Direction::Down => 0,
+        horizon_core::geometry::Direction::Up => 1,
+        horizon_core::geometry::Direction::North => 2,
+        horizon_core::geometry::Direction::South => 3,
+        horizon_core::geometry::Direction::West => 4,
+        horizon_core::geometry::Direction::East => 5,
+    };
+    if face_id != facing {
+        *signal = 0;
+        return;
+    }
+    let has_output = level.world.block_entities.get(&(pos.x, pos.y, pos.z)).is_some_and(|entity| {
+        let horizon_client::containers::BlockEntity::Mod(entity) = entity else { return false; };
+        entity.items.get(3).is_some_and(Option::is_some)
+    });
+    *signal = if has_output { 15 } else { 0 };
+}
+
+pub fn is_signal_source(
+    level: &crate::game::GameLevel<'_>,
+    state: horizon_world::registry::BlockStateId,
+    source: &mut bool,
+) {
+    if vat_block(state, level).is_some() {
+        *source = true;
+    }
+}
+
+pub fn has_analog_output(
+    level: &crate::game::GameLevel<'_>,
+    state: horizon_world::registry::BlockStateId,
+    output: &mut bool,
+) {
+    if vat_block(state, level).is_some() {
+        *output = true;
+    }
+}
+
+/// `VatAnalogSignalOutputBehaviour`: one output slot, vanilla container
+/// formula (nonempty = 1 + floor(fill * 14)).
+pub fn analog_output(
+    level: &crate::game::GameLevel<'_>,
+    pos: horizon_core::position::BlockPos,
+    state: horizon_world::registry::BlockStateId,
+    output: &mut i32,
+) {
+    if vat_block(state, level).is_none() {
+        return;
+    }
+    *output = level.world.block_entities.get(&(pos.x, pos.y, pos.z)).map_or(0, |entity| {
+        let horizon_client::containers::BlockEntity::Mod(entity) = entity else { return 0; };
+        entity.items.get(3).and_then(Option::as_ref).map_or(0, |stack| {
+            if stack.count == 0 {
+                return 0;
+            }
+            let max = level.items.get(&stack.item).map_or(64, |info| info.max_stack).max(1);
+            1 + ((u64::from(stack.count) * 14) / u64::from(max)) as i32
+        })
+    });
 }
 
 #[cfg(test)]
