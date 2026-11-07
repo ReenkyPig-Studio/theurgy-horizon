@@ -1,7 +1,7 @@
 // Real CodeDefinedGUI list filters on extractor+inserter, including components and fluids.
 const FILTER='theurgy:list_filter',EXTRACTOR='theurgy:logistics_item_extractor',INSERTER='theurgy:logistics_item_inserter';
-const SRC=[10,80,10],EX=[11,80,10],IN=[14,80,10],DST=[15,80,10],NEX=[12,80,12];
-const TANK_SRC=[10,80,20],FLUID_EX=[11,80,20],FLUID_IN=[14,80,20],TANK_DST=[15,80,20],FLUID_NEX=[12,80,22];
+const SRC=[12,80,10],EX=[11,80,10],IN=[14,80,10],DST=[13,80,10],NEX=[12,80,12];
+const TANK_SRC=[12,80,20],FLUID_EX=[11,80,20],FLUID_IN=[14,80,20],TANK_DST=[13,80,20],FLUID_NEX=[12,80,22];
 const s=p=>p.map(String);
 function slots(r){return Array.isArray(r?.slots)?r.slots:[];}
 function count(r,id){return slots(r).reduce((n,v)=>{const x=v?.item&&typeof v.item==='object'?v.item:v;return n+(x?.id===id||x?.item===id?Number(x.count??v.count??0):0);},0);}
@@ -50,8 +50,8 @@ export async function runCustom(call,assert){
  assert.equal(count(await step('sink rejected apple',['container',...s(SRC)]),'minecraft:apple'),2,'inserter filter must independently reject');
  await click('remove sink filter',IN,true);
  await place('reset source',SRC,'minecraft:chest');await place('reset dest',DST,'minecraft:chest');
- await step('plain apple fixture',['command','item replace block 10 80 10 container.0 with minecraft:apple 1']);
- await step('named apple fixture',['command','item replace block 10 80 10 container.1 with minecraft:apple[minecraft:custom_name="Special"] 1']);
+ await step('plain apple fixture',['command','item replace block 12 80 10 container.0 with minecraft:apple 1']);
+ await step('named apple fixture',['command','item replace block 12 80 10 container.1 with minecraft:apple[minecraft:custom_name="Special"] 1']);
  await filter('allow','minecraft:apple',true);
  // Replace the filter entry with an exact named reference stack.
  await step('exact reference',['command','item modify entity @s weapon.mainhand {"type":"minecraft:set_components","components":{"codedefinedgui:list_filter_contents":[{"slot":0,"item":{"id":"minecraft:apple","count":1,"components":{"minecraft:custom_name":"Special"}}}]}}']);
