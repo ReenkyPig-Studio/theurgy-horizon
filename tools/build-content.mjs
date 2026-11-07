@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import {root} from './common.mjs';
+import {root,config} from './common.mjs';
+import {applyRecipeConditions} from './recipe-conditions.mjs';
 const source=path.join(root,'upstream/theurgy/src');
 const dest=path.join(root,'content/theurgy');
 await fs.rm(dest,{recursive:true,force:true});
@@ -53,12 +54,12 @@ const props={
  sulfuric_flux_emitter:[['facing',{type:'enum',values:['down','up','north','south','west','east']}]],
  mercury_flux_emitter:[['facing',{type:'enum',values:['down','up','north','south','west','east']}]],
  fermentation_vat:[['facing',{type:'enum',values:['north','south','east','west']}],bool('open'),bool('has_output')],
- digestion_vat:[bool('open')],
+ digestion_vat:[['facing',{type:'enum',values:['north','south','east','west']}],bool('open')],
  logistics_item_inserter:[bool('has_filter')],logistics_item_extractor:[bool('has_filter')],
  logistics_fluid_inserter:[bool('has_filter'),bool('waterlogged')],logistics_fluid_extractor:[bool('has_filter'),bool('waterlogged')],
  logistics_mercury_flux_connector:[bool('has_filter')]
 };
-const defaults={lit:'false',half:'lower',open:'false',has_output:'false',enabled:'true',has_filter:'false',
+const defaults={lit:'false',half:'lower',open:'true',has_output:'false',enabled:'true',has_filter:'false',
  waterlogged:'false',north:'false',south:'false',east:'false',west:'false',up:'false',down:'false',facing:'north'};
 const templateFor=id=>{
  if(id==='sal_ammoniac_ore')return 'minecraft:iron_ore';
@@ -135,6 +136,24 @@ for(const id of items) {
  const p=path.join(dest,'data/theurgy/horizon/item',id+'.json');
  await fs.mkdir(path.dirname(p),{recursive:true});await fs.writeFile(p,JSON.stringify(d,null,2)+'\n');
 }
+async function locateNeoforgeJar() {
+ const base=path.join(root,'.local/gradle/caches/modules-2/files-2.1/net.neoforged/neoforge/26.3.0.76');
+ for(const file of await files(base))if(file.endsWith('neoforge-26.3.0.76-universal.jar'))return file;
+ throw new Error('Pinned NeoForge universal jar not found offline');
+}
+// Resolve `not(tag_empty)` before Horizon loads recipes. Its loader does not
+// know NeoForge tag conditions and would otherwise drop all conditioned files.
+// Unknown external-mod tags/items fail closed, while vanilla/Theurgy tags keep
+// exactly the recipes available in this installation.
+const prepared=path.join(config.horizonVersion,'.local/horizon-client/26.3');
+const conditionReport=await applyRecipeConditions({
+ dest,
+ sources:[path.join(dest,'data'),path.join(prepared,'data')],
+ itemAssets:[path.join(source,'main/resources'),path.join(source,'generated/resources'),prepared],
+ neoforgeJar:await locateNeoforgeJar(),
+ reportFile:path.join(root,'artifacts/recipe-conditions.json'),
+});
+console.log(JSON.stringify({recipeConditions:conditionReport}));
 for(const file of await files(path.join(dest,'data/theurgy/recipe'))) {
  if(!file.endsWith('.json'))continue;
  const j=JSON.parse(await fs.readFile(file,'utf8'));
@@ -142,18 +161,6 @@ for(const file of await files(path.join(dest,'data/theurgy/recipe'))) {
    j.type='minecraft:crafting_shaped';
    await fs.writeFile(file,JSON.stringify(j,null,2)+'\n');
  }
-}
-// Horizon resolves NeoForge load conditions before a content mod's tags are
-// in its item table, so conditions on mod tags (theurgy:...) would silently
-// drop every conditioned recipe. The recipes themselves stay unchanged; a
-// missing optional ingredient simply never matches.
-for(const file of await files(path.join(dest,'data'))) {
- const normalized=file.split(path.sep).join('/');
- if(!normalized.endsWith('.json') || !normalized.includes('/recipe/'))continue;
- const j=JSON.parse(await fs.readFile(file,'utf8'));
- if(!('neoforge:conditions' in j))continue;
- delete j['neoforge:conditions'];
- await fs.writeFile(file,JSON.stringify(j,null,2)+'\n');
 }
 // NeoForge provides these convention tags outside Theurgy's own data. Horizon
 // does not ship NeoForge's tag bundle, so carry the small set used by the
