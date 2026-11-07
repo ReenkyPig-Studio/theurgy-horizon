@@ -557,8 +557,15 @@ pub fn tick(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut ModBlo
         {
             game.native_set_block_property_with(pos, "open", "false", 2);
         }
-        if !state.is_processing && !was_open {
-            game.native_set_block_property_with(pos, "open", "true", 2);
+        let redstone_signal = game.native_neighbor_signal(game.dim.id(), pos);
+        let previous_signal = theurgy_host::int(&entity.nbt, "lastRedstoneSignal", redstone_signal);
+        if previous_signal != redstone_signal {
+            // VatRedstoneChangeOpenCloseLidBehaviour opens only on a
+            // high-to-low transition, not whenever processing is idle.
+            if redstone_signal == 0 && !was_open {
+                game.native_set_block_property_with(pos, "open", "true", 2);
+            }
+            theurgy_host::set_int(&mut entity.nbt, "lastRedstoneSignal", redstone_signal);
         }
         if kind == "theurgy:fermentation" {
             let has_output = read_slot(entity, 3).is_some_and(|stack| stack.count > 0);
