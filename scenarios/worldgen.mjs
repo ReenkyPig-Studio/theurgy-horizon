@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+
 export async function runCustom(call, assert) {
   const results = [];
   const step = async (name, args) => {
@@ -38,6 +40,18 @@ export async function runCustom(call, assert) {
     'theurgy:sal_ammoniac_ore');
   const again = await step('count after', ['find-block', 'theurgy:sal_ammoniac_ore', '64']);
   assert.ok(again.count > 0 && again.count <= ore.count, 'old chunks must not regenerate');
+
+  if (process.env.THEURGY_WORLDGEN_ORACLE) {
+    const trace = JSON.parse(fs.readFileSync(process.env.THEURGY_WORLDGEN_ORACLE, 'utf8'));
+    assert.ok(Array.isArray(trace.ores) && trace.ores.length > 0, 'Java worldgen trace contains no ores');
+    let checked = 0;
+    for (const expected of trace.ores) {
+      const actual = await step('Java ore position ' + checked, ['block', ...expected.pos.map(String)]);
+      assert.equal(actual.block, expected.id, `worldgen mismatch at ${expected.pos.join(',')}`);
+      checked++;
+    }
+    results.push({name: 'Java worldgen differential', checked, seed: trace.seed, origin: trace.origin});
+  }
   return results;
 }
 

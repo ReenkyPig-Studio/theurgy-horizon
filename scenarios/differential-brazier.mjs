@@ -4,7 +4,7 @@ import {at, record, setblock, container, merge, wait, probe} from '../differenti
 const BLOCK = 'theurgy:pyromantic_brazier', POS = [2, 1, 2], ABOVE = [2, 2, 2];
 async function until(call, pos, predicate, description, timeout = 400) {
   for (let elapsed = 0; elapsed < timeout; elapsed += 5) {
-    await wait(call, 5);
+    await wait(call, 1);
     if (predicate(await probe(call, pos))) return;
   }
   throw new Error('Timed out waiting for ' + description);
@@ -24,7 +24,7 @@ async function breakAt(call, pos) {
   await wait(call, 4);
   return broken;
 }
-const has = (state, id, count) => state.items.some(stack => stack.id === id && (count === undefined || stack.count === count));
+const has = (state, id, count) => state.items.some(stack => stack.id === id && (count === undefined || (stack.count ?? 1) === count));
 
 export async function runCustom(call) {
   const out = [];
