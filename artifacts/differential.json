@@ -2,13 +2,13 @@
   "schema": 1,
   "kind": "pinned Java 26.3 to real Horizon Rust state differential",
   "java": {
-    "run": "runs/java-oracle-2026-11-07T16-43-41.576Z",
+    "run": "runs/java-oracle-2026-11-07T16-49-59.610Z",
     "source": {
       "tag": "release/v26.3-1.120.1",
       "revision": "33b959c9ed0da1de2aff649e9728c1a03470b1bd",
       "minecraft": "26.3"
     },
-    "traceSha256": "935e69930cb71de978e82f501b874d25f7e1548dd2682819c8a53264366963c4"
+    "traceSha256": "5522c0afb3fa63a668bbe67054d068f178db9ab08e4d4eb32785b70db97cbf15"
   },
   "rustEvidence": [
     "runs/game-1794068661229",
