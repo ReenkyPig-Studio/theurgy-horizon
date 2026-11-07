@@ -415,7 +415,7 @@ fn json_int(value: &serde_json::Value, key: &str) -> Option<i32> {
 
 /// Reads the flux budget of a catalysation recipe from its JSON.
 fn recipe_flux_budget(json: &serde_json::Value) -> Option<(i32, i32)> {
-    let total = json_int(json, "mercuryFlux")?;
+    let total = json_int(json, "totalMercuryFlux").or_else(|| json_int(json, "mercuryFlux"))?;
     let per_tick = json_int(json, "mercuryFluxPerTick").unwrap_or(total);
     Some((total, per_tick))
 }

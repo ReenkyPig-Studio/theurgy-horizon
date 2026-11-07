@@ -147,6 +147,12 @@ file = "crates/horizon-client/src/game.rs"
 name = "theurgy_filter_client"
 source = "filter_client.rs"
 
+[[module]]
+id = "recipe_client"
+file = "crates/horizon-client/src/game.rs"
+name = "theurgy_recipe_client"
+source = "recipe_client.rs"
+
 [[injection]]
 id = "register_commands"
 hook = "register_commands"
