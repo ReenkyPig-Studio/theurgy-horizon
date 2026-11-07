@@ -35,7 +35,7 @@ const MODES={
 const mode=process.argv[2]??'smoke';
 const custom=mode.startsWith('custom:')?mode.slice(7):'';
 if(custom&&!/^[a-z0-9][a-z0-9-]*$/.test(custom))throw new Error('invalid custom scenario id');
-const spec=MODES[mode]??(custom?{home:'.local/agent-'+custom,world:'Horizon'+custom,native:true,content:true,custom}:null);
+const spec=MODES[mode]??(custom?{home:'.local/agent-'+custom,world:'Horizon'+custom,native:true,content:true,custom,naturalTerrain:custom==='worldgen'}:null);
 if(!spec)throw new Error(Object.keys(MODES).join(' | '));
 const native=!!spec.native;
 const withContent=!!spec.content;
@@ -94,7 +94,8 @@ async function call(args) {
 async function launch() {
   const args=['launch','--game',exe,'--world',spec.world,'--seed','42','--creative','--wait',
     '--resources',path.join(version,'.local/horizon-client/26.3'),
-    '--game-dir',gameHome,'--home',gameHome,'--test-terrain','--render-distance','2'];
+    '--game-dir',gameHome,'--home',gameHome,'--render-distance','2'];
+  if(!spec.naturalTerrain)args.push('--test-terrain');
   if(headless)args.push('--headless');
   if(withContent)args.push('--dev-mod',path.resolve(root,process.env.HORIZON_DEV_MOD??'content/theurgy'));
   await call(args);
@@ -247,7 +248,7 @@ try {
     scope:mode==='machines'?'distiller place/insert/heat/process/save/reload/break inventory parity on the isolated machine world'
       :mode==='chaos-machines'?'bounded adversarial distiller probes: duplication, invalid input, repeated placement, reload, destruction'
       :mode==='interactions'?'real player give/place/break, double-high placement validation and inventory conservation'
-      :spec.custom?'agent-owned real headless integration scenario '+spec.custom
+      :spec.custom?'agent-owned real '+(headless?'headless':'GUI')+' integration scenario '+spec.custom
       :native?'distiller block registration only'
       :'vanilla game/control harness only (not Theurgy parity)',
     customResults,
