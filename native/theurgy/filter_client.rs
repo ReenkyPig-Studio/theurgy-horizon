@@ -26,6 +26,8 @@ struct FilterUi {
     rules: Vec<RuleView>,
     page: usize,
     refresh_ticks: u32,
+    editing: bool,
+    input: String,
 }
 
 static FILTER_UI: Mutex<Option<FilterUi>> = Mutex::new(None);
@@ -92,7 +94,7 @@ fn load(game: &crate::game::Game<'_>, stack: &ItemStack, hand: &'static str, pag
         }
         (text(&config, "mode", "match_any"), false, Vec::new(), rules)
     };
-    Some(FilterUi { kind, hand, mode, respect, entries, rules, page, refresh_ticks: 0 })
+    Some(FilterUi { kind, hand, mode, respect, entries, rules, page, refresh_ticks: 0, editing: false, input: String::new() })
 }
 
 pub fn open(game: &mut crate::game::Game<'_>, stack: &ItemStack, hand: &'static str) -> bool {
@@ -141,6 +143,16 @@ pub fn render(
     let Ok(guard) = FILTER_UI.lock() else { return false; };
     let Some(ui) = guard.as_ref() else { return false; };
     let rect = panel(batch.width, batch.height);
+    if ui.editing {
+        game.native_fill(batch, [0.0, 0.0, batch.width, batch.height], 0xA0000000);
+        game.native_fill(batch, rect, 0xFF18251F);
+        game.native_text(batch, "Advanced rule: <kind> <JSON payload>", [rect[0] + 10.0, rect[1] + 12.0], 0xE7D59A, false);
+        game.native_text(batch, "Example: codedefinedgui:standard {\"value\":\"renamed\"}", [rect[0] + 10.0, rect[1] + 28.0], 0xA9C9B0, false);
+        game.native_fill(batch, [rect[0] + 10.0, rect[1] + 52.0, rect[2] - 20.0, 22.0], 0xFF101010);
+        game.native_text(batch, &ui.input, [rect[0] + 14.0, rect[1] + 58.0], 0xFFFFFF, false);
+        game.native_text(batch, "Enter: apply   Escape: cancel", [rect[0] + 10.0, rect[1] + rect[3] - 24.0], 0xFFFFFF, false);
+        return true;
+    }
     game.native_fill(batch, [0.0, 0.0, batch.width, batch.height], 0xA0000000);
     game.native_fill(batch, rect, 0xFF18251F);
     game.native_fill(batch, [rect[0] + 3.0, rect[1] + 3.0, rect[2] - 6.0, rect[3] - 6.0], 0xFF263A30);
@@ -175,6 +187,7 @@ pub fn render(
         button(game, batch, [rect[0] + 8.0, rect[1] + rect[3] - 42.0, 92.0, 15.0], "Add renamed", false);
         button(game, batch, [rect[0] + 106.0, rect[1] + rect[3] - 42.0, 88.0, 15.0], "Add item tag", false);
         button(game, batch, [rect[0] + 200.0, rect[1] + rect[3] - 42.0, 64.0, 15.0], "Clear", false);
+        button(game, batch, [rect[0] + 270.0, rect[1] + rect[3] - 42.0, 78.0, 15.0], "Advanced", false);
     }
     let count = if ui.kind == Kind::List { ui.entries.len() } else { ui.rules.len() };
     let page_size = if ui.kind == Kind::List { 18 } else { 7 };
@@ -254,6 +267,9 @@ pub fn click(
             queue(ui, "rule_tag auto".to_owned());
         } else if inside(point, [rect[0] + 200.0, rect[1] + rect[3] - 42.0, 64.0, 15.0]) {
             queue(ui, "clear".to_owned());
+        } else if inside(point, [rect[0] + 270.0, rect[1] + rect[3] - 42.0, 78.0, 15.0]) {
+            ui.editing = true;
+            ui.input.clear();
         }
     }
     true
@@ -269,6 +285,63 @@ pub fn scroll(screen: &NativeScreenView<'_>, game: &crate::game::Game<'_>, delta
     let (count, size) = if ui.kind == Kind::List { (ui.entries.len(), 18) } else { (ui.rules.len(), 7) };
     let pages = count.div_ceil(size).max(1);
     ui.page = if delta > 0.0 { ui.page.saturating_sub(1) } else { (ui.page + 1).min(pages - 1) };
+    true
+}
+
+pub fn char_typed(
+    game: &crate::game::Game<'_>,
+    screen: &NativeScreenView<'_>,
+    c: char,
+    canceled: &mut bool,
+) -> bool {
+    if screen.id != "mod" || game.native_mod_screen() != Some("theurgy") {
+        return false;
+    }
+    let Ok(mut guard) = FILTER_UI.lock() else { return false; };
+    let Some(ui) = guard.as_mut() else { return false; };
+    if !ui.editing {
+        return false;
+    }
+    *canceled = true;
+    if ui.input.len() < 256 && !c.is_control() {
+        ui.input.push(c);
+    }
+    true
+}
+
+pub fn key_pressed(
+    game: &crate::game::Game<'_>,
+    screen: &NativeScreenView<'_>,
+    key: &str,
+    canceled: &mut bool,
+) -> bool {
+    if screen.id != "mod" || game.native_mod_screen() != Some("theurgy") {
+        return false;
+    }
+    let Ok(mut guard) = FILTER_UI.lock() else { return false; };
+    let Some(ui) = guard.as_mut() else { return false; };
+    if !ui.editing {
+        return false;
+    }
+    *canceled = true;
+    match key {
+        "key.keyboard.escape" => {
+            ui.editing = false;
+            ui.input.clear();
+        }
+        "key.keyboard.backspace" => {
+            ui.input.pop();
+        }
+        "key.keyboard.enter" | "key.keyboard.keypad_enter" => {
+            if ui.input.split_once(' ').is_some() {
+                let action = ui.input.trim().to_owned();
+                queue(ui, format!("rule_add {action}"));
+                ui.editing = false;
+                ui.input.clear();
+            }
+        }
+        _ => {}
+    }
     true
 }
 
