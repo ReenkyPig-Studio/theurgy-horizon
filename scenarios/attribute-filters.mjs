@@ -1,5 +1,5 @@
 const FILTER='theurgy:attribute_filter',EXTRACTOR='theurgy:logistics_item_extractor',INSERTER='theurgy:logistics_item_inserter';
-const SRC=[30,80,30],EX=[31,80,30],IN=[34,80,30],DST=[35,80,30],NEX=[32,80,32];const s=p=>p.map(String);
+const SRC=[32,80,30],EX=[31,80,30],IN=[34,80,30],DST=[33,80,30],NEX=[32,80,32];const s=p=>p.map(String);
 function count(r,id){return (r?.slots??[]).reduce((n,v)=>{const x=v?.item&&typeof v.item==='object'?v.item:v;return n+(x?.id===id||x?.item===id?Number(x.count??v.count??0):0);},0);}
 export async function runCustom(call,assert){const results=[];const step=async(name,args)=>{const r=await call(args);results.push({name,args,reply:r});if(['give','setblock','tp','container','command'].includes(args[0]))await call(['wait','2']);return r;};
 const place=(n,p,id,state='')=>step(n,['setblock',...s(p),id+state]);const nexus=p=>step('nexus '+p,['command','data','merge','block',...s(p),'{nexusId:"attribute-net"}']);
@@ -13,7 +13,7 @@ await click('remove tag filter',EX,true);await filter('deny',[tagRule()]);await 
 await click('remove deny tag',EX,true);await filter('match_any',[tagRule(true)]);await click('attach inverted tag',EX);await step('inverted seed apple',['container',...s(SRC),'minecraft:apple','1']);await step('inverted wait',['wait','60']);assert.equal(count(await step('inverted apple accepted',['container',...s(DST)]),'minecraft:apple'),2);assert.equal(count(await step('inverted planks rejected',['container',...s(SRC)]),'minecraft:oak_planks'),1);
 await click('remove inverted tag',EX,true);await place('reset source',SRC,'minecraft:chest');await place('reset dest',DST,'minecraft:chest');
 await filter('match_all',[tagRule(),{type:'codedefinedgui:standard',payload:{value:'renamed'},inverted:false}]);await click('attach match all',EX);
-await step('plain planks fixture',['command','item replace block 30 80 30 container.0 with minecraft:oak_planks 1']);await step('named planks fixture',['command','item replace block 30 80 30 container.1 with minecraft:oak_planks[minecraft:custom_name="Named"] 1']);await step('match all wait',['wait','60']);
+await step('plain planks fixture',['command','item replace block 32 80 30 container.0 with minecraft:oak_planks 1']);await step('named planks fixture',['command','item replace block 32 80 30 container.1 with minecraft:oak_planks[minecraft:custom_name="Named"] 1']);await step('match all wait',['wait','60']);
 assert.equal(count(await step('match all named accepted',['container',...s(DST)]),'minecraft:oak_planks'),1);assert.equal(count(await step('match all plain rejected',['container',...s(SRC)]),'minecraft:oak_planks'),1);await click('remove match all',EX,true);
 return results;}
 export default {name:'attribute-filters',runCustom};
