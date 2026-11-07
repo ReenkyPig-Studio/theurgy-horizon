@@ -30,6 +30,7 @@ fn tag_json(tag: &Tag) -> serde_json::Value {
 pub fn register(commands: &mut Vec<NativeCommand>) {
     commands.push(NativeCommand::op("theurgy_probe <pos:block_pos>", 4));
     commands.push(NativeCommand::op("theurgy_state <pos:block_pos> <key:word> <value:word>", 4));
+    commands.push(NativeCommand::op("theurgy_worldgen <pos:block_pos>", 4));
     commands.push(NativeCommand::op("theurgy_proxy_read <pos:block_pos>", 4));
     commands.push(NativeCommand::op("theurgy_proxy_drain <pos:block_pos> <amount:integer>", 4));
 }
@@ -54,6 +55,17 @@ pub fn perform(
             };
             let changed = game.native_set_block_property_with([x, y, z], parts[3], parts[4], 3);
             game.native_feedback(Text::literal(serde_json::json!({"changed": changed}).to_string()));
+            return;
+        }
+        if let Some(arguments) = command.strip_prefix("theurgy_worldgen ") {
+            *ran = true;
+            let coordinates: Option<Vec<i32>> = arguments.split_whitespace().map(str::parse).collect::<Result<_, _>>().ok();
+            let Some(coordinates) = coordinates.filter(|values| values.len() == 3) else {
+                game.native_feedback(Text::literal("{\"error\":\"usage: theurgy_worldgen <x y z>\"}"));
+                return;
+            };
+            crate::game::theurgy_worldgen::chunk_load(game, "minecraft:overworld", [coordinates[0].div_euclid(16), coordinates[2].div_euclid(16)], true);
+            game.native_feedback(Text::literal("{\"ok\":true}"));
             return;
         }
         if let Some(arguments) = command.strip_prefix("theurgy_proxy_read ") {
