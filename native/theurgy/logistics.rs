@@ -88,11 +88,18 @@ pub fn read_state(nbt: &horizon_world::nbt::Compound) -> LogisticsState {
             Some(horizon_world::nbt::Tag::Short(v)) if (0..6).contains(v) => Some(*v as u8),
             _ => None,
         };
+    let flux_buffer = match nbt.get(&horizon_world::nbt::JavaString::from("buffer")) {
+        Some(horizon_world::nbt::Tag::Compound(child)) => int(child, "energy", 0),
+        _ => match nbt.get(&horizon_world::nbt::JavaString::from("mercuryFluxHandler")) {
+            Some(horizon_world::nbt::Tag::Compound(child)) => int(child, "energy", 0),
+            _ => int(nbt, "fluxBuffer", 0),
+        },
+    };
     LogisticsState {
         enabled,
         direction_override,
         extraction_amount: int(nbt, "extractionAmount", 0),
-        flux_buffer: int(nbt, "fluxBuffer", 0),
+        flux_buffer,
     }
 }
 
@@ -105,7 +112,11 @@ pub fn write_state(nbt: &mut horizon_world::nbt::Compound, state: &LogisticsStat
         }
     }
     set_int(nbt, "extractionAmount", state.extraction_amount);
-    set_int(nbt, "fluxBuffer", state.flux_buffer);
+    let mut buffer = Compound::new();
+    set_int(&mut buffer, "energy", state.flux_buffer.clamp(0, FLUX_BUFFER_CAPACITY));
+    nbt.insert(JavaString::from("buffer"), Tag::Compound(buffer.clone()));
+    nbt.insert(JavaString::from("mercuryFluxHandler"), Tag::Compound(buffer));
+    nbt.remove(&JavaString::from("fluxBuffer"));
 }
 
 // ---------------------------------------------------------------------------
@@ -282,6 +293,122 @@ pub fn filter_use_on(game: &mut crate::game::Game<'_>, pos: Pos) -> bool {
     inserted
 }
 
+fn mod_tank_capacity(id: &str) -> Option<i32> {
+    match id {
+        "theurgy:sal_ammoniac_tank" | "theurgy:liquefaction_cauldron" => Some(2_000),
+        "theurgy:fermentation_vat" | "theurgy:digestion_vat" | "theurgy:sal_ammoniac_accumulator" => Some(10_000),
+        _ => None,
+    }
+}
+
+/// Fill a real mod tank without Horizon's water/lava-only helper restriction.
+/// The complete accepted amount is committed; no source is drained before it.
+fn fill_mod_tank(game: &mut crate::game::Game<'_>, pos: Pos, fluid: &str, amount: i32) -> i32 {
+    if amount <= 0 {
+        return 0;
+    }
+    game.native_with_mod_block_entity(pos, |entity| {
+        let Some(capacity) = mod_tank_capacity(&entity.id) else { return 0; };
+        let mut tank = crate::game::theurgy_host::tank(entity, 0, capacity);
+        if tank.fluid.as_deref().is_some_and(|old| old != fluid) {
+            return 0;
+        }
+        let accepted = amount.min((capacity - tank.amount).max(0));
+        if accepted <= 0 {
+            return 0;
+        }
+        tank.fluid = Some(fluid.to_owned());
+        tank.amount += accepted;
+        crate::game::theurgy_host::save_tanks(entity, &[tank]);
+        accepted
+    }).unwrap_or(0)
+}
+
+fn drain_mod_tank(game: &mut crate::game::Game<'_>, pos: Pos, fluid: &str, amount: i32) -> i32 {
+    if amount <= 0 {
+        return 0;
+    }
+    game.native_with_mod_block_entity(pos, |entity| {
+        let Some(capacity) = mod_tank_capacity(&entity.id) else { return 0; };
+        let mut tank = crate::game::theurgy_host::tank(entity, 0, capacity);
+        if tank.fluid.as_deref() != Some(fluid) {
+            return 0;
+        }
+        let drained = amount.min(tank.amount).max(0);
+        if drained <= 0 {
+            return 0;
+        }
+        tank.amount -= drained;
+        if tank.amount == 0 {
+            tank.fluid = None;
+        }
+        crate::game::theurgy_host::save_tanks(entity, &[tank]);
+        drained
+    }).unwrap_or(0)
+}
+
+fn insert_energy(entity: &mut ModBlockEntity, amount: i32) -> i32 {
+    let mut state = read_state(&entity.nbt);
+    let accepted = amount.max(0).min((FLUX_BUFFER_CAPACITY - state.flux_buffer).max(0));
+    if accepted <= 0 {
+        return 0;
+    }
+    state.flux_buffer += accepted;
+    write_state(&mut entity.nbt, &state);
+    accepted
+}
+
+/// Capability entry used by catalyst/capacitor push logic for a connector.
+pub fn receive_mercury_flux(entity: &mut ModBlockEntity, amount: i32) -> i32 {
+    if !read_state(&entity.nbt).enabled {
+        return 0;
+    }
+    insert_energy(entity, amount)
+}
+
+fn insert_flux_target(entity: &mut ModBlockEntity, amount: i32, face: u8) -> i32 {
+    if amount <= 0 || entity.id == "theurgy:mercury_catalyst" {
+        return 0;
+    }
+    if entity.id == "theurgy:logistics_mercury_flux_connector" {
+        return receive_mercury_flux(entity, amount);
+    }
+    let capacity = match entity.id.as_str() {
+        "theurgy:mercury_capacitor" => 500_000,
+        "theurgy:mercury_flux_emitter" | "theurgy:caloric_flux_emitter" | "theurgy:sulfuric_flux_emitter" => 1_000,
+        _ => return 0,
+    };
+    if entity.id == "theurgy:mercury_capacitor" {
+        if !read_state(&entity.nbt).enabled {
+            return 0;
+        }
+        let direction = match face {
+            0 => "DOWN", 1 => "UP", 2 => "NORTH", 3 => "SOUTH", 4 => "WEST", _ => "EAST",
+        };
+        let default_mode = if matches!(face, 0 | 1) { 2 } else { 1 };
+        let mode = match entity.nbt.get(&JavaString::from("sideModes")) {
+            Some(Tag::Compound(modes)) => int(modes, direction, default_mode),
+            _ => default_mode,
+        };
+        if mode != 1 && mode != 3 {
+            return 0;
+        }
+    }
+    let mut energy = match entity.nbt.get(&JavaString::from("mercuryFluxHandler")) {
+        Some(Tag::Compound(child)) => int(child, "energy", 0).clamp(0, capacity),
+        _ => 0,
+    };
+    let accepted = amount.max(0).min((capacity - energy).max(0));
+    if accepted <= 0 {
+        return 0;
+    }
+    energy += accepted;
+    let mut child = Compound::new();
+    set_int(&mut child, "energy", energy);
+    entity.nbt.insert(JavaString::from("mercuryFluxHandler"), Tag::Compound(child));
+    accepted
+}
+
 // ---------------------------------------------------------------------------
 // Block entity tick
 // ---------------------------------------------------------------------------
@@ -328,9 +455,12 @@ fn block_kind(block: &str) -> Option<(LeafNodeMode, CapabilityKind)> {
         "theurgy:logistics_item_extractor" => Some((LeafNodeMode::Extract, CapabilityKind::Item)),
         "theurgy:logistics_fluid_inserter" => Some((LeafNodeMode::Insert, CapabilityKind::Fluid)),
         "theurgy:logistics_fluid_extractor" => Some((LeafNodeMode::Extract, CapabilityKind::Fluid)),
-        "theurgy:logistics_mercury_flux_connector" | "theurgy:logistics_capability_proxy" => {
+        "theurgy:logistics_mercury_flux_connector" => {
             Some((LeafNodeMode::Insert, CapabilityKind::MercuryFlux))
         }
+        // A capability proxy is not itself an insert target: it forwards the
+        // capabilities of connected probes. Its tick is handled separately.
+        "theurgy:logistics_capability_proxy" => Some((LeafNodeMode::Insert, CapabilityKind::Item)),
         _ => None,
     }
 }
@@ -365,6 +495,21 @@ fn dir_offset(dir: u8) -> Pos {
         5 => [1, 0, 0],
         _ => [0, -1, 0],
     }
+}
+
+fn opposite_dir(dir: u8) -> u8 {
+    match dir {
+        0 => 1,
+        1 => 0,
+        2 => 3,
+        3 => 2,
+        4 => 5,
+        _ => 4,
+    }
+}
+
+fn attached(pos: Pos, facing: u8) -> Pos {
+    add(pos, dir_offset(opposite_dir(facing)))
 }
 
 fn direction_from_index(value: u8) -> Direction {
@@ -578,17 +723,17 @@ fn collect_network(
     let mut out = Vec::new();
     for (&(x, y, z), block_entity) in game.world.block_entities.iter() {
         let p = [x, y, z];
-        if p == self_pos {
-            continue;
-        }
         let BlockEntity::Mod(ent) = block_entity else {
             continue;
         };
+        if p == self_pos || ent.id == "theurgy:logistics_capability_proxy" {
+            continue;
+        }
         let Some((mode, kind)) = block_kind(&ent.id) else {
             continue;
         };
         let connected = wired.contains(&p)
-            || (nexus_id.is_some() && java_nexus_id(&ent.nbt).as_deref() == nexus_id);
+            || (nexus_id.is_some() && java_nexus_id(&ent.nbt).as_deref() == nexus_id.as_deref());
         if !connected || int(&ent.nbt, "frequency", 0) != frequency { continue; }
         let state = read_state(&ent.nbt);
         if !state.enabled {
@@ -601,17 +746,97 @@ fn collect_network(
     out
 }
 
+/// Read-only network facts for the operator differential probe.
+pub fn probe_insert_targets(
+    game: &crate::game::Game<'_>,
+    pos: Pos,
+) -> Vec<Pos> {
+    let Some(BlockEntity::Mod(entity)) = game.world.block_entities.get(&(pos[0], pos[1], pos[2])) else {
+        return Vec::new();
+    };
+    let Some((_, kind)) = block_kind(&entity.id) else { return Vec::new(); };
+    let nexus_id = java_nexus_id(&entity.nbt);
+    let wired = wire_network(game, pos, &entity.nbt);
+    collect_network(game, nexus_id.as_deref(), &wired, int(&entity.nbt, "frequency", 0), pos)
+        .into_iter()
+        .filter(|(_, mode, candidate, _, _)| *mode == LeafNodeMode::Insert && *candidate == kind)
+        .map(|(target, _, _, _, _)| target)
+        .collect()
+}
+
+pub fn probe_nexus_partners(game: &crate::game::Game<'_>, pos: Pos) -> usize {
+    let Some(BlockEntity::Mod(entity)) = game.world.block_entities.get(&(pos[0], pos[1], pos[2])) else {
+        return 0;
+    };
+    let Some(id) = java_nexus_id(&entity.nbt) else { return 0; };
+    game.world.block_entities.iter().filter(|(other, block_entity)| {
+        let other = [other.0, other.1, other.2];
+        other != pos
+            && matches!(block_entity, BlockEntity::Mod(candidate)
+                if is_nexus(&candidate.id) && java_nexus_id(&candidate.nbt).as_deref() == Some(id.as_str()))
+    }).count()
+}
+
+fn proxy_fluid_target(
+    game: &mut crate::game::Game<'_>,
+    pos: Pos,
+) -> Option<(Pos, String, i32)> {
+    let own_nbt = game.native_with_mod_block_entity(pos, |entity| entity.nbt.clone())?;
+    let nexus_id = java_nexus_id(&own_nbt);
+    let wired = wire_network(game, pos, &own_nbt);
+    let mut probes = Vec::new();
+    for (&(x, y, z), block_entity) in game.world.block_entities.iter() {
+        let p = [x, y, z];
+        let BlockEntity::Mod(entity) = block_entity else { continue; };
+        if entity.id != "theurgy:logistics_capability_probe" { continue; }
+        let connected = wired.contains(&p)
+            || (nexus_id.is_some() && java_nexus_id(&entity.nbt).as_deref() == nexus_id.as_deref());
+        if connected { probes.push(p); }
+    }
+    probes.sort_by_key(|p| wire_pos_long(*p));
+    if probes.is_empty() { return None; }
+    let index = (int(&own_nbt, "roundRobinIndex", 0) + 1).rem_euclid(probes.len() as i32) as usize;
+    game.native_with_mod_block_entity(pos, |entity| {
+        set_int(&mut entity.nbt, "roundRobinIndex", index as i32);
+    });
+    let probe = probes[index];
+    let facing = facing_of(game, probe);
+    let target = attached(probe, facing);
+    game.native_fluid_tanks(game.dim.id(), target, direction_from_index(facing))
+        .into_iter().flatten()
+        .find(|tank| tank.amount > 0)
+        .and_then(|tank| tank.fluid.map(|fluid| (target, fluid, tank.amount)))
+}
+
+/// Successive capability reads advance the same round-robin distributor as
+/// Java's LogisticsCapabilityProxyBlockEntity.
+pub fn proxy_read_fluid(game: &mut crate::game::Game<'_>, pos: Pos) -> Option<(String, i32)> {
+    proxy_fluid_target(game, pos).map(|(_, fluid, amount)| (fluid, amount))
+}
+
+pub fn proxy_drain_fluid(game: &mut crate::game::Game<'_>, pos: Pos, amount: i32) -> i32 {
+    let Some((target, fluid, _)) = proxy_fluid_target(game, pos) else { return 0; };
+    drain_mod_tank(game, target, &fluid, amount)
+}
+
+fn restore_attached_target_if_empty(game: &crate::game::Game<'_>, pos: Pos, entity: &mut ModBlockEntity) {
+    if entity.id == "theurgy:logistics_capability_proxy" { return; }
+    let populated = matches!(entity.nbt.get(&JavaString::from("targets")), Some(Tag::List(targets)) if !targets.is_empty());
+    if populated { return; }
+    let target = attached(pos, facing_of(game, pos));
+    entity.nbt.insert(JavaString::from("targets"), Tag::List(vec![Tag::Long(wire_pos_long(target))]));
+}
+
 fn tick_connector(
     game: &mut crate::game::Game<'_>,
     pos: [i32; 3],
     entity: &mut ModBlockEntity,
     block: &str,
 ) {
-    let Some((mode, kind)) = block_kind(block) else {
-        return;
-    };
+    let is_proxy = block == "theurgy:logistics_capability_proxy";
+    let Some((mode, kind)) = block_kind(block) else { return; };
+    restore_attached_target_if_empty(game, pos, entity);
     let mut state = read_state(&entity.nbt);
-    let mut state_changed = false;
     let filter = saved_filter(&entity.nbt);
     if state.extraction_amount == 0 {
         state.extraction_amount = match kind {
@@ -619,104 +844,194 @@ fn tick_connector(
             CapabilityKind::Fluid => MAX_FLUID_EXTRACTION_AMOUNT,
             CapabilityKind::MercuryFlux => FLUX_DEFAULT_TRANSFER_RATE,
         };
-        state_changed = true;
     }
-    if state.flux_buffer < 0 {
-        state.flux_buffer = 0;
-        state_changed = true;
-    }
-    if state.flux_buffer > FLUX_BUFFER_CAPACITY {
-        state.flux_buffer = FLUX_BUFFER_CAPACITY;
-        state_changed = true;
-    }
-    if state.extraction_amount <= 0 {
-        state.extraction_amount = 1;
-        state_changed = true;
-    }
+    state.flux_buffer = state.flux_buffer.clamp(0, FLUX_BUFFER_CAPACITY);
+    state.extraction_amount = state.extraction_amount.max(1);
 
     let facing = facing_of(game, pos);
     let target_dir = connector_direction(state.direction_override, facing);
-
     if !state.enabled {
-        if state_changed {
-            write_state(&mut entity.nbt, &state);
-        }
+        write_state(&mut entity.nbt, &state);
         return;
     }
 
-    let now = game.world.game_time as i64;
-    let period = match kind {
+    let period = if is_proxy { 20 } else { match kind {
         CapabilityKind::Item => ITEM_EXTRACTION_EVERY_N_TICKS,
         CapabilityKind::Fluid => FLUID_EXTRACTION_EVERY_N_TICKS,
         CapabilityKind::MercuryFlux => FLUX_TRANSFER_EVERY_N_TICKS,
-    };
-    let offset = slow_tick_offset(pos, period);
-    if !on_slow_tick(offset, now, period) {
-        if state_changed {
-            write_state(&mut entity.nbt, &state);
-        }
+    }};
+    if !on_slow_tick(slow_tick_offset(pos, period), game.world.game_time, period) {
+        write_state(&mut entity.nbt, &state);
         return;
     }
 
     let nexus_id = java_nexus_id(&entity.nbt);
     let wired = wire_network(game, pos, &entity.nbt);
     if nexus_id.is_none() && wired.len() <= 1 {
-        if state_changed { write_state(&mut entity.nbt, &state); }
+        write_state(&mut entity.nbt, &state);
         return;
     }
     let frequency = int(&entity.nbt, "frequency", 0);
     let network = collect_network(game, nexus_id.as_deref(), &wired, frequency, pos);
 
+    if is_proxy {
+        let mut probes = Vec::new();
+        for (&(x, y, z), block_entity) in game.world.block_entities.iter() {
+            let p = [x, y, z];
+            let BlockEntity::Mod(ent) = block_entity else { continue; };
+            if ent.id != "theurgy:logistics_capability_probe" { continue; }
+            let connected = wired.contains(&p)
+                || (nexus_id.is_some() && java_nexus_id(&ent.nbt).as_deref() == nexus_id.as_deref());
+            if connected { probes.push(p); }
+        }
+        probes.sort_by_key(|p| wire_pos_long(*p));
+        if probes.is_empty() {
+            write_state(&mut entity.nbt, &state);
+            return;
+        }
+        let index = (int(&entity.nbt, "roundRobinIndex", 0) + 1).rem_euclid(probes.len() as i32) as usize;
+        let probe = probes[index];
+        set_int(&mut entity.nbt, "roundRobinIndex", index as i32);
+        let probe_facing = facing_of(game, probe);
+        let source = attached(probe, probe_facing);
+        let from_face = direction_from_index(probe_facing);
+        let source_is_fluid = game.native_fluid_tanks(game.dim.id(), source, from_face)
+            .is_some_and(|tanks| !tanks.is_empty());
+        if source_is_fluid {
+            let sinks: Vec<_> = network.iter().filter(|(_, m, k, _, _)| {
+                *m == LeafNodeMode::Insert && *k == CapabilityKind::Fluid
+            }).collect();
+            if let Some((_, _, _, sink_dir, sink_filter)) = sinks.first() {
+                let sink = attached(sinks[0].0, *sink_dir);
+                let to_face = direction_from_index(*sink_dir);
+                let source_fluid = game.native_fluid_tanks(game.dim.id(), source, from_face)
+                    .into_iter().flatten().find(|tank| tank.amount > 0)
+                    .and_then(|tank| tank.fluid.map(|fluid| (fluid, tank.amount)));
+                if let Some((fluid, available)) = source_fluid {
+                    let sink_rule = game.native_list_filter(sink_filter.as_ref());
+                    if sink_rule.allows_fluid(game, &fluid) {
+                        let accepted = fill_mod_tank(game, sink, &fluid, MAX_FLUID_EXTRACTION_AMOUNT.min(available));
+                        if accepted > 0 {
+                            let _ = drain_mod_tank(game, source, &fluid, accepted);
+                        }
+                    }
+                }
+                let _ = to_face;
+            }
+        } else if let Some((_, _, _, sink_dir, sink_filter)) = network.iter().find(|(_, m, k, _, _)| {
+            *m == LeafNodeMode::Insert && *k == CapabilityKind::Item
+        }) {
+            let sink = attached(network.iter().find(|(_, m, k, _, _)| {
+                *m == LeafNodeMode::Insert && *k == CapabilityKind::Item
+            }).unwrap().0, *sink_dir);
+            let sink_rule = game.native_list_filter(sink_filter.as_ref());
+            let accept = |stack: &ItemStack| sink_rule.allows_item(stack);
+            let _ = game.native_move_items_filtered(
+                game.dim.id(), source, from_face, sink, direction_from_index(*sink_dir),
+                &accept, state.extraction_amount as u32,
+            );
+        }
+        write_state(&mut entity.nbt, &state);
+        return;
+    }
+
     match (mode, kind) {
         (LeafNodeMode::Extract, CapabilityKind::Item) => {
-            let source = add(pos, dir_offset(target_dir));
-            let amount = state.extraction_amount.clamp(1, MAX_ITEM_EXTRACTION_AMOUNT) as u32;
-            let from_face = direction_from_index(target_dir).opposite();
-            for (sink, dir, sink_filter) in network.iter()
-                .filter(|(_, m, k, _, _)| *m == LeafNodeMode::Insert && *k == CapabilityKind::Item)
-                .map(|(p, _, _, d, filter)| (add(*p, dir_offset(*d)), *d, filter)) {
-                let to_face = direction_from_index(dir).opposite();
-                let source_rule = game.native_list_filter(filter.as_ref());
-                let sink_rule = game.native_list_filter(sink_filter.as_ref());
-                let source_attribute = game.native_attribute_filter(filter.as_ref());
-                let sink_attribute = game.native_attribute_filter(sink_filter.as_ref());
-                let accept = |stack: &ItemStack| source_rule.allows_item(stack)
-                    && sink_rule.allows_item(stack)
-                    && source_attribute.allows_item(stack)
-                    && sink_attribute.allows_item(stack);
-                let moved = game.native_move_items_filtered(game.dim.id(), source, from_face, sink, to_face, &accept, amount);
-                if moved > 0 { state_changed = true; }
+            let sinks: Vec<_> = network.iter().filter(|(_, m, k, _, _)| {
+                *m == LeafNodeMode::Insert && *k == CapabilityKind::Item
+            }).collect();
+            if sinks.is_empty() {
+                write_state(&mut entity.nbt, &state);
+                return;
+            }
+            let index = (int(&entity.nbt, "distributor", 0) + 1).rem_euclid(sinks.len() as i32) as usize;
+            set_int(&mut entity.nbt, "distributor", index as i32);
+            let (_, _, _, sink_dir, sink_filter) = sinks[index];
+            let source = attached(pos, target_dir);
+            let sink = attached(sinks[index].0, *sink_dir);
+            let source_rule = game.native_list_filter(filter.as_ref());
+            let sink_rule = game.native_list_filter(sink_filter.as_ref());
+            let source_attribute = game.native_attribute_filter(filter.as_ref());
+            let sink_attribute = game.native_attribute_filter(sink_filter.as_ref());
+            let accept = |stack: &ItemStack| source_rule.allows_item(stack)
+                && sink_rule.allows_item(stack)
+                && source_attribute.allows_item(stack)
+                && sink_attribute.allows_item(stack);
+            let moved = game.native_move_items_filtered(
+                game.dim.id(), source, direction_from_index(target_dir), sink,
+                direction_from_index(*sink_dir), &accept,
+                state.extraction_amount.clamp(1, MAX_ITEM_EXTRACTION_AMOUNT) as u32,
+            );
+            if moved > 0 {
+                set_int(&mut entity.nbt, "lastTransfer", moved as i32);
             }
         }
         (LeafNodeMode::Extract, CapabilityKind::Fluid) => {
-            let source = add(pos, dir_offset(target_dir));
-            let amount = state.extraction_amount.clamp(1, MAX_FLUID_EXTRACTION_AMOUNT);
-            let from_face = direction_from_index(target_dir).opposite();
-            for (sink, dir, sink_filter) in network.iter()
-                .filter(|(_, m, k, _, _)| *m == LeafNodeMode::Insert && *k == CapabilityKind::Fluid)
-                .map(|(p, _, _, d, filter)| (add(*p, dir_offset(*d)), *d, filter)) {
-                let to_face = direction_from_index(dir).opposite();
-                let source_rule = game.native_list_filter(filter.as_ref());
-                let sink_rule = game.native_list_filter(sink_filter.as_ref());
-                let accepted = game.native_fluid_tanks(game.dim.id(), source, from_face)
+            let sinks: Vec<_> = network.iter().filter(|(_, m, k, _, _)| {
+                *m == LeafNodeMode::Insert && *k == CapabilityKind::Fluid
+            }).collect();
+            if sinks.is_empty() {
+                write_state(&mut entity.nbt, &state);
+                return;
+            }
+            let index = (int(&entity.nbt, "distributor", 0) + 1).rem_euclid(sinks.len() as i32) as usize;
+            set_int(&mut entity.nbt, "distributor", index as i32);
+            let (_, _, _, sink_dir, sink_filter) = sinks[index];
+            let source = attached(pos, target_dir);
+            let sink = attached(sinks[index].0, *sink_dir);
+            let source_rule = game.native_list_filter(filter.as_ref());
+            let sink_rule = game.native_list_filter(sink_filter.as_ref());
+            let world_fluid = match game.native_block(source).as_str() {
+                "minecraft:water" => Some("minecraft:water".to_owned()),
+                "minecraft:lava" => Some("minecraft:lava".to_owned()),
+                "theurgy:sal_ammoniac" => Some("theurgy:sal_ammoniac".to_owned()),
+                _ => None,
+            };
+            let source_fluid = world_fluid.map(|fluid| (fluid, MAX_FLUID_EXTRACTION_AMOUNT)).or_else(|| {
+                game.native_fluid_tanks(game.dim.id(), source, direction_from_index(target_dir))
                     .into_iter().flatten().find(|tank| tank.amount > 0)
-                    .is_some_and(|tank| tank.fluid.as_deref().is_none_or(|fluid|
-                        source_rule.allows_fluid(game, fluid)
-                        && sink_rule.allows_fluid(game, fluid)));
-                // Both rules were evaluated against the first drainable fluid
-                // above; do not capture Game in the mutable transfer closure.
-                if !accepted { continue; }
-                if let Some((_, moved)) = game.native_move_fluids_filtered(game.dim.id(), source, from_face, sink, to_face, &|_| true, amount) {
-                    if moved > 0 { state_changed = true; }
+                    .and_then(|tank| tank.fluid.map(|fluid| (fluid, tank.amount)))
+            });
+            if let Some((fluid, available)) = source_fluid {
+                if source_rule.allows_fluid(game, &fluid) && sink_rule.allows_fluid(game, &fluid) {
+                    let accepted = fill_mod_tank(game, sink, &fluid, state.extraction_amount.min(available));
+                    if accepted > 0 {
+                        // A world source block is infinite in Java and remains
+                        // untouched. Only a real tank is drained, by accepted.
+                        let _ = drain_mod_tank(game, source, &fluid, accepted);
+                        set_int(&mut entity.nbt, "lastTransfer", accepted);
+                    }
+                }
+            }
+        }
+        (LeafNodeMode::Insert, CapabilityKind::MercuryFlux) => {
+            let sinks: Vec<_> = network.iter().filter(|(p, m, k, _, _)| {
+                *p != pos && *m == LeafNodeMode::Insert && *k == CapabilityKind::MercuryFlux
+            }).map(|(p, _, _, d, _)| (attached(*p, *d), *d)).collect();
+            if !sinks.is_empty() && state.flux_buffer > 0 {
+                let total = flux_pushes_for(state.flux_buffer, sinks.len());
+                let shares = distribute_evenly(total, sinks.len());
+                let mut moved_total = 0;
+                for ((sink, face), amount) in sinks.iter().zip(shares) {
+                    if game.native_block_property(*sink, "enabled").as_deref() == Some("false") {
+                        continue;
+                    }
+                    let moved = game.native_with_mod_block_entity(*sink, |target| {
+                        insert_flux_target(target, amount, *face)
+                    }).unwrap_or(0);
+                    if moved > 0 {
+                        state.flux_buffer -= moved;
+                        moved_total += moved;
+                    }
+                }
+                if moved_total > 0 {
+                    set_int(&mut entity.nbt, "lastTransfer", moved_total);
                 }
             }
         }
         _ => {}
     }
-
-    if state_changed {
-        write_state(&mut entity.nbt, &state);
-    }
+    write_state(&mut entity.nbt, &state);
 }
 
 // ---------------------------------------------------------------------------
