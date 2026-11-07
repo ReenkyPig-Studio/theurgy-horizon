@@ -55,6 +55,14 @@ export async function runCustom(call, assert) {
   assert.ok(attributeText.includes('renamed'), 'renamed rule must be authoritative: ' + attributeText);
   assert.ok(attributeText.includes('in_tag'), 'item tag rule must be authoritative: ' + attributeText);
   await step('edited attribute screenshot', ['screenshot', 'filter-attribute-edited.png']);
+  await step('open advanced editor', ['click-at', String(attribute.x + 305), String(attribute.y + attribute.h - 35)]);
+  await step('type advanced rule', ['type', 'codedefinedgui:standard {"value":"enchanted"}']);
+  await step('apply advanced rule', ['key', 'enter', 'down']);
+  await step('release enter', ['key', 'enter', 'up']);
+  await step('advanced settle', ['wait', '24']);
+  const advancedNbt = await step('advanced authoritative NBT', ['command', 'data', 'get', 'entity', '@s', 'SelectedItem']);
+  assert.ok(JSON.stringify(advancedNbt).includes('enchanted'), 'advanced JSON rule must be authoritative');
+  await step('advanced screenshot', ['screenshot', 'filter-attribute-advanced.png']);
   await step('close attribute', ['close']);
   return out;
 }

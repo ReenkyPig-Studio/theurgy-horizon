@@ -44,6 +44,10 @@ export async function runCustom(call, assert) {
   if (process.env.THEURGY_WORLDGEN_ORACLE) {
     const trace = JSON.parse(fs.readFileSync(process.env.THEURGY_WORLDGEN_ORACLE, 'utf8'));
     assert.ok(Array.isArray(trace.ores) && trace.ores.length > 0, 'Java worldgen trace contains no ores');
+    const origin = trace.origin.split(',').map(Number);
+    await step('Java deepslate fixture', ['fill', String(origin[0] - 8), '0', String(origin[2] - 8), String(origin[0] + 8), '7', String(origin[2] + 8), 'minecraft:deepslate']);
+    await step('Java stone fixture', ['fill', String(origin[0] - 8), '8', String(origin[2] - 8), String(origin[0] + 8), '15', String(origin[2] + 8), 'minecraft:stone']);
+    await step('run placed feature', ['command', 'theurgy_worldgen', ...origin.map(String)]);
     let checked = 0;
     for (const expected of trace.ores) {
       const actual = await step('Java ore position ' + checked, ['block', ...expected.pos.map(String)]);
