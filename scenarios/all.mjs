@@ -92,7 +92,10 @@ export async function runAll(call, assert) {
     r => assert.equal(itemAt(r, 0), 'theurgy:alchemical_sulfur_beef'));
   await step('fermentation crop', ['container', ...s(ferm), 'minecraft:oak_log', '1'],
     r => assert.ok(itemAt(r, 1) === 'minecraft:oak_log' || itemAt(r, 0) === 'minecraft:oak_log'));
+  await step('fermentation close with redstone', ['setblock', '16', '80', '1', 'minecraft:redstone_block']);
   await step('fermentation wait', ['wait', '260']);
+  const fermentationFinalNbt = await step('fermentation final nbt', ['command', 'data', 'get', 'block', ...s(ferm)]);
+  results.push({name: 'fermentation final nbt', reply: fermentationFinalNbt});
   const fermOut = await step('fermentation output', ['container', ...s(ferm)]);
   assert.ok(itemAt(fermOut, 3), 'fermentation produced no output: ' + JSON.stringify(slots(fermOut)));
   results.push({name: 'fermentation result', item: itemAt(fermOut, 3)});
@@ -104,6 +107,7 @@ export async function runAll(call, assert) {
   await step('digestion solvent', mergeFluid(dig, 'theurgy:sal_ammoniac', 1000));
   await step('digestion input', ['container', ...s(dig), 'theurgy:alchemical_niter_animals_common', '1'],
     r => assert.ok(itemAt(r, 0) === 'theurgy:alchemical_niter_animals_common'));
+  await step('digestion close with redstone', ['setblock', '24', '80', '1', 'minecraft:redstone_block']);
   await step('digestion wait', ['wait', '260']);
   const digOut = await step('digestion output', ['container', ...s(dig)]);
   assert.ok(itemAt(digOut, 3), 'digestion produced no output: ' + JSON.stringify(slots(digOut)));
