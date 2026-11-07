@@ -316,6 +316,10 @@ fn recipe_time(json: &Value) -> i32 {
         .clamp(0, i64::from(i32::MAX)) as i32
 }
 
+fn default_crafting_time(kind: &str) -> i32 {
+    if matches!(kind, "theurgy:fermentation" | "theurgy:digestion") { 200 } else { 100 }
+}
+
 fn matches_ingredient(
     game: &mut crate::game::Game<'_>,
     ingredient: &Value,
@@ -436,6 +440,17 @@ pub fn tick(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut ModBlo
     let result: ProcessResult = match selected {
         None => {
             let old = state.clone();
+            let previous = ((entity.data.get(8).copied().unwrap_or(0) as u32 as u64) << 32)
+                | entity.data.get(7).copied().unwrap_or(0) as u32 as u64;
+            let signature = input_signature(entity, kind, "");
+            current_signature = signature;
+            let has_items = entity.items.iter().any(Option::is_some);
+            if previous != signature && (previous != 0 || has_items) {
+                // CraftingBehaviour.onInputItemChanged stores the current
+                // recipe time, or the type's default even with no recipe.
+                state.total_time = default_crafting_time(kind);
+                state.progress = 0;
+            }
             let updates = state.stop();
             ProcessResult {
                 selected_recipe: None,
