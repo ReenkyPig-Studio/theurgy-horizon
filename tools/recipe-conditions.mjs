@@ -68,6 +68,9 @@ export async function applyRecipeConditions({dest,sources,neoforgeJar,reportFile
   if(accepted){delete json['neoforge:conditions'];await fs.writeFile(file,JSON.stringify(json,null,2)+'\n');}
   else await fs.rm(file);
  }
+ const report={accepted:rows.filter(r=>r.accepted).length,skipped:rows.filter(r=>!r.accepted).length,tagDefinitions:definitions.size};
  if(reportFile){await fs.mkdir(path.dirname(reportFile),{recursive:true});await fs.writeFile(reportFile,JSON.stringify({schema:1,tagDefinitions:definitions.size,debugDefinition:definitions.get('theurgy:alchemical_sulfurs/animals/abundant'),knownItemCount:knownItems.size,hasSulfurBeef:knownItems.has('theurgy:alchemical_sulfur_beef'),resolvedTags:cache.size,tagSizes:Object.fromEntries([...cache].map(([id,values])=>[id,values.size])),accepted:rows.filter(r=>r.accepted).length,skipped:rows.filter(r=>!r.accepted).length,rows},null,2)+'\n');}
- return {accepted:rows.filter(r=>r.accepted).length,skipped:rows.filter(r=>!r.accepted).length,tagDefinitions:definitions.size};
+ const tagItems=id=>[...tag(id)].sort();
+ Object.defineProperty(report,'tagItems',{value:tagItems,enumerable:false});
+ return report;
 }
