@@ -11,7 +11,7 @@ fn hook(
     if *canceled {
         return;
     }
-    crate::game::theurgy_interactions::right_click(game, stack.as_ref(), pos, canceled);
+    crate::game::theurgy_interactions::right_click(game, stack.as_ref(), pos, face, canceled);
     if *canceled {
         return;
     }
