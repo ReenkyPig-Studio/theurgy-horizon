@@ -15,8 +15,8 @@ function has(items, id, count) {
 }
 
 async function until(call, pos, predicate, description, timeout = 400) {
-  for (let elapsed = 0; elapsed < timeout; elapsed += 10) {
-    await wait(call, 10);
+  for (let elapsed = 0; elapsed < timeout; elapsed += 1) {
+    await wait(call, 1); // GameTestHelper.succeedWhen polls every tick
     const value = await probe(call, pos);
     if (predicate(value)) return value;
   }

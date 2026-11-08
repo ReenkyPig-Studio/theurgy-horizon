@@ -4,9 +4,7 @@ import {at, record, setblock, container, merge, wait, probe} from '../differenti
 async function interact(call, pos, item = null) {
   await call(['command', 'clear', '@s']);
   if (item) await call(['give', item, '1']);
-  await call(['tp', String(pos[0]), String(pos[1] + 2), String(pos[2] - 3)]);
-  await call(['look-at', 'block', ...pos.map(String)]);
-  await call(['interact', ...pos.map(String)]);
+  await call(['command', 'theurgy_interact', ...pos.map(String), 'up']);
   await wait(call, 2);
 }
 

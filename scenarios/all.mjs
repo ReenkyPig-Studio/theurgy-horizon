@@ -119,9 +119,11 @@ export async function runAll(call, assert) {
     r => assert.ok(blockState(r).startsWith('theurgy:sal_ammoniac_accumulator')));
   await step('accumulator tank', ['setblock', ...s(tank), 'theurgy:sal_ammoniac_tank'],
     r => assert.ok(blockState(r).startsWith('theurgy:sal_ammoniac_tank')));
-  await step('accumulator water', mergeFluid(acc, 'minecraft:water', 1000));
+  // Solute first: water alone matches sal_ammoniac_from_water, which a fresh
+  // BE (totalTime 0) crafts on its first tick, leaving no room for the lava.
   await step('accumulator input', ['container', ...s(acc), 'theurgy:crystallized_lava', '1'],
     r => assert.equal(itemAt(r, 0), 'theurgy:crystallized_lava'));
+  await step('accumulator water', mergeFluid(acc, 'minecraft:water', 1000));
   await step('accumulator wait', ['wait', '260']);
   const accOut = await step('accumulator output', ['container', ...s(acc)]);
   assert.equal(itemAt(accOut, 0), null, 'accumulator solute should be consumed');

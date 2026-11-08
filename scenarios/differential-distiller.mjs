@@ -7,8 +7,8 @@ const OUTPUT = 'theurgy:mercury_shard';
 const LOWER = [2, 2, 2], UPPER = [2, 3, 2], HEAT = [2, 1, 2];
 
 async function until(call, pos, predicate, description, timeout = 400) {
-  for (let elapsed = 0; elapsed < timeout; elapsed += 10) {
-    await wait(call, 10);
+  for (let elapsed = 0; elapsed < timeout; elapsed += 1) {
+    await wait(call, 1); // GameTestHelper.succeedWhen polls every tick
     if (predicate(await probe(call, pos))) return;
   }
   throw new Error('Timed out waiting for ' + description);

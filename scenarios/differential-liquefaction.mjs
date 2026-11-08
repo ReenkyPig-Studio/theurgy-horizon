@@ -32,8 +32,8 @@ async function interact(call, pos, item = null) {
   await wait(call, 2);
 }
 async function until(call, pos, predicate, description, timeout = 400) {
-  for (let elapsed = 0; elapsed < timeout; elapsed += 10) {
-    await wait(call, 10);
+  for (let elapsed = 0; elapsed < timeout; elapsed += 1) {
+    await wait(call, 1); // GameTestHelper.succeedWhen polls every tick
     if (predicate(await probe(call, pos))) return;
   }
   throw new Error('Timed out waiting for ' + description);

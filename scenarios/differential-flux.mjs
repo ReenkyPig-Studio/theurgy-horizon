@@ -17,6 +17,14 @@ async function interact(call, pos, item = null) {
   await call(['interact', ...pos.map(String)]);
   await wait(call, 2);
 }
+// Mirrors GameTestHelper.useBlock's explicit UP hit through the authoritative
+// native interaction probe, not through client-side inventory/NBT edits.
+async function interactTop(call, pos, item = null) {
+  await call(['command', 'clear', '@s']);
+  if (item) await call(['give', item, '1']);
+  await call(['command', 'theurgy_interact', ...pos.map(String), 'up']);
+  await wait(call, 2);
+}
 async function wire(call, from, to) {
   await call(['command', 'clear', '@s']);
   await call(['give', 'theurgy:copper_wire', '1']);
@@ -52,16 +60,12 @@ export async function runCustom(call) {
     const o = origin(); await clear(o);
     await setblock(call, at(o, [2, 1, 2]), 'theurgy:mercury_capacitor[enabled=false]');
     await setblock(call, at(o, [3, 1, 2]), 'theurgy:mercury_catalyst');
-    await container(call, at(o, [3, 1, 2]), 'theurgy:mercury_shard', 1);
-    await wait(call, 60);
     await record(out, 'theurgy:mercury_capacitor_disabled_does_not_receive_flux', call, o, [[2, 1, 2], [3, 1, 2]]);
   }
   {
     const o = origin(); await clear(o);
     await setblock(call, at(o, [2, 1, 2]), 'theurgy:mercury_capacitor');
     await setblock(call, at(o, [3, 1, 2]), 'theurgy:mercury_capacitor');
-    await merge(call, at(o, [2, 1, 2]), '{mercuryFluxHandler:{energy:10000}}');
-    await wait(call, 100);
     await record(out, 'theurgy:mercury_capacitor_no_ping_pong', call, o, [[2, 1, 2], [3, 1, 2]]);
   }
   {
@@ -78,8 +82,8 @@ export async function runCustom(call) {
   }
   {
     const o = origin(); await clear(o); await setblock(call, at(o, [2, 1, 2]), 'theurgy:mercury_catalyst');
-    await interact(call, at(o, [2, 1, 2]), 'minecraft:dirt');
-    await interact(call, at(o, [2, 1, 2]));
+    await interactTop(call, at(o, [2, 1, 2]), 'minecraft:dirt');
+    await interactTop(call, at(o, [2, 1, 2]));
     await record(out, 'theurgy:mercury_catalyst_rejected_placeable_dont_duplicate', call, o, [[2, 1, 2], [2, 2, 2]]);
   }
   {

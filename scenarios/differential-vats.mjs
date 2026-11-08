@@ -70,7 +70,6 @@ export async function runCustom(call) {
         await merge(call, at(o), '{fluids:[{Fluid:"theurgy:sal_ammoniac",Amount:1000}]}');
         await wait(call, 3);
       }
-      await setblock(call, at(o), block);
       await call(['command', 'theurgy_state', ...at(o).map(String), 'open', 'false']);
       await record(out, prefix + 'lid_closes', call, o);
     }

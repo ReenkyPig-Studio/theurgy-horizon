@@ -13,18 +13,14 @@ async function wire(call, from, to) {
   }
 }
 async function placeNexus(call, o, locals) {
-  await call(['command', 'clear', '@s']);
-  await call(['give', 'theurgy:logistics_nexus', String(locals.length)]);
-  await call(['command', 'item', 'modify', 'entity', '@s', 'weapon.mainhand', JSON.stringify({type:'minecraft:set_components',components:{'theurgy:logistics_nexus_id':UUID}})]);
+  // The Java fixtures use setBlock and then assign the same nexus id to both
+  // BEs; they do not place a supporting stone below the nexus.
   for (const local of locals) {
-    const pos = at(o, local), support = [pos[0], pos[1] - 1, pos[2]];
-    await setblock(call, support, 'minecraft:stone');
-    await call(['tp', String(pos[0]), String(pos[1] + 2), String(pos[2] - 3)]);
-    await call(['look-at', 'block', ...support.map(String)]);
-    await call(['select', 'theurgy:logistics_nexus']);
-    await call(['interact', ...support.map(String)]);
-    await wait(call, 2);
+    const pos = at(o, local);
+    await setblock(call, pos, 'theurgy:logistics_nexus');
+    await merge(call, pos, `{nexusId:"${UUID}"}`);
   }
+  await wait(call, 2);
 }
 async function until(call, pos, predicate, description, timeout = 400) {
   for (let elapsed = 0; elapsed < timeout; elapsed += 10) {
@@ -136,6 +132,9 @@ export async function runCustom(call) {
     await setblock(call, at(o, extractor), 'theurgy:logistics_fluid_extractor[facing=east]');
     await setblock(call, at(o, inserter), 'theurgy:logistics_fluid_inserter[facing=west]');
     await setblock(call, at(o, tank), 'theurgy:sal_ammoniac_tank');
+    const packed = pos => BigInt.asIntN(64, (BigInt(pos[0]) << 38n) | (BigInt(pos[2]) << 12n) | BigInt(pos[1] & 0xfff));
+    const tankPos = at(o, tank), packedTank = packed(tankPos);
+    await merge(call, at(o, inserter), `{targets:[${packedTank}L,${packedTank}L]}`);
     await wire(call, at(o, extractor), at(o, inserter));
     await until(call, at(o, tank), state => fluid(state), 'world fluid extraction');
     await record(out, 'theurgy:logistics_fluid_extracts_world_source', call, o, [...stones, source, extractor, inserter, tank]);

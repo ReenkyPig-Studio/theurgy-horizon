@@ -1,0 +1,13 @@
+{
+  "renderSulfurSourceItem": false,
+  "enableItemHUD": true,
+  "enableInWorldHUD": true,
+  "enableHeldStackFitOutline": true,
+  "heldStackFitOutlineRenderMode": "GREEN_ONLY",
+  "hudScale": 1.0,
+  "wireLineWidth": 4,
+  "useSimpleWireRenderer": true,
+  "sulfurSourceToBlockMapping": {
+    "theurgy:sal_ammoniac_ore": "minecraft:stone"
+  }
+}

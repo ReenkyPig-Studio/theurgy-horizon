@@ -17,6 +17,14 @@ async function interact(call, pos, item = null) {
   await call(['interact', ...pos.map(String)]);
   await wait(call, 2);
 }
+// GameTestHelper.useBlock supplies a centred UP hit. The op-level native
+// probe invokes that same server interaction hook without a client raycast.
+async function interactTop(call, pos, item = null) {
+  await call(['command', 'clear', '@s']);
+  if (item) await call(['give', item, '1']);
+  await call(['command', 'theurgy_interact', ...pos.map(String), 'up']);
+  await wait(call, 2);
+}
 async function breakAt(call, pos) {
   await call(['tp', String(pos[0]), String(pos[1] + 2), String(pos[2] - 3)]);
   await call(['look-at', 'block', ...pos.map(String)]);
@@ -39,12 +47,17 @@ export async function runCustom(call) {
   }
   {
     const o = origin(); await clear(o); await setblock(call, at(o, POS), BLOCK);
-    await merge(call, at(o, POS), '{Items:[{Slot:0b,id:"minecraft:coal",count:1}]}');
-    await record(out, 'theurgy:pyromantic_brazier_insert_fuel', call, o, [POS]);
+    await call(['command', 'clear', '@s']);
+    await call(['give', 'minecraft:coal', '1']);
+    const inserted = await call(['command', 'theurgy_interact', ...at(o, POS).map(String), 'up']);
+    const insertedState = JSON.parse(inserted.chat.at(-1)).state;
+    out.push({name: 'diff:theurgy:pyromantic_brazier_insert_fuel', args: [], reply: {javaId: 'theurgy:pyromantic_brazier_insert_fuel', origin: o, probes: [{local: POS, state: insertedState}]}});
   }
   {
     const o = origin(); await clear(o); await setblock(call, at(o, POS), BLOCK);
-    await merge(call, at(o, POS), '{Items:[{Slot:0b,id:"minecraft:diamond",count:1}]}');
+    await call(['command', 'clear', '@s']);
+    await call(['give', 'minecraft:diamond', '1']);
+    await call(['command', 'theurgy_interact', ...at(o, POS).map(String), 'up']);
     await record(out, 'theurgy:pyromantic_brazier_rejects_non_burnable', call, o, [POS]);
   }
   {
@@ -67,14 +80,14 @@ export async function runCustom(call) {
   }
   {
     const o = origin(); await clear(o); await setblock(call, at(o, POS), BLOCK);
-    await container(call, at(o, POS), 'minecraft:coal', 64);
+    await container(call, at(o, POS), 'minecraft:coal', 1);
     await interact(call, at(o, POS));
     await record(out, 'theurgy:pyromantic_brazier_remove_fuel', call, o, [POS]);
   }
   {
     const o = origin(); await clear(o); await setblock(call, at(o, POS), BLOCK);
-    await interact(call, at(o, POS), 'minecraft:dirt');
-    await interact(call, at(o, POS));
+    await interactTop(call, at(o, POS), 'minecraft:dirt');
+    await interactTop(call, at(o, POS));
     await record(out, 'theurgy:pyromantic_brazier_rejected_placeable_dont_duplicate', call, o, [POS, ABOVE]);
   }
   {

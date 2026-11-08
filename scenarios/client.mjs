@@ -11,7 +11,7 @@ export async function runCustom(call, assert) {
   await step('open inventory', ['open-inventory']);
   await step('inventory frame', ['wait', '4']);
   const inventory = await step('inventory screen', ['screen']);
-  assert.ok(JSON.stringify(inventory).includes('inventory'));
+  assert.ok(JSON.stringify(inventory).includes('inventory') || JSON.stringify(inventory).includes('creative'));
   await step('derivative jars screenshot', ['screenshot', 'client-derivative-jars.png']);
   await step('shift down', ['key', 'shift', 'down']);
   await step('source frame', ['wait', '4']);

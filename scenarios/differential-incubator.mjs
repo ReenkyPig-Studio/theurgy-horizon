@@ -35,17 +35,18 @@ async function breakAt(call, pos) {
   await call(['break', ...pos.map(String)]);
   await wait(call, 4);
 }
+// The Java helper calls useBlock directly; use the same authoritative native
+// interaction hook when Horizon's raycast cannot see a double-high lower half.
 async function extract(call, pos) {
   await call(['command', 'clear', '@s']);
-  await call(['tp', String(pos[0]), String(pos[1] + 2), String(pos[2] - 3)]);
-  await call(['look-at', 'block', ...pos.map(String)]);
-  await call(['interact', ...pos.map(String)]);
+  await call(['command', 'theurgy_interact', ...pos.map(String), 'north']);
   await wait(call, 2);
 }
 async function until(call, pos, predicate, description, timeout = 400) {
   for (let elapsed = 0; elapsed < timeout; elapsed += 10) {
     await wait(call, 10);
-    if (predicate(await probe(call, pos))) return;
+    const state = await probe(call, pos);
+    if (predicate(state)) return state;
   }
   throw new Error('Timed out waiting for ' + description);
 }
@@ -132,7 +133,7 @@ export async function runCustom(call) {
   {
     const o = origin(); await clear(o); await processing(call, o);
     await wait(call, 25);
-    await breakAt(call, at(o, HEAT));
+    await setblock(call, at(o, HEAT), 'minecraft:air');
     await until(call, at(o, LOWER), state => Number(state.data?.[4]) === 0, 'incubator heat removal');
     await record(out, 'theurgy:incubator_stops_without_heat', call, o, ALL);
   }
