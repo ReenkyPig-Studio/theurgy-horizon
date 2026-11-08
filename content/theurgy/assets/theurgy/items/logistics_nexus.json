@@ -1,9 +1,6 @@
 {
   "model": {
-    "type": "minecraft:special",
-    "base": "theurgy:item/logistics_nexus",
-    "model": {
-      "type": "geckolib:geckolib"
-    }
+    "type": "minecraft:model",
+    "model": "theurgy:item/logistics_nexus"
   }
 }
