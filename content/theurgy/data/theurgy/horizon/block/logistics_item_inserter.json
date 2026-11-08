@@ -23,7 +23,7 @@
     }
   },
   "default_state": {
-    "facing": "north",
+    "facing": "up",
     "has_filter": "false"
   }
 }

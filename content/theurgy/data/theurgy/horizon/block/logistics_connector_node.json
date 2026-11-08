@@ -7,24 +7,6 @@
     "requires_tool": false
   },
   "state_properties": {
-    "up": {
-      "type": "boolean"
-    },
-    "down": {
-      "type": "boolean"
-    },
-    "north": {
-      "type": "boolean"
-    },
-    "south": {
-      "type": "boolean"
-    },
-    "east": {
-      "type": "boolean"
-    },
-    "west": {
-      "type": "boolean"
-    },
     "facing": {
       "type": "enum",
       "values": [
@@ -38,12 +20,6 @@
     }
   },
   "default_state": {
-    "up": "false",
-    "down": "false",
-    "north": "false",
-    "south": "false",
-    "east": "false",
-    "west": "false",
-    "facing": "north"
+    "facing": "up"
   }
 }

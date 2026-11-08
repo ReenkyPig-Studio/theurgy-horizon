@@ -5,7 +5,7 @@
     "A": "#c:gems/amethyst",
     "G": "#c:glass_blocks",
     "R": "#c:rods/wooden",
-    "S": "#theurgy:alchemical_sulfurs/rare"
+    "S": "theurgy:alchemical_sulfur_ghast_tear"
   },
   "pattern": [
     " GS",
@@ -19,7 +19,8 @@
       "theurgy:divination_settings_duration": 40,
       "theurgy:divination_settings_max_damage": 32,
       "theurgy:divination_settings_range": 96,
-      "theurgy:divination_settings_tier": "stone"
+      "theurgy:divination_settings_tier": "stone",
+      "theurgy:divination_linked_block": "minecraft:ghast_tear"
     },
     "id": "theurgy:sulfur_attuned_divination_rod_rare"
   }

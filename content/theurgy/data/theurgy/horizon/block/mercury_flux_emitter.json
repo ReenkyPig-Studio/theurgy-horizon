@@ -17,9 +17,13 @@
         "west",
         "east"
       ]
+    },
+    "enabled": {
+      "type": "boolean"
     }
   },
   "default_state": {
-    "facing": "north"
+    "facing": "up",
+    "enabled": "true"
   }
 }

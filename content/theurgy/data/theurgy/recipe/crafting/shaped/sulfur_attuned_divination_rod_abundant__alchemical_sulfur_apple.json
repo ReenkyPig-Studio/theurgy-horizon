@@ -4,7 +4,7 @@
   "key": {
     "G": "#c:glass_blocks",
     "R": "#c:rods/wooden",
-    "S": "#theurgy:alchemical_sulfurs/abundant"
+    "S": "theurgy:alchemical_sulfur_apple"
   },
   "pattern": [
     " GS",
@@ -18,7 +18,8 @@
       "theurgy:divination_settings_duration": 40,
       "theurgy:divination_settings_max_damage": 16,
       "theurgy:divination_settings_range": 96,
-      "theurgy:divination_settings_tier": "stone"
+      "theurgy:divination_settings_tier": "stone",
+      "theurgy:divination_linked_block": "minecraft:apple"
     },
     "id": "theurgy:sulfur_attuned_divination_rod_abundant"
   }
