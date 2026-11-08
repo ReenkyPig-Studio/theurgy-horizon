@@ -56,8 +56,17 @@ export function machineChaosPlan(opts = {}) {
   // `no container there` and the probe would fail for the wrong reason. Place them all, then
   // assert each readback so a failed placement halts immediately.
   for (const p of positions) {
+    // Reused isolated homes must start with both halves empty. Otherwise a
+    // previous run's upper half can make the new lower placement pop back to
+    // air before the first real chaos action.
+    actions.push({name: 'clear upper fixture ' + p.join(','), kind: 'setblock',
+      args: ['setblock', String(p[0]), String(p[1] + 1), String(p[2]), 'minecraft:air']});
+    actions.push({name: 'clear lower fixture ' + p.join(','), kind: 'setblock',
+      args: ['setblock', ...p.map(String), 'minecraft:air']});
     actions.push({name: 'place machine ' + p.join(','), kind: 'setblock',
       args: ['setblock', ...p.map(String), MACHINE], expect: MACHINE});
+    actions.push({name: 'place upper fixture ' + p.join(','), kind: 'setblock',
+      args: ['setblock', String(p[0]), String(p[1] + 1), String(p[2]), MACHINE + '[half=upper]'], expect: MACHINE});
     actions.push({name: 'confirm machine ' + p.join(','), kind: 'block',
       args: ['block', ...p.map(String)], expect: MACHINE});
   }

@@ -2,6 +2,8 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import {root,config} from './common.mjs';
 import {applyRecipeConditions} from './recipe-conditions.mjs';
+import {bakeGeckolibItems} from './geckolib-items.mjs';
+import {enrichHermetica} from './hermetica-book.mjs';
 import {readZipEntries} from './zip.mjs';
 const source=path.join(root,'upstream/theurgy/src');
 const dest=path.join(root,'content/theurgy');
@@ -27,7 +29,10 @@ side = "both"
 capabilities = ["registries"]
 `);
 await copy(path.join(root,'upstream/theurgy/LICENSES'),path.join(dest,'LICENSES'));
-await fs.copyFile(path.join(root,'upstream/theurgy/REUSE.toml'),path.join(dest,'REUSE.toml'));
+// Upstream REUSE.toml names upstream paths; annotate the derived addon data too.
+await fs.writeFile(path.join(dest,'REUSE.toml'),await fs.readFile(path.join(root,'upstream/theurgy/REUSE.toml'),'utf8')+
+ ['','[[annotations]]','path = ["assets/theurgy/**", "data/theurgy/**"]','precedence = "aggregate"',
+  'SPDX-FileCopyrightText = "2024 klikli-dev"','SPDX-License-Identifier = "CC-BY-4.0"',''].join('\n'));
 await fs.copyFile(path.join(root,'THIRD_PARTY_NOTICES.md'),path.join(dest,'THIRD_PARTY_NOTICES.md'));
 // Horizon's generator catalog is built before dev-mod configured features are
 // visible. Do not leave a dangling placed-feature/biome-modifier reference:
@@ -50,13 +55,13 @@ const props={
  distiller:[bool('lit'),['half',{type:'enum',values:['lower','upper']}]],
  incubator:['north','east','south','west'].map(bool).concat([['half',{type:'enum',values:['lower','upper']}]]),
  logistics_nexus:['up','down','north','south','east','west'].map(bool),
- logistics_connector_node:['up','down','north','south','east','west'].map(bool).concat([['facing',{type:'enum',values:['down','up','north','south','west','east']}]]),
+ logistics_connector_node:[['facing',{type:'enum',values:['down','up','north','south','west','east']}]],
  logistics_capability_proxy:[['facing',{type:'enum',values:['down','up','north','south','west','east']}]],
  logistics_capability_probe:[['facing',{type:'enum',values:['down','up','north','south','west','east']}]],
  mercury_catalyst:[bool('enabled')],mercury_capacitor:[bool('enabled')],
  caloric_flux_emitter:[['facing',{type:'enum',values:['down','up','north','south','west','east']}],bool('enabled')],
  sulfuric_flux_emitter:[['facing',{type:'enum',values:['down','up','north','south','west','east']}]],
- mercury_flux_emitter:[['facing',{type:'enum',values:['down','up','north','south','west','east']}]],
+ mercury_flux_emitter:[['facing',{type:'enum',values:['down','up','north','south','west','east']}],bool('enabled')],
  fermentation_vat:[['facing',{type:'enum',values:['north','south','east','west']}],bool('open'),bool('has_output')],
  digestion_vat:[['facing',{type:'enum',values:['north','south','east','west']}],bool('open')],
  logistics_item_inserter:[['facing',{type:'enum',values:['down','up','north','south','west','east']}],bool('has_filter')],logistics_item_extractor:[['facing',{type:'enum',values:['down','up','north','south','west','east']}],bool('has_filter')],
@@ -82,7 +87,8 @@ const blocks=(await fs.readdir(blockDir)).filter(f=>f.endsWith('.json')).map(f=>
 for(const id of blocks) {
  const template=templateFor(id),short=template.split(':')[1];
  const state_properties=Object.fromEntries((props[id]??[]).filter(([n])=>!known[short].includes(n)));
- const default_state=Object.fromEntries((props[id]??[]).map(([n])=>[n,defaults[n]??'false'])
+const upFacing=new Set(['caloric_flux_emitter','sulfuric_flux_emitter','mercury_flux_emitter','logistics_connector_node','logistics_capability_probe','logistics_capability_proxy','logistics_item_inserter','logistics_item_extractor','logistics_fluid_inserter','logistics_fluid_extractor','logistics_mercury_flux_connector']);
+ const default_state=Object.fromEntries((props[id]??[]).map(([n])=>[n,upFacing.has(id)&&n==='facing'?'up':defaults[n]??'false'])
    .filter(([n])=>state_properties[n]));
  const d={template,item:id!=='sal_ammoniac',properties:{hardness:id.includes('ore')?3:1,
    explosion_resistance:id.includes('ore')?3:1,requires_tool:id.includes('ore')}};
@@ -119,11 +125,13 @@ const conventionTag=token=>{
 const sulfurComponents={};
 for(const match of sulfurJava.matchAll(/DeferredItem<AlchemicalSulfurItem>\s+(\w+)\s*=\s*registerForSource(Item|Tag)\(([^,]+),/g)) {
  const name=match[1].toLowerCase(),kind=match[2],argument=match[3].trim();
+ const declaration=sulfurJava.slice(match.index,sulfurJava.indexOf(';',match.index));
+ const tier=declaration.match(/AlchemicalDerivativeTier\.(\w+)/)?.[1].toLowerCase();
  if(kind==='Tag') {
   const tag=conventionTag(argument);
-  if(tag)sulfurComponents['alchemical_sulfur_'+name]={tag};
+  if(tag)sulfurComponents['alchemical_sulfur_'+name]={tag,tier};
  } else if(argument.startsWith('Items.')) {
-  sulfurComponents['alchemical_sulfur_'+name]={item:'minecraft:'+argument.slice('Items.'.length).toLowerCase()};
+  sulfurComponents['alchemical_sulfur_'+name]={item:'minecraft:'+argument.slice('Items.'.length).toLowerCase(),tier};
  }
 }
 // DataComponentRegistry defaults for the tool items. The native component
@@ -208,6 +216,40 @@ for(const file of await files(path.join(dest,'data/theurgy/recipe'))) {
    await fs.writeFile(file,JSON.stringify(j,null,2)+'\n');
  }
 }
+// DivinationRodRecipe is dynamic in Java: its result copies SOURCE_ITEM or
+// SOURCE_TAG from the sulfur in the grid. Horizon's local crafting menu does
+// not dispatch prepare_item_craft, so provide the equivalent authoritative
+// per-sulfur shaped recipes instead of relying on a client-side callback.
+const oreTag=tag=>{
+ if(tag==='minecraft:coals')return 'c:ores/coal';
+ const [namespace,path]=tag.split(':');
+ for(const prefix of ['ingots','nuggets','raw_materials','dusts','storage_blocks','gems'])
+  if(path.startsWith(prefix+'/'))return namespace+':ores/'+path.slice(prefix.length+1);
+ if(path.endsWith('/netherite'))return namespace+':ores/netherite_scrap';
+ return tag;
+};
+let attunedRecipes=0;
+const attunedFiles={abundant:[],common:[],rare:[],precious:[]};
+for(const [id,sulfur] of Object.entries(sulfurComponents)) {
+ const tier=sulfur.tier;
+ if(!tier)continue;
+ const generic=path.join(dest,`data/theurgy/recipe/crafting/shaped/sulfur_attuned_divination_rod_${tier}.json`);
+ const template=JSON.parse(await fs.readFile(generic,'utf8'));
+ template.key.S='theurgy:'+id;
+ if(sulfur.item)template.result.components['theurgy:divination_linked_block']=sulfur.item;
+ if(sulfur.tag)template.result.components['theurgy:divination_linked_tag']=oreTag(sulfur.tag);
+ const out=path.join(dest,`data/theurgy/recipe/crafting/shaped/sulfur_attuned_divination_rod_${tier}__${id}.json`);
+ await fs.writeFile(out,JSON.stringify(template,null,2)+'\n');
+ attunedFiles[tier].push(path.relative(dest,out).replaceAll('\\','/'));
+ attunedRecipes++;
+}
+for(const tier of ['abundant','common','rare','precious'])
+ await fs.rm(path.join(dest,`data/theurgy/recipe/crafting/shaped/sulfur_attuned_divination_rod_${tier}.json`),{force:true});
+await fs.writeFile(path.join(root,'artifacts/attunement-recipes.json'),JSON.stringify({schema:1,
+  reason:'DivinationRodRecipe copies sulfur source components; authoritative per-sulfur shaped replacements are required because Horizon does not dispatch the local prepare_item_craft callback.',
+  replacements:Object.entries(attunedFiles).map(([tier,files])=>({source:`crafting/shaped/sulfur_attuned_divination_rod_${tier}`,files}))
+},null,2)+'\n');
+console.log(JSON.stringify({attunedRecipes}));
 // NeoForge provides these convention tags outside Theurgy's own data. Horizon
 // does not ship NeoForge's tag bundle, so carry the small set used by the
 // divination-rod Java tags. Do not synthesize unrelated convention tags.
@@ -221,6 +263,13 @@ for(const [relative,values] of Object.entries(conventionTags)) {
  await fs.mkdir(path.dirname(target),{recursive:true});
  await fs.writeFile(target,JSON.stringify({values},null,2)+'\n');
 }
+// CreativeModeTabRegistry.displayItems order first; the salt/sulfur/niter
+// registries append theirs afterwards via BuildCreativeModeTabContentsEvent.
+const tabSource=await fs.readFile(path.join(source,'main/java/com/klikli_dev/theurgy/registry/CreativeModeTabRegistry.java'),'utf8');
+const tabOrder=[...tabSource.slice(tabSource.indexOf('displayItems')).matchAll(/ItemRegistry\.([A-Z0-9_]+)\.get\(\)/g)].map(m=>m[1].toLowerCase())
+ .map(id=>id==='logistics_connection_node'?'logistics_connector_node':id); // BlockRegistry path differs from the constant
+if(tabOrder.length<40||tabOrder.some(id=>!items.includes(id)))throw new Error('creative tab order does not resolve: '+tabOrder.filter(id=>!items.includes(id)));
+items.sort((a,b)=>(tabOrder.includes(a)?tabOrder.indexOf(a):1e9)-(tabOrder.includes(b)?tabOrder.indexOf(b):1e9));
 await fs.mkdir(path.join(dest,'data/theurgy/horizon/creative_tab'),{recursive:true});
 await fs.writeFile(path.join(dest,'data/theurgy/horizon/creative_tab/theurgy.json'),JSON.stringify({
  title:'itemGroup.theurgy',icon:'theurgy:empty_jar_icon',items:items.filter(id=>!id.endsWith('_icon')).map(id=>'theurgy:'+id)
@@ -234,6 +283,10 @@ for(const id of ['calcination_oven','distiller','incubator_vessel_iron','incubat
  await fs.mkdir(modelDir,{recursive:true});
  await fs.writeFile(path.join(modelDir,id+'.json',),JSON.stringify({parent:'minecraft:block/cube_all',textures:{all:'theurgy:block/'+id}},null,2)+'\n');
 }
+// GeckoLib block items: static geometry baked into item-model elements
+// (tools/geckolib-items.mjs) so GUIs, hands, frames and the Hermetica draw them.
+const geckolibItems=await bakeGeckolibItems(dest);
+console.log(JSON.stringify({geckolibItems}));
 // GeckoLib special item renderers are implemented by the native item
 // decoration hook. Give each derivative a valid visible base model instead
 // of leaving Horizon's loader on the unknown `theurgy:*` special model type.
@@ -276,6 +329,11 @@ for(const file of await files(hermeticaEntryRoot)) {
  hermeticaEntries.push({...entry,pages});
 }
 hermeticaEntries.sort((a,b)=>String(a.category).localeCompare(String(b.category))||(a.sort_number??0)-(b.sort_number??0)||String(a.id).localeCompare(String(b.id)));
+const hermeticaReport=await enrichHermetica({dest,entries:hermeticaEntries,tagItems:conditionReport.tagItems,
+ textureRoots:[dest,path.join(source,'main/resources'),path.join(source,'generated/resources')]});
+console.log(JSON.stringify({hermetica:hermeticaReport}));
+if(hermeticaReport.missingRecipes.length||hermeticaReport.missingMultiblocks.length||hermeticaReport.missingImages.length)
+ throw new Error('Hermetica references unresolved content: '+JSON.stringify(hermeticaReport));
 const hermetica={book:await readJson(path.join(hermeticaRoot,'book.json')),categories:hermeticaCategories,
  entries:hermeticaEntries,translations:await readJson(path.join(dest,'assets/theurgy/lang/en_us.json'))};
 await fs.writeFile(path.join(dest,'data/theurgy/hermetica.json'),JSON.stringify(hermetica)+'\n');

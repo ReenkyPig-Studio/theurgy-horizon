@@ -10,7 +10,7 @@ const mode=process.argv[2]??'all';
 // Wheel input is a real window event in Horizon (`scroll-at` has no headless
 // fallback). Wand verification therefore uses the renderer explicitly; every
 // other scenario remains headless by default.
-const gui=mode==='wand'||mode==='custom:render'||mode==='custom:client'||mode==='custom:book'||mode==='custom:filter-ui'||mode==='custom:recipes'||mode==='custom:differential-divination-recipes'||process.env.THEURGY_GUI==='1';
+const gui=mode==='wand'||mode==='custom:wand'||mode==='custom:render'||mode==='custom:client'||mode==='custom:book'||mode==='custom:filter-ui'||mode==='custom:recipes'||mode==='custom:client-features'||mode==='custom:tooltips'||mode==='custom:differential-divination-recipes'||process.env.THEURGY_GUI==='1';
 const matrixRoot=process.env.THEURGY_MATRIX_ROOT??root;
 const target=process.env.THEURGY_CARGO_TARGET??path.join(matrixRoot,'target/native-agent-cache');
 const binary=path.join(target,'fast/horizon-client.exe');

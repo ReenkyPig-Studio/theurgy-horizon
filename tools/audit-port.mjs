@@ -36,6 +36,15 @@ for(const b of unregistered)tests.push({id:'unregistered:'+b.method.toLowerCase(
 const recipeFiles=(await files(path.join(generated,'data/theurgy/recipe'))).filter(f=>f.endsWith('.json'));
 const conditionPath=path.join(root,'artifacts/recipe-conditions.json');
 const conditionReport=await exists(conditionPath)?JSON.parse(await read(conditionPath)):null;
+const attunementPath=path.join(root,'artifacts/attunement-recipes.json');
+const attunementReport=await exists(attunementPath)?JSON.parse(await read(attunementPath)):null;
+const replacementRows=[];
+for(const replacement of attunementReport?.replacements??[]) {
+ const files=replacement.files??[];
+ const present=await Promise.all(files.map(file=>exists(path.join(content,file))));
+ replacementRows.push({source:replacement.source,files,valid:files.length>0&&present.every(Boolean)});
+}
+const replacedSources=new Set(replacementRows.filter(row=>row.valid).map(row=>row.source));
 const conditionallyDisabled=new Set((conditionReport?.rows??[]).filter(r=>!r.accepted).map(r=>r.id));
 const recipeTypes={};
 const recipeRows=[];
@@ -54,7 +63,7 @@ const featureRows=[];
 for(const [index,line] of features.split(/\r?\n/).entries()){
  if(!line.startsWith('|'))continue;
  const cells=line.split(/(?<!\\)\|/).slice(1,-1).map(x=>x.trim());
- if(cells.length===6&&/^[A-Z]+-[0-9]+$/.test(cells[0]))featureRows.push({line:index+1,id:cells[0],behaviour:cells[1],status:cells[2],java:cells[3],rust:cells[4],evidence:cells[5]});
+ if(cells.length>=6&&/^[A-Z]+-[0-9]+$/.test(cells[0]))featureRows.push({line:index+1,id:cells[0],behaviour:cells[1],status:cells[2],java:cells[3],rust:cells[4],evidence:cells.slice(5).join(' | ')});
 }
 const javaTraceResults=(await files(path.join(root,'runs'))).filter(f=>f.endsWith('result.json')&&f.includes('java-oracle-'));
 const javaOracle=[];
@@ -72,7 +81,7 @@ const report={
  counts:{java:javaFiles.length,registeredGameTests:registrations.length,instantiatedGameTests:registrations.length-missingInstances.length,
   gameTestBodies:bodies.length,totalBehaviourTests:tests.length,recipes:recipeFiles.length,assets:assetFiles.length,featureRows:featureRows.length},
  gameTests:{rows:tests,missingInstances,missingBodies},
- recipes:{types:recipeTypes,rows:recipeRows,available:recipeRows.filter(r=>r.present).length,conditionallyDisabled:[...conditionallyDisabled],missing:recipeRows.filter(r=>!r.present&&!conditionallyDisabled.has(r.id+'.json')).map(r=>r.id),changed:recipeRows.filter(r=>r.present&&r.sourceSha256!==r.portedSha256).map(r=>r.id)},
+ recipes:{types:recipeTypes,rows:recipeRows,available:recipeRows.filter(r=>r.present).length,conditionallyDisabled:[...conditionallyDisabled],replacements:replacementRows,missing:recipeRows.filter(r=>!r.present&&!conditionallyDisabled.has(r.id+'.json')&&!replacedSources.has(r.id)).map(r=>r.id),changed:recipeRows.filter(r=>r.present&&r.sourceSha256!==r.portedSha256).map(r=>r.id)},
  assets:{rows:assetRows,missing:assetRows.filter(r=>!r.present).map(r=>r.source),changed:assetRows.filter(r=>r.present&&!r.sameHash).map(r=>r.source)},
  features:{rows:featureRows,byStatus:Object.groupBy(featureRows,r=>r.status)},
  differential:differential?{summary:differential.summary,matched:differential.rows.filter(r=>r.status==='MATCH').map(r=>r.id),
@@ -85,7 +94,7 @@ const report={
 };
 await fsp.mkdir(path.dirname(out),{recursive:true});await fsp.writeFile(out,JSON.stringify(report,null,2)+'\n');
 const summary={out:slash(path.relative(root,out)),counts:report.counts,missingInstances,missingBodies,missingRecipes:report.recipes.missing.length,
- available:report.recipes.available,conditionallyDisabled:report.recipes.conditionallyDisabled.length,changedRecipes:report.recipes.changed.length,missingAssets:report.assets.missing.length,changedAssets:report.assets.changed.length,
+ available:report.recipes.available,conditionallyDisabled:report.recipes.conditionallyDisabled.length,replacedRecipes:replacementRows.filter(row=>row.valid).length,changedRecipes:report.recipes.changed.length,missingAssets:report.assets.missing.length,changedAssets:report.assets.changed.length,
  featureStatuses:Object.fromEntries(Object.entries(report.features.byStatus).map(([k,v])=>[k,v.length])),placeholders:placeholders.length,javaOracle:latest(javaOracle)};
 function latest(rows){return rows.at(-1)??null;}
 console.log(JSON.stringify(summary,null,2));
