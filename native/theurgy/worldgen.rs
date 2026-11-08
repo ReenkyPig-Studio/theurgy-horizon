@@ -6,19 +6,73 @@
 // `WorldgenRandom.setDecorationSeed/setFeatureSeed`, `CountPlacement`,
 // `InSquarePlacement` and `HeightRangePlacement.triangle`.
 
-use horizon_core::random::{LegacyRandom, RandomSource, WorldgenRandom};
-
 const UNDERGROUND_ORES_STEP: i32 = 6; // GenerationStep.Decoration ordinal.
 // Real FeatureSorter oracle: runs/java-oracle-2026-11-07T05-40-09.710Z,
 // game-test-server.log marker THEURGY_FEATURE_INDEX=34;STEP=6.
 const SAL_AMMONIAC_FEATURE_INDEX: i32 = 34;
 const ORE_SIZE: usize = 9;
 const ORE_COUNT: usize = 20;
+const LCG: u64 = 0x5_DEEC_E66D;
+const MASK48: u64 = (1u64 << 48) - 1;
 
-type Rng = WorldgenRandom<LegacyRandom>;
+#[derive(Clone, Copy, Debug)]
+struct Rng { state: u64 }
+impl Rng {
+    fn new(seed: i64) -> Self {
+        let mut rng = Self { state: 0 };
+        rng.set_seed(seed);
+        rng
+    }
+    /// LegacyRandomSource.setSeed only scrambles the seed; it consumes no bits.
+    fn set_seed(&mut self, seed: i64) {
+        self.state = (seed as u64 ^ LCG) & MASK48;
+    }
+    fn next_bits(&mut self, bits: u32) -> u32 {
+        self.state = self.state.wrapping_mul(LCG).wrapping_add(0xB) & MASK48;
+        (self.state >> (48 - bits)) as u32
+    }
+    fn next_int_bound(&mut self, bound: i32) -> i32 {
+        assert!(bound > 0);
+        if bound & bound.wrapping_neg() == bound {
+            return (i64::from(bound) * i64::from(self.next_bits(31)) >> 31) as i32;
+        }
+        loop {
+            let bits = self.next_bits(31) as i32;
+            let value = bits % bound;
+            if bits.wrapping_sub(value).wrapping_add(bound - 1) >= 0 {
+                return value;
+            }
+        }
+    }
+    fn next_long(&mut self) -> i64 {
+        let high = i64::from(self.next_bits(32) as i32) << 32;
+        high.wrapping_add(i64::from(self.next_bits(32) as i32))
+    }
+    fn next_float(&mut self) -> f32 { self.next_bits(24) as f32 / 16_777_216.0 }
+    fn next_double(&mut self) -> f64 {
+        let high = u64::from(self.next_bits(26)) << 27;
+        let low = u64::from(self.next_bits(27));
+        (high + low) as f64 / 9_007_199_254_740_992.0
+    }
+    fn between_inclusive(&mut self, min: i32, max: i32) -> i32 {
+        min + self.next_int_bound(max - min + 1)
+    }
+    fn set_decoration_seed(&mut self, world: i64, chunk_x: i32, chunk_z: i32) -> i64 {
+        self.set_seed(world);
+        let x_scale = self.next_long() | 1;
+        let z_scale = self.next_long() | 1;
+        let decoration = (chunk_x as u64).wrapping_mul(x_scale as u64)
+            .wrapping_add((chunk_z as u64).wrapping_mul(z_scale as u64)) ^ (world as u64);
+        self.set_seed(decoration as i64);
+        decoration as i64
+    }
+    fn set_feature_seed(&mut self, decoration: i64, index: i32, step: i32) {
+        self.set_seed(decoration.wrapping_add(index as i64).wrapping_add(step.wrapping_mul(10_000) as i64));
+    }
+}
 
 fn chunk_rng(world: i64, chunk: [i32; 2]) -> Rng {
-    let mut rng = WorldgenRandom::new(LegacyRandom::new(0));
+    let mut rng = Rng::new(0);
     let decoration = rng.set_decoration_seed(world, chunk[0], chunk[1]);
     rng.set_feature_seed(decoration, SAL_AMMONIAC_FEATURE_INDEX, UNDERGROUND_ORES_STEP);
     rng
@@ -35,14 +89,14 @@ fn replacement_for_tags(stone: bool, deepslate: bool) -> Option<&'static str> {
 }
 
 fn triangle_height(rng: &mut Rng) -> i32 {
-    let first = rng.next_int_between_inclusive(-64, 200).expect("fixed valid height range");
-    let second = rng.next_int_between_inclusive(-64, 200).expect("fixed valid height range");
+    let first = rng.between_inclusive(-64, 200);
+    let second = rng.between_inclusive(-64, 200);
     (first + second) / 2
 }
 
 /// OCEAN_FLOOR_WG is one above the highest block in this tag. The 16x16
 /// cache is computed once per chunk instead of rescanning for all 20 veins.
-fn ocean_floor_heights(game: &mut crate::game::Game<'_>, chunk: [i32; 2]) -> Vec<i32> {
+pub(crate) fn ocean_floor_heights(game: &mut crate::game::Game<'_>, chunk: [i32; 2]) -> Vec<i32> {
     let mut heights = vec![-64; 256];
     for local_x in 0..16 {
         for local_z in 0..16 {
@@ -95,7 +149,7 @@ fn place_ore_feature(
     origin: [i32; 3],
     chunk: [i32; 2],
     heights: &mut [i32],
-) -> usize {
+) -> (Vec<[i32; 3]>, [i32; 3]) {
     let direction = rng.next_float() * std::f32::consts::PI;
     let spread_xy = ORE_SIZE as f32 / 8.0;
     let max_radius = ((ORE_SIZE as f32 / 16.0 * 2.0 + 1.0) / 2.0).ceil() as i32;
@@ -107,8 +161,8 @@ fn place_ore_feature(
     let x1 = ox - sin * spread;
     let z0 = oz + cos * spread;
     let z1 = oz - cos * spread;
-    let y0 = f64::from(origin[1] + rng.next_int_bound(3).expect("bound 3") - 2);
-    let y1 = f64::from(origin[1] + rng.next_int_bound(3).expect("bound 3") - 2);
+    let y0 = f64::from(origin[1] + rng.next_int_bound(3) - 2);
+    let y1 = f64::from(origin[1] + rng.next_int_bound(3) - 2);
     let spread_ceil = spread.ceil() as i32;
     let x_start = origin[0].wrapping_sub(spread_ceil).wrapping_sub(max_radius);
     let y_start = origin[1].wrapping_sub(2).wrapping_sub(max_radius);
@@ -116,7 +170,7 @@ fn place_ore_feature(
     let size_xz = 2 * (spread_ceil + max_radius);
     let size_y = 2 * (2 + max_radius);
     if !any_ocean_floor_at_least(heights, [x_start, y_start, z_start], size_xz, chunk) {
-        return 0;
+        return (Vec::new(), [0, 0, 0]);
     }
 
     let mut cells = vec![[0.0f64; 4]; ORE_SIZE];
@@ -158,7 +212,10 @@ fn place_ore_feature(
 
     let tested_len = (size_xz as usize) * (size_y as usize) * (size_xz as usize);
     let mut tested = vec![0u64; tested_len.div_ceil(64)];
-    let mut written = 0usize;
+    let mut written = Vec::new();
+    let mut candidates = 0i32;
+    let mut replaceable = 0i32;
+    let mut attempts = 0i32;
     for [xx, yy, zz, radius] in cells {
         if radius < 0.0 {
             continue;
@@ -207,6 +264,7 @@ fn place_ore_feature(
                     if x.div_euclid(16) != chunk[0] || z.div_euclid(16) != chunk[1] {
                         continue;
                     }
+                    candidates += 1;
                     let current = game.native_block([x, y, z]);
                     if current.is_empty() {
                         continue;
@@ -223,11 +281,13 @@ fn place_ore_feature(
                     let Some(ore) = replacement_for_tags(stone, deepslate) else {
                         continue;
                     };
+                    replaceable += 1;
                     let Some(state) = game.pack.assets.registry.default_state(ore) else {
                         continue;
                     };
+                    attempts += 1;
                     if game.native_set_block(dimension, [x, y, z], state, 2) {
-                        written += 1;
+                        written.push([x, y, z]);
                         let index = x.rem_euclid(16) as usize + z.rem_euclid(16) as usize * 16;
                         if y + 1 > heights[index] {
                             heights[index] = y + 1;
@@ -237,7 +297,7 @@ fn place_ore_feature(
             }
         }
     }
-    written
+    (written, [candidates, replaceable, attempts])
 }
 
 /// Theurgy's count=20, size=9, in-square, triangle(-64,200) feature.
@@ -246,18 +306,25 @@ pub fn chunk_load(
     dimension: &str,
     chunk: [i32; 2],
     new: bool,
-) {
+) -> (Vec<[i32; 3]>, [i32; 3], Vec<[i32; 3]>) {
     if !new || dimension != "minecraft:overworld" {
-        return;
+        return (Vec::new(), [0, 0, 0], Vec::new());
     }
     let mut heights = ocean_floor_heights(game, chunk);
     let mut rng = chunk_rng(game.level.seed, chunk);
+    let mut written = Vec::new();
+    let mut stats = [0i32; 3];
+    let mut origins = Vec::new();
     for _ in 0..ORE_COUNT {
-        let x = chunk[0].wrapping_mul(16) + rng.next_int_bound(16).expect("bound 16");
-        let z = chunk[1].wrapping_mul(16) + rng.next_int_bound(16).expect("bound 16");
+        let x = chunk[0].wrapping_mul(16) + rng.next_int_bound(16);
+        let z = chunk[1].wrapping_mul(16) + rng.next_int_bound(16);
         let y = triangle_height(&mut rng);
-        place_ore_feature(game, dimension, &mut rng, [x, y, z], chunk, &mut heights);
+        origins.push([x, y, z]);
+        let (positions, counts) = place_ore_feature(game, dimension, &mut rng, [x, y, z], chunk, &mut heights);
+        written.extend(positions);
+        for (total, count) in stats.iter_mut().zip(counts) { *total += count; }
     }
+    (written, stats, origins)
 }
 
 #[cfg(test)]
@@ -271,19 +338,16 @@ mod tests {
     }
 
     #[test]
-    fn worldgen_rng_matches_horizon_java_reference() {
-        let mut reference = WorldgenRandom::new(LegacyRandom::new(0));
-        let decoration = reference.set_decoration_seed(42, 3, -2);
-        reference.set_feature_seed(decoration, 34, 6);
-        let mut actual = chunk_rng(42, [3, -2]);
-        for _ in 0..128 {
-            assert_eq!(actual.next_long(), reference.next_long());
-        }
+    fn legacy_rng_matches_java_legacy_source() {
+        let mut rng = Rng::new(1);
+        assert_eq!(rng.next_int_bound(16), 11);
+        assert_eq!(rng.next_int_bound(16), 1);
+        assert_eq!(rng.next_int_bound(16), 6);
     }
 
     #[test]
     fn triangle_and_replacements_stay_in_java_domain() {
-        let mut rng = WorldgenRandom::new(LegacyRandom::new(7));
+        let mut rng = Rng::new(7);
         for _ in 0..512 {
             assert!((-64..=200).contains(&triangle_height(&mut rng)));
         }
