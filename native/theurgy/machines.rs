@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-use horizon_client::containers::ModBlockEntity;
+use horizon_client::containers::{BlockEntity, ModBlockEntity};
 use horizon_client::items::ItemStack;
 use horizon_world::nbt::{Compound, JavaString, Tag};
 use serde_json::Value;
@@ -95,7 +95,10 @@ fn input_signature(entity: &ModBlockEntity, kind: &str, recipe_id: &str) -> u64 
         hash ^= u64::from(byte);
         hash = hash.wrapping_mul(0x0000_0100_0000_01b3);
     }
-    for slot in &entity.items {
+    // CraftingBehaviour.onInputItemChanged is wired to the input inventory
+    // only (*StorageBehaviour): output-slot changes never reset totalTime.
+    let inputs = layout(kind).map(|value| value.inputs).unwrap_or(&[]);
+    for slot in inputs.iter().map(|index| entity.items.get(*index).and_then(Option::as_ref)) {
         if let Some(stack) = slot {
             for byte in format!("{:?}|{:?}|{:?}", stack.item, stack.damage, stack.extra).bytes() {
                 hash ^= u64::from(byte);
@@ -444,7 +447,8 @@ pub fn tick(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut ModBlo
                 | entity.data.get(7).copied().unwrap_or(0) as u32 as u64;
             let signature = input_signature(entity, kind, "");
             current_signature = signature;
-            let has_items = entity.items.iter().any(Option::is_some);
+            let has_items = layout(kind).map(|value| value.inputs).unwrap_or(&[]).iter()
+                .any(|index| entity.items.get(*index).is_some_and(Option::is_some));
             if previous != signature && (previous != 0 || has_items) {
                 // CraftingBehaviour.onInputItemChanged stores the current
                 // recipe time, or the type's default even with no recipe.
@@ -574,9 +578,79 @@ pub fn tick(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut ModBlo
             }
         }
     }
+    if result.crafted {
+        let mut options = horizon_client::particles::ParticleOptions::named("theurgy:colored_bubble");
+        options.color = [0.35, 0.8, 1.0, 1.0];
+        options.scale = 0.75;
+        let at = [pos[0] as f64 + 0.5, pos[1] as f64 + 3.0, pos[2] as f64 + 0.5];
+        let dust = horizon_client::particles::ParticleOptions::dust([0.35, 0.8, 1.0], 0.75);
+        for _ in 0..16 {
+            game.particles.add(&dust, at, [0.0, 0.03, 0.0]);
+            game.particles.add(&options, at, [0.0, 0.03, 0.0]);
+        }
+        game.native_flame_particle(at, false);
+        game.with_level(|_, level, _| level.native_send_particles(&dust, None, at, [0.25, 0.35, 0.25], 0.02, 4));
+        game.with_level(|_, level, _| level.native_send_particles(&options, None, at, [0.25, 0.35, 0.25], 0.02, 4));
+    }
     if result.state_changed || result.crafted {
         game.native_block_entity_sync(pos);
     }
+}
+
+/// `GenericVatInteractionBehaviour.useItemOn`: closing is allowed only when
+/// the current items/fluid form a complete recipe whose whole output fits.
+pub(crate) fn vat_can_craft(game: &mut crate::game::Game<'_>, pos: [i32; 3]) -> bool {
+    let Some(entity) = game.world.block_entities.get(&(pos[0], pos[1], pos[2])).and_then(|block| match block {
+        BlockEntity::Mod(entity) => Some(entity.as_ref().clone()),
+        _ => None,
+    }) else { return false; };
+    let Some(kind) = kind_for_block(&entity.id)
+        .filter(|kind| matches!(*kind, "theurgy:fermentation" | "theurgy:digestion")) else { return false; };
+    let items = read_items(game, &entity, 4);
+    let tanks = vec![read_tank(&entity, 0)];
+    let snapshots: Vec<RecipeSnapshot> = game.native_recipes_of_type(kind).iter()
+        .map(|recipe| RecipeSnapshot { id: recipe.id.clone(), json: Arc::clone(&recipe.json), time: recipe_time(&recipe.json) })
+        .collect();
+    for snap in snapshots {
+        let parts = ingredient_parts(kind, &snap.json);
+        if parts.is_empty() || (0..3).filter(|slot| items.get(*slot).is_some_and(Option::is_some)).count() != parts.len() {
+            continue;
+        }
+        let mut used = [false; 4];
+        let mut matched = true;
+        for (ingredient, count) in &parts {
+            let mut found = false;
+            for slot in 0..3 {
+                if used[slot] { continue; }
+                let Some(item) = items.get(slot).and_then(Option::as_ref) else { continue; };
+                if item.count >= *count && matches_ingredient(game, ingredient, item) {
+                    used[slot] = true;
+                    found = true;
+                    break;
+                }
+            }
+            if !found { matched = false; break; }
+        }
+        if !matched { continue; }
+        if let Some((fluid, amount)) = fluid_part(kind, &snap.json)
+            && !tanks.first().is_some_and(|tank| tank.amount >= amount && tank.fluid.as_deref() == Some(fluid))
+        {
+            continue;
+        }
+        let recipe = Recipe { id: &snap.id, json: &snap.json, time: snap.time };
+        let mut matcher = |ingredient: &Value, item: &Item| matches_ingredient(game, ingredient, item);
+        let Some(plan) = plan_for(kind, &recipe, &items, &tanks, &mut matcher) else { continue; };
+        let mut sim_items = items.clone();
+        let mut sim_tanks = tanks.clone();
+        if !commit_plan(&mut sim_items, &mut sim_tanks, &plan) { continue; }
+        if let Some(result) = snap.json.get("result").and_then(|json| game.native_recipe_result(json))
+            && read_slot(&entity, 3).is_some_and(|old| !same_resource(old, &result))
+        {
+            continue;
+        }
+        return true;
+    }
+    false
 }
 
 /// Whether a fermentation/digestion vat's `open` block property is set. Both

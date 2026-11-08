@@ -5,6 +5,10 @@ use horizon_client::items::ItemStack;
 use horizon_core::geometry::Direction;
 use horizon_world::nbt::{Compound, JavaString, Tag};
 use std::collections::BTreeSet;
+use std::sync::Mutex;
+
+static LAST_FILTER_ACTION: Mutex<Option<(u128, [i32; 3], i64)>> = Mutex::new(None);
+static LAST_WIRE_ACTION: Mutex<Option<(u128, [i32; 3], i64)>> = Mutex::new(None);
 
 // ---------------------------------------------------------------------------
 // Pure logic: logistics network model
@@ -267,16 +271,38 @@ fn sync_filter_state(game: &mut crate::game::Game<'_>, pos: Pos, present: bool) 
 /// The main-hand half of FilterBehaviour.useItemOn, before a barrel menu opens.
 pub fn filter_use_on(game: &mut crate::game::Game<'_>, pos: Pos) -> bool {
     if !filter_block(game.native_block(pos).as_str()) { return false; }
+    let action = (game.native_acting_id(), pos, game.world.game_time);
+    if let Ok(mut last) = LAST_FILTER_ACTION.lock() {
+        if last.is_some_and(|(player, position, tick)| player == action.0 && position == action.1 && action.2 - tick <= 1) {
+            return true;
+        }
+        *last = Some(action);
+    }
     let slot = game.selected as i32;
-    let held = game.native_carried_stack(slot).cloned();
+    let held = game.native_carried_stack(slot).cloned()
+        .filter(|stack| stack.count > 0 && stack.item.as_ref() != "minecraft:air");
     let existing = game.native_with_mod_block_entity(pos, |entity| saved_filter(&entity.nbt)).flatten();
     if let Some(stack) = existing {
+        let player = game.native_acting_id();
         if !wire_sneaking(game) || held.is_some() { return false; }
         let player = game.native_acting_id();
         // Atomic give-back: only clear and consume the block state if the whole
         // preserved stack fits. No item duplication or destruction on full bag.
         let returned = game.native_give_stack(player, stack.clone());
-        if returned.is_some() { return true; }
+        if returned.is_some() {
+            // A local single-player inventory may not be wrapped by the LAN
+            // helper. Use the same empty-slot transaction instead of losing
+            // the filter; never clear the block if the slot is occupied.
+            let slot = game.selected as i32;
+            if game.inventory.get(slot as usize).and_then(Option::as_ref).is_some_and(|stack| stack.count > 0) {
+                return true;
+            }
+            if let Some(current) = game.inventory.get_mut(slot as usize) {
+                *current = Some(stack.clone());
+            } else {
+                return true;
+            }
+        }
         game.native_with_mod_block_entity(pos, |entity| { entity.nbt.remove(&JavaString::from("filter")); });
         sync_filter_state(game, pos, false);
         return true;
@@ -583,11 +609,16 @@ fn store_wire_endpoint(game: &mut crate::game::Game<'_>, pos: Pos) {
     point.insert(JavaString::from("level"), Tag::String(JavaString::from(game.dim.id())));
     change_wire_component(game, Some(Tag::Compound(point)));
 }
+fn next_wire_count(count: u32, delta: i32, creative: bool) -> u32 {
+    if creative { return count; }
+    if delta < 0 { count.saturating_sub(1) } else { count.saturating_add(1).min(64) }
+}
 fn change_wire_count(game: &mut crate::game::Game<'_>, delta: i32) {
+    let creative = game.native_acting_player().is_some_and(|player| player.game_mode == 1);
     let slot = game.selected as i32;
     let Some(mut held) = game.native_carried_stack(slot).cloned() else { return; };
     if held.item.as_ref() == WIRE_ITEM {
-        held.count = if delta < 0 { held.count.saturating_sub(1) } else { held.count.saturating_add(1).min(64) };
+        held.count = next_wire_count(held.count, delta, creative);
         if let Some(current) = game.native_carried_stack(slot) { *current = held; }
     }
 }
@@ -636,9 +667,19 @@ fn remove_wire(game: &mut crate::game::Game<'_>, owner: Pos, a: Pos, b: Pos) -> 
     }).is_some()
 }
 
+fn repeated_wire_action(last: Option<(u128, Pos, i64)>, action: (u128, Pos, i64)) -> bool {
+    last.is_some_and(|(player, pos, tick)| player == action.0 && pos == action.1
+        && matches!(action.2.checked_sub(tick), Some(0..=4)))
+}
+
 /// WireItem.useOn: select, connect, or disconnect an existing unordered edge.
 pub fn wire_use_on(game: &mut crate::game::Game<'_>, stack: &ItemStack, pos: Pos, claimed: &mut bool) -> bool {
     *claimed = true;
+    let action = (game.native_acting_id(), pos, game.world.game_time);
+    if let Ok(mut last) = LAST_WIRE_ACTION.lock() {
+        if repeated_wire_action(*last, action) { return true; }
+        *last = Some(action);
+    }
     if !wire_endpoint_block(game.native_block(pos).as_str()) {
         if wire_sneaking(game) { change_wire_component(game, None); }
         return true;
@@ -688,9 +729,22 @@ fn wire_network(game: &crate::game::Game<'_>, start: Pos, own_nbt: &Compound) ->
 pub fn tick(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut ModBlockEntity) {
     let id = entity.id.clone();
     if is_nexus(&id) {
+        sync_nexus_connections(game, pos);
         tick_nexus(pos, entity);
     } else if is_connector(&id) {
         tick_connector(game, pos, entity, &id);
+    }
+}
+
+fn sync_nexus_connections(game: &mut crate::game::Game<'_>, pos: [i32; 3]) {
+    for (property, offset) in [
+        ("up", [0, 1, 0]), ("down", [0, -1, 0]), ("north", [0, 0, -1]),
+        ("south", [0, 0, 1]), ("east", [1, 0, 0]), ("west", [-1, 0, 0]),
+    ] {
+        let neighbor = [pos[0] + offset[0], pos[1] + offset[1], pos[2] + offset[2]];
+        let block = game.native_block(neighbor);
+        let connected = !block.is_empty() && block != "minecraft:air" && block != "minecraft:cave_air" && block != "minecraft:void_air";
+        game.native_set_block_property_with(pos, property, if connected { "true" } else { "false" }, 3);
     }
 }
 
@@ -821,10 +875,32 @@ pub fn proxy_drain_fluid(game: &mut crate::game::Game<'_>, pos: Pos, amount: i32
 
 fn restore_attached_target_if_empty(game: &crate::game::Game<'_>, pos: Pos, entity: &mut ModBlockEntity) {
     if entity.id == "theurgy:logistics_capability_proxy" { return; }
-    let populated = matches!(entity.nbt.get(&JavaString::from("targets")), Some(Tag::List(targets)) if !targets.is_empty());
-    if populated { return; }
+    let phase = entity.data.get(8).copied().unwrap_or(0);
     let target = attached(pos, facing_of(game, pos));
+    let populated = matches!(entity.nbt.get(&JavaString::from("targets")), Some(Tag::List(targets)) if !targets.is_empty());
+    if populated {
+        // A block-entity tick can precede Horizon's final facing-state write.
+        // Only our automatically restored adjacent target may follow that
+        // facing correction; explicitly selected remote targets are preserved.
+        if phase >= 2
+            && let Some(Tag::List(targets)) = entity.nbt.get_mut(&JavaString::from("targets"))
+            && targets.len() == 1
+            && matches!(targets.first(), Some(Tag::Long(value)) if wire_manhattan(wire_pos_from_long(*value), pos) == 1)
+        {
+            targets[0] = Tag::Long(wire_pos_long(target));
+        }
+        return;
+    }
+    // Defer onLoad-style restoration until the block state has settled. This
+    // also preserves Java's empty tick-0 placement snapshot.
+    if phase == 0 {
+        if entity.data.len() <= 8 { entity.data.resize(9, 0); }
+        entity.data[8] = 1;
+        return;
+    }
     entity.nbt.insert(JavaString::from("targets"), Tag::List(vec![Tag::Long(wire_pos_long(target))]));
+    if entity.data.len() <= 8 { entity.data.resize(9, 0); }
+    entity.data[8] = 2;
 }
 
 fn tick_connector(
@@ -1218,6 +1294,27 @@ mod tests {
             Some((LeafNodeMode::Insert, CapabilityKind::MercuryFlux))
         );
         assert_eq!(block_kind("theurgy:logistics_nexus"), None);
+    }
+
+    #[test]
+    fn wire_count_respects_java_creative_and_survival_rules() {
+        assert_eq!(next_wire_count(2, -1, false), 1);
+        assert_eq!(next_wire_count(1, 1, false), 2);
+        assert_eq!(next_wire_count(2, -1, true), 2);
+        assert_eq!(next_wire_count(2, 1, true), 2);
+        assert_eq!(next_wire_count(0, -1, false), 0);
+    }
+
+    #[test]
+    fn wire_callback_deduplication_is_scoped_to_one_action() {
+        let action = (7, [1, 80, 2], 100);
+        assert!(!repeated_wire_action(None, action));
+        assert!(repeated_wire_action(Some(action), action));
+        assert!(repeated_wire_action(Some(action), (7, [1, 80, 2], 104)));
+        assert!(!repeated_wire_action(Some(action), (8, [1, 80, 2], 100)));
+        assert!(!repeated_wire_action(Some(action), (7, [2, 80, 2], 100)));
+        assert!(!repeated_wire_action(Some(action), (7, [1, 80, 2], 99)));
+        assert!(!repeated_wire_action(Some(action), (7, [1, 80, 2], 105)));
     }
 
     #[test]

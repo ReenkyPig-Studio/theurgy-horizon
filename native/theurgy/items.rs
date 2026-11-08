@@ -23,6 +23,7 @@ const WIRE_MAX_RANGE: i64 = 32;
 
 const DIVINATION_LINKED_BLOCK: &str = "theurgy:divination_linked_block";
 const DIVINATION_LINKED_TAG: &str = "theurgy:divination_linked_tag";
+
 const DIVINATION_POS: &str = "theurgy:divination_pos";
 const DIVINATION_DISTANCE: &str = "theurgy:divination_distance";
 const DIVINATION_RANGE: &str = "theurgy:divination_settings_range";
@@ -139,7 +140,7 @@ pub fn state_for_placement(
             (fluid.kind() == horizon_world::fluid::FluidKind::Water).to_string(),
         );
     }
-    if matches!(block, "theurgy:logistics_nexus" | "theurgy:logistics_connector_node") {
+    if block == "theurgy:logistics_nexus" {
         for direction in horizon_core::geometry::Direction::ALL {
             let at = horizon_core::position::BlockPos::new(
                 context.pos.x + direction.normal()[0],
@@ -148,7 +149,7 @@ pub fn state_for_placement(
             );
             let neighbor = level.block_state(at);
             let present = level.registry.state(neighbor).is_some_and(|other| {
-                other.name.starts_with("theurgy:logistics_")
+                other.name != "minecraft:air" && other.name != "minecraft:cave_air" && other.name != "minecraft:void_air"
             });
             descriptor.properties.insert(facing_name(direction).into(), present.to_string());
         }
@@ -295,12 +296,29 @@ pub fn inventory_tick(game: &mut crate::game::Game<'_>, slot: i32) {
     }
 }
 
+fn component_string_with_defaults(
+    game: &crate::game::Game<'_>,
+    stack: &ItemStack,
+    id: &str,
+) -> Option<String> {
+    component_string(game, stack, id).or_else(|| {
+        let info = game.res.items().get(&stack.item)?;
+        match info.custom_components.get(id) {
+            Some(Tag::String(value)) => Some(value.to_string_lossy()),
+            _ => None,
+        }
+    })
+}
+
 /// Read a registered native component from `stack` as a string.
 pub(crate) fn component_string(
     game: &crate::game::Game<'_>,
     stack: &ItemStack,
     id: &str,
 ) -> Option<String> {
+    if let Some(Tag::String(value)) = stack.data().and_then(|data| data.other(id)) {
+        return Some(value.to_string_lossy());
+    }
     match game.native_component(stack, id).ok().flatten()? {
         Tag::String(value) => Some(value.to_string_lossy()),
         _ => None,
@@ -594,10 +612,11 @@ fn attune_rod(
     {
         return true;
     }
+    let linked = translated_source_block(game, &block).unwrap_or(block);
     set_held_component(
         game,
         DIVINATION_LINKED_BLOCK,
-        Tag::String(JavaString::from(block.as_str())),
+        Tag::String(JavaString::from(linked.as_str())),
     );
     true
 }
@@ -920,6 +939,9 @@ pub fn right_click_block(
 }
 
 fn translated_source_block(game: &crate::game::Game<'_>, source: &str) -> Option<String> {
+    if let Some(mapped) = crate::game::theurgy_config::source_override(source) {
+        return Some(mapped.to_owned());
+    }
     if game.pack.assets.registry.default_state(source).is_some() {
         return Some(source.to_owned());
     }
@@ -942,6 +964,9 @@ fn translated_source_block(game: &crate::game::Game<'_>, source: &str) -> Option
 }
 
 fn translated_source_tag(game: &crate::game::Game<'_>, source: &str) -> Option<String> {
+    if let Some(mapped) = crate::game::theurgy_config::source_override(source) {
+        return Some(mapped.to_owned());
+    }
     let exists = |tag: &str| game.res.items().block_tags.get(tag).is_some_and(|blocks| !blocks.is_empty());
     if exists(source) {
         return Some(source.to_owned());
@@ -981,13 +1006,13 @@ pub fn prepare_item_craft(
         return;
     }
     for stack in game.craft_grid.iter().flatten() {
-        if let Some(source) = component_string(game, stack, "theurgy:source_item") {
+        if let Some(source) = component_string_with_defaults(game, stack, "theurgy:source_item") {
             if let Some(block) = translated_source_block(game, &source) {
                 result.data_mut().set_other(DIVINATION_LINKED_BLOCK, Some(Tag::String(JavaString::from(block.as_str()))));
                 break;
             }
         }
-        if let Some(source) = component_string(game, stack, "theurgy:source_tag") {
+        if let Some(source) = component_string_with_defaults(game, stack, "theurgy:source_tag") {
             if let Some(tag) = translated_source_tag(game, &source) {
                 result.data_mut().set_other(DIVINATION_LINKED_TAG, Some(Tag::String(JavaString::from(tag.as_str()))));
                 break;
@@ -1017,16 +1042,25 @@ pub fn use_item(
         *claimed = true;
         return;
     }
+    if stack.item.as_ref() == WIRE_ITEM {
+        if is_sneaking(game) {
+            clear_wire_endpoint(game);
+            *claimed = true;
+        }
+        return;
+    }
     if is_sneaking(game) || !stack.item.contains("divination_rod") {
         return;
     }
-    *claimed = true;
     let linked = component_string(game, stack, DIVINATION_LINKED_BLOCK).is_some()
         || component_string(game, stack, DIVINATION_LINKED_TAG).is_some();
     if !linked {
+        *claimed = true;
         overlay(game, "message.theurgy.divination_rod.no_link", &[]);
         return;
     }
+    // Leave the click unclaimed so Horizon's `start_mod_use` starts the timed
+    // native use. Claiming here would skip `native_living_entity_use_item_finish`.
     set_held_component(game, DIVINATION_DISTANCE, Tag::Float(DIVINATION_SEARCHING.to_bits()));
     play_tuning_fork(game);
 }
@@ -1302,7 +1336,15 @@ pub fn tooltip(
         lines.push((horizon_client::text::Text::translate("tooltip.theurgy..divination_rod.no_link", &[]), u32::MAX));
         return;
     };
-    let target = horizon_client::text::Text::literal(linked);
+    let target = if let Some((namespace, path)) = linked.strip_prefix('#').unwrap_or(&linked).split_once(':') {
+        if linked.starts_with('#') {
+            horizon_client::text::Text::literal(linked.clone())
+        } else {
+            horizon_client::text::Text::translate(&format!("block.{namespace}.{path}"), &[])
+        }
+    } else {
+        horizon_client::text::Text::literal(linked.clone())
+    };
     lines.push((horizon_client::text::Text::translate("tooltip.theurgy..divination_rod.linked_to", &[target.clone()]), u32::MAX));
     if let Some(pos) = held_distance(game, stack) {
         let coordinates = horizon_client::text::Text::literal(format!("{}, {}, {}", pos[0], pos[1], pos[2]));
@@ -1328,7 +1370,9 @@ pub fn use_on(
         return;
     }
     if stack.item.as_ref() == WIRE_ITEM {
-        wire_use_on(game, stack, pos, claimed);
+        // `right_click_block` owns the complete WireItem.useOn transaction.
+        // Running it again here would store a fresh endpoint after the early
+        // hook had just connected/disconnected and cleared the old one.
         return;
     }
     if stack.item.contains("divination_rod") && attune_rod(game, stack, pos, claimed) {
