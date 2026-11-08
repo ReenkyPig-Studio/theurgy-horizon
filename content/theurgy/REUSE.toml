@@ -103,3 +103,9 @@ precedence = "aggregate"
 SPDX-FileCopyrightText = "ChampionAsh5357"
 SPDX-License-Identifier = "CC-BY-4.0"
 
+
+[[annotations]]
+path = ["assets/theurgy/**", "data/theurgy/**"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2024 klikli-dev"
+SPDX-License-Identifier = "CC-BY-4.0"

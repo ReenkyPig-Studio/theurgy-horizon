@@ -5,6 +5,7 @@
 - Upstream: `klikli-dev/theurgy`, `release/v26.3-1.120.1`, commit `33b959c9ed0da1de2aff649e9728c1a03470b1bd`.
 - Code and assets retain the upstream `LICENSES/` directory and `REUSE.toml` in the generated content addon.
 - GeckoLib models, animations, book pages, translations and other assets retain their original attribution; CC-BY-4.0 assets are not relicensed.
+- `data/theurgy/hermetica_images/*.bin` are raw RGBA decodes of Theurgy's `assets/theurgy/textures/gui/book/*.png` (CC-BY-4.0, © klikli-dev), unmodified except for format; `data/theurgy/hermetica.json` derives from the Theurgy Hermetica book data under the same terms.
 
 ## NeoForge 26.3.0.76
 
