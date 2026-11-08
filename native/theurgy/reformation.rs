@@ -134,6 +134,10 @@ fn selection(entity: &ModBlockEntity) -> (Vec<[i32; 3]>, Option<[i32; 3]>, Optio
     )
 }
 
+pub fn trail_color(start: [f32; 3], end: [f32; 3], t: f32) -> [f32; 3] {
+    std::array::from_fn(|axis| start[axis] + (end[axis] - start[axis]) * t)
+}
+
 /// Emitter tick from `SulfuricFluxEmitterBlockEntity.tickServer` and the
 /// transaction in `ReformationArrayCraftingBehaviour.craft`.
 pub fn tick(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut ModBlockEntity) {
@@ -352,6 +356,16 @@ fn stop_idle(entity: &mut ModBlockEntity) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn projectile_color_lerp_matches_java_endpoints() {
+        let start = [2.0 / 3.0, 8.0 / 255.0, 2.0 / 3.0];
+        let end = [0.0, 1.0, 0.0];
+        for (step, expected) in [(0.0, start), (1.0, end)] {
+            let color = trail_color(start, end, step);
+            assert_eq!(color, expected);
+        }
+    }
 
     #[test]
     fn flux_never_wraps_below_zero_or_above_capacity() {

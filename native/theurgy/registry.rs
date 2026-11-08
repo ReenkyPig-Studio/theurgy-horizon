@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 use horizon_client::containers::{ModBlockEntity, ModContainer, ModFluidTanks};
-use horizon_world::nbt::Compound;
+use horizon_world::nbt::{Compound, JavaString, Tag};
 
 /// All Theurgy blocks that carry a block entity, mirroring BlockEntityRegistry.
 const BLOCK_ENTITIES: &[&str] = &[
@@ -119,7 +119,19 @@ pub fn is_be(block: &str) -> bool {
 
 pub fn create(block: &str, entity: &mut Option<(String, Compound)>) {
     if is_be(block) && entity.is_none() {
-        *entity = Some((block.to_owned(), Compound::new()));
+        let mut nbt = Compound::new();
+        if matches!(block,
+            "theurgy:calcination_oven" | "theurgy:distiller" | "theurgy:liquefaction_cauldron"
+            | "theurgy:fermentation_vat" | "theurgy:digestion_vat" | "theurgy:incubator"
+            | "theurgy:sal_ammoniac_accumulator" | "theurgy:sulfuric_flux_emitter")
+        {
+            nbt.insert(JavaString::from("progress"), Tag::Short(0));
+            nbt.insert(JavaString::from("totalTime"), Tag::Short(0));
+        }
+        if block == "theurgy:pyromantic_brazier" {
+            nbt.insert(JavaString::from("remainingLitTime"), Tag::Short(0));
+        }
+        *entity = Some((block.to_owned(), nbt));
     }
 }
 
