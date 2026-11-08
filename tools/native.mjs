@@ -57,16 +57,17 @@ if(!['plan','stage','check','build','check-headless','build-headless'].includes(
   throw new Error('plan | stage | check | build | check-headless | build-headless');
 const base=cmd.replace('-headless','');
 const headless=cmd.endsWith('-headless');
+const nativeRoot=process.env.THEURGY_NATIVE_ROOT??path.join(root,'native');
 const stage=path.join(root,'target/horizon-stages',String(process.pid));
 await fs.mkdir(path.join(root,'target'),{recursive:true});
 if(cmd==='plan') {
-  await run(config.mixins,['plan','--workspace',config.horizonSource,'--mods',path.join(root,'native'),
+  await run(config.mixins,['plan','--workspace',config.horizonSource,'--mods',nativeRoot,
     '--out',path.join(root,'target/native-plan.json')]);
 } else {
   // Mixins writes its own stage, never the launcher's source/build or user instance.
   await writableTree(stage);
   await fs.rm(stage,{recursive:true,force:true}); // Windows mixins requires a fresh output directory
-  await run(config.mixins,['apply','--workspace',config.horizonSource,'--mods',path.join(root,'native'),'--out',stage]);
+  await run(config.mixins,['apply','--workspace',config.horizonSource,'--mods',nativeRoot,'--out',stage]);
   if(base!=='stage') {
     const target=process.env.THEURGY_CARGO_TARGET??path.join(root,headless?'target/horizon-headless-cargo':'target/horizon-cargo');
     const args=[base==='check'?'check':'build','--locked','--offline','--manifest-path',path.join(stage,'Cargo.toml'),

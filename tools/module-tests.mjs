@@ -11,7 +11,7 @@ import {root,config} from './common.mjs';
 const specs={
  worldgen:['chunk_load','place_ore_feature','any_ocean_floor_at_least','ocean_floor_heights'],
  selection:['sneaking','right_click','inventory_tick','left_click','placed'],
- interactions:['accepts_input','entity_pos','right_click'],
+ interactions:['accepts_input','entity_pos','vat_message','right_click'],
  items:[
  'upper_state','placed','component_string','component_bool','component_i32',
  'set_held_component','load_wire_endpoint','store_wire_endpoint',
@@ -22,12 +22,16 @@ const specs={
  'acting_position','play_tuning_fork','overlay','held_distance','scan_rod',
  'uuid_from_random','uuid_text','apply_block_item_components','inventory_tick',
  'replace_held','fluid_use_on','state_for_placement','use_duration',
+ 'component_string_with_defaults',
  'translated_source_block','translated_source_tag','prepare_item_craft',
  'release_using','finish_using','tooltip',
  ],
  registry:['tick'],
+ heat:['stack_burn_time','consume_fuel','tick','heated','hot_until_for','mirror_lit'],
+ flux:['find_catalysation_recipe','sync_enabled_from_redstone','tick_catalyst','push_flux','tick_capacitor','tick_mercury_emitter','selected_target','tick_caloric_emitter','tick'],
+ reformation:['pedestal_item','pedestal_exists','match_ingredient','tick'],
  logistics:[
- 'sync_filter_state','filter_use_on','facing_of','tick','wire_sneaking',
+ 'sync_filter_state','filter_use_on','facing_of','tick','sync_nexus_connections','wire_sneaking',
  'load_wire_endpoint','change_wire_component','store_wire_endpoint',
  'change_wire_count','find_wire','add_wire','remove_wire','wire_use_on',
  'wire_network','collect_network','tick_connector',
@@ -57,25 +61,39 @@ function stripFunction(source,name) {
 }
 let pure=source;for(const fn of specs[name])pure=stripFunction(pure,fn);
 const out=path.join(root,'target/module-tests');await fs.mkdir(out,{recursive:true});
-const deps=path.join(root,'target/horizon-headless-cargo/fast/deps');
+const cargoRoot=process.env.THEURGY_CARGO_TARGET??await fs.access(path.join(root,'target/horizon-headless-cargo/fast/deps')).then(()=>path.join(root,'target/horizon-headless-cargo')).catch(()=>path.join(root,'target/native-agent-cache'));
+const deps=path.join(cargoRoot,'fast/deps');
 const wrapper=path.join(out,name+'-wrapper.rs');
-await fs.writeFile(wrapper,`extern crate horizon_client_lib as horizon_client;\npub mod game {\n #[path = ${JSON.stringify(path.join(root,'native/theurgy/host.rs'))}]\n pub mod theurgy_host;\n pub mod under_test {\n${pure}\n }\n}\n`);
+const extraModules=name==='reformation'?` #[path = ${JSON.stringify(path.join(out,'reformation-selection.rs'))}]\n pub mod theurgy_selection;\n`:'';
+if(name==='reformation') {
+ let selection=await fs.readFile(path.join(root,'native/theurgy/selection.rs'),'utf8');
+ for(const fn of ['sneaking','right_click','inventory_tick','left_click','placed'])selection=stripFunction(selection,fn);
+ await fs.writeFile(path.join(out,'reformation-selection.rs'),selection);
+}
+await fs.writeFile(wrapper,`extern crate horizon_client_lib as horizon_client;\npub mod game {\n #[path = ${JSON.stringify(path.join(root,'native/theurgy/host.rs'))}]\n pub mod theurgy_host;\n${extraModules} pub mod under_test {\n${pure}\n }\n}\n`);
 const names=await fs.readdir(deps);
-function extern(crate) {
+async function extern(crate) {
  const hits=names.filter(n=>n.startsWith('lib'+crate+'-')&&n.endsWith('.rlib')).sort();
- if(hits.length!==1)throw new Error('expected one pinned rlib for '+crate+': '+hits.join(','));
- return path.join(deps,hits[0]);
+ if(hits.length===0)throw new Error('expected one pinned rlib for '+crate);
+ if(hits.length===1)return path.join(deps,hits[0]);
+ // Unique-stage GUI/headless checks can leave several feature variants in
+ // the shared cache. Use the newest artifact; pure module tests never depend
+ // on renderer-only symbols.
+ return Promise.all(hits.map(async name=>({name,stat:await fs.stat(path.join(deps,name))})))
+  .then(entries=>entries.sort((a,b)=>b.stat.mtimeMs-a.stat.mtimeMs)[0].name)
+  .then(name=>path.join(deps,name));
 }
 const args=['--edition','2024','--test',wrapper,'-L','dependency='+deps];
 // Cargo contributes these link-search paths to normal builds. rustc needs
 // them too when reusing the already-built Horizon rlibs for this test binary.
-for(const dir of await fs.readdir(path.join(root,'target/horizon-headless-cargo/fast/build'))) {
+for(const dir of await fs.readdir(path.join(cargoRoot,'fast/build'))) {
  if(!dir.startsWith('windows_x86_64_gnu-'))continue;
- const output=path.join(root,'target/horizon-headless-cargo/fast/build',dir,'output');
+ const output=path.join(cargoRoot,'fast/build',dir,'output');
  const text=await fs.readFile(output,'utf8').catch(()=>'');
  for(const m of text.matchAll(/^cargo:rustc-link-search=native=(.+)$/gm))args.push('-L','native='+m[1].trim());
 }
-for(const crate of ['horizon_client_lib','horizon_core','horizon_world','winit','theurgy_engine'])args.push('--extern',crate+'='+extern(crate));
+for(const crate of ['horizon_client_lib','horizon_core','horizon_world','winit','theurgy_engine'])args.push('--extern',crate+'='+await extern(crate));
+if(name==='reformation'||name==='flux')args.push('--extern','serde_json='+await extern('serde_json'));
 args.push('-A','dead_code','-o',path.join(out,name+'.exe'));
 async function execute(file,args){await new Promise((resolve,reject)=>{const p=spawn(file,args,{cwd:root,stdio:'inherit'});p.on('error',reject);p.on('exit',code=>code===0?resolve():reject(new Error(path.basename(file)+' exited '+code)));});}
 await execute(path.join(config.rust,'bin/rustc.exe'),args);

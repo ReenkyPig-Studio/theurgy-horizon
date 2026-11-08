@@ -6,7 +6,7 @@ import {root,run,rustEnv} from './common.mjs';
 const args=process.argv.slice(2);
 const mode=args.find(arg=>!arg.startsWith('--'))??'all';
 const build=!args.includes('--no-build');
-const binary=path.join(root,'target/horizon-headless-cargo/fast/horizon-client.exe');
+const binary=process.env.THEURGY_GAME_BIN??path.join(root,'target/horizon-headless-cargo/fast/horizon-client.exe');
 
 if(build) {
   await run(process.execPath,['tools/build-content.mjs']);

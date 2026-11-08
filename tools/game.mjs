@@ -42,7 +42,7 @@ const withContent=!!spec.content;
 // Real integrated-server gameplay without a window, GPU or renderer. Set
 // THEURGY_GUI=1 only when a scenario explicitly needs pixels or input.
 const headless=process.env.THEURGY_GUI!=='1';
-const gameHome=path.join(root,spec.home);
+const gameHome=path.join(root,process.env.THEURGY_GAME_HOME??spec.home);
 const out=path.join(root,'runs/game-'+Date.now());
 await fs.mkdir(gameHome,{recursive:true});
 await fs.mkdir(out,{recursive:true});
@@ -54,6 +54,8 @@ const exe=process.env.THEURGY_GAME_BIN?path.resolve(process.env.THEURGY_GAME_BIN
 await fs.access(exe); // fail before launching if native binary not built
 const ctl=path.join(version,'horizon-ctl.exe');
 const env={...rustEnv,HORIZON_HOME:gameHome,HORIZON_CONTROL:socket,HORIZON_NO_AUDIO:'1'};
+if((custom==='config-attunement'||custom==='client-features')&&!process.env.THEURGY_CONFIG_FILE)
+  env.THEURGY_CONFIG_FILE=path.join(root,'scenarios/client-features-config.json');
 const evidence=[];
 let customResults=null;
 let launched=false;
