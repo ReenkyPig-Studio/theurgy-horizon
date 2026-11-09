@@ -2,8 +2,8 @@
   "schema": 1,
   "kind": "pinned Java 26.3 RecipeManager vs shipped Horizon recipe JSON (theurgy namespace)",
   "java": {
-    "run": "runs\\java-oracle-2026-11-09T14-46-03.873Z",
-    "traceSha256": "9d97c7379fd97f31e4f4fa5da15a2c3c8f454368ee500ad6d62e013efba7594b",
+    "run": "runs\\java-oracle-2026-11-09T18-11-23.902Z",
+    "traceSha256": "b2529360f7021ee5addd4a508bbc8cd7517c6c5fd53ec978e974ba9a46c03b35",
     "theurgyRecipes": 999,
     "allRecipes": 3041
   },
