@@ -1,0 +1,229 @@
+{
+  "theurgy:calcination_oven_blocked_output_does_not_consume_input": {
+    "class": "java-nondeterministic",
+    "fields": [
+      "progress",
+      "property lit",
+      "mercuryFluxHandler.energy",
+      "buffer.energy",
+      "currentMercuryFluxPerTick",
+      "totalMercuryFluxToConvert"
+    ],
+    "reason": "Pinned Java ends this succeedWhen test in different states on different runs (pass tick 2..37; e.g. mercury_capacitor_receives_flux energy 0/160/140/220, distiller pass tick 13/3/15/5); exact progress/energy/LIT depends on when the condition is first observed and on gameTime%20 (HeatConsumerBehaviour.isHeated)."
+  },
+  "theurgy:calcination_oven_insert_input": {
+    "class": "java-nondeterministic",
+    "fields": [
+      "progress",
+      "property lit",
+      "mercuryFluxHandler.energy",
+      "buffer.energy",
+      "currentMercuryFluxPerTick",
+      "totalMercuryFluxToConvert"
+    ],
+    "reason": "Pinned Java ends this succeedWhen test in different states on different runs (pass tick 2..37; e.g. mercury_capacitor_receives_flux energy 0/160/140/220, distiller pass tick 13/3/15/5); exact progress/energy/LIT depends on when the condition is first observed and on gameTime%20 (HeatConsumerBehaviour.isHeated)."
+  },
+  "theurgy:calcination_oven_lit_during_processing": {
+    "class": "java-nondeterministic",
+    "fields": [
+      "progress",
+      "property lit",
+      "mercuryFluxHandler.energy",
+      "buffer.energy",
+      "currentMercuryFluxPerTick",
+      "totalMercuryFluxToConvert"
+    ],
+    "reason": "Pinned Java ends this succeedWhen test in different states on different runs (pass tick 2..37; e.g. mercury_capacitor_receives_flux energy 0/160/140/220, distiller pass tick 13/3/15/5); exact progress/energy/LIT depends on when the condition is first observed and on gameTime%20 (HeatConsumerBehaviour.isHeated)."
+  },
+  "theurgy:calcination_oven_processing_starts": {
+    "class": "java-nondeterministic",
+    "fields": [
+      "progress",
+      "property lit",
+      "mercuryFluxHandler.energy",
+      "buffer.energy",
+      "currentMercuryFluxPerTick",
+      "totalMercuryFluxToConvert"
+    ],
+    "reason": "Pinned Java ends this succeedWhen test in different states on different runs (pass tick 2..37; e.g. mercury_capacitor_receives_flux energy 0/160/140/220, distiller pass tick 13/3/15/5); exact progress/energy/LIT depends on when the condition is first observed and on gameTime%20 (HeatConsumerBehaviour.isHeated)."
+  },
+  "theurgy:distiller_lit_during_processing": {
+    "class": "java-nondeterministic",
+    "fields": [
+      "progress",
+      "property lit",
+      "mercuryFluxHandler.energy",
+      "buffer.energy",
+      "currentMercuryFluxPerTick",
+      "totalMercuryFluxToConvert"
+    ],
+    "reason": "Pinned Java ends this succeedWhen test in different states on different runs (pass tick 2..37; e.g. mercury_capacitor_receives_flux energy 0/160/140/220, distiller pass tick 13/3/15/5); exact progress/energy/LIT depends on when the condition is first observed and on gameTime%20 (HeatConsumerBehaviour.isHeated)."
+  },
+  "theurgy:distiller_processing_starts": {
+    "class": "java-nondeterministic",
+    "fields": [
+      "progress",
+      "property lit",
+      "mercuryFluxHandler.energy",
+      "buffer.energy",
+      "currentMercuryFluxPerTick",
+      "totalMercuryFluxToConvert"
+    ],
+    "reason": "Pinned Java ends this succeedWhen test in different states on different runs (pass tick 2..37; e.g. mercury_capacitor_receives_flux energy 0/160/140/220, distiller pass tick 13/3/15/5); exact progress/energy/LIT depends on when the condition is first observed and on gameTime%20 (HeatConsumerBehaviour.isHeated)."
+  },
+  "theurgy:lc_lit_state_true_during_processing": {
+    "class": "java-nondeterministic",
+    "fields": [
+      "progress",
+      "property lit",
+      "mercuryFluxHandler.energy",
+      "buffer.energy",
+      "currentMercuryFluxPerTick",
+      "totalMercuryFluxToConvert"
+    ],
+    "reason": "Pinned Java ends this succeedWhen test in different states on different runs (pass tick 2..37; e.g. mercury_capacitor_receives_flux energy 0/160/140/220, distiller pass tick 13/3/15/5); exact progress/energy/LIT depends on when the condition is first observed and on gameTime%20 (HeatConsumerBehaviour.isHeated)."
+  },
+  "theurgy:lc_processing_starts": {
+    "class": "java-nondeterministic",
+    "fields": [
+      "progress",
+      "property lit",
+      "mercuryFluxHandler.energy",
+      "buffer.energy",
+      "currentMercuryFluxPerTick",
+      "totalMercuryFluxToConvert"
+    ],
+    "reason": "Pinned Java ends this succeedWhen test in different states on different runs (pass tick 2..37; e.g. mercury_capacitor_receives_flux energy 0/160/140/220, distiller pass tick 13/3/15/5); exact progress/energy/LIT depends on when the condition is first observed and on gameTime%20 (HeatConsumerBehaviour.isHeated)."
+  },
+  "theurgy:mercury_capacitor_receives_flux": {
+    "class": "java-nondeterministic",
+    "fields": [
+      "progress",
+      "property lit",
+      "mercuryFluxHandler.energy",
+      "buffer.energy",
+      "currentMercuryFluxPerTick",
+      "totalMercuryFluxToConvert"
+    ],
+    "reason": "Pinned Java ends this succeedWhen test in different states on different runs (pass tick 2..37; e.g. mercury_capacitor_receives_flux energy 0/160/140/220, distiller pass tick 13/3/15/5); exact progress/energy/LIT depends on when the condition is first observed and on gameTime%20 (HeatConsumerBehaviour.isHeated)."
+  },
+  "theurgy:mercury_flux_connector_forwards_flux": {
+    "class": "java-nondeterministic",
+    "fields": [
+      "progress",
+      "property lit",
+      "mercuryFluxHandler.energy",
+      "buffer.energy",
+      "currentMercuryFluxPerTick",
+      "totalMercuryFluxToConvert"
+    ],
+    "reason": "Pinned Java ends this succeedWhen test in different states on different runs (pass tick 2..37; e.g. mercury_capacitor_receives_flux energy 0/160/140/220, distiller pass tick 13/3/15/5); exact progress/energy/LIT depends on when the condition is first observed and on gameTime%20 (HeatConsumerBehaviour.isHeated)."
+  },
+  "theurgy:mercury_flux_connector_forwards_to_multiple": {
+    "class": "java-nondeterministic",
+    "fields": [
+      "progress",
+      "property lit",
+      "mercuryFluxHandler.energy",
+      "buffer.energy",
+      "currentMercuryFluxPerTick",
+      "totalMercuryFluxToConvert"
+    ],
+    "reason": "Pinned Java ends this succeedWhen test in different states on different runs (pass tick 2..37; e.g. mercury_capacitor_receives_flux energy 0/160/140/220, distiller pass tick 13/3/15/5); exact progress/energy/LIT depends on when the condition is first observed and on gameTime%20 (HeatConsumerBehaviour.isHeated)."
+  },
+  "theurgy:mercury_flux_emitter_flux_transfer": {
+    "class": "java-nondeterministic",
+    "fields": [
+      "progress",
+      "property lit",
+      "mercuryFluxHandler.energy",
+      "buffer.energy",
+      "currentMercuryFluxPerTick",
+      "totalMercuryFluxToConvert"
+    ],
+    "reason": "Pinned Java ends this succeedWhen test in different states on different runs (pass tick 2..37; e.g. mercury_capacitor_receives_flux energy 0/160/140/220, distiller pass tick 13/3/15/5); exact progress/energy/LIT depends on when the condition is first observed and on gameTime%20 (HeatConsumerBehaviour.isHeated)."
+  },
+  "theurgy:pyromantic_brazier_fuel_consumed": {
+    "class": "java-vacuous",
+    "fields": [
+      "progress",
+      "property lit",
+      "mercuryFluxHandler.energy",
+      "buffer.energy",
+      "currentMercuryFluxPerTick",
+      "totalMercuryFluxToConvert"
+    ],
+    "reason": "Java succeedWhen held already at tick 0, before runAfterDelay(1) inserted the fuel/shard, so the Java snapshot is the pre-action state and asserts nothing about the behaviour; Rust probes after the action."
+  },
+  "theurgy:pyromantic_brazier_remove_fuel": {
+    "class": "java-vacuous",
+    "fields": [
+      "progress",
+      "property lit",
+      "mercuryFluxHandler.energy",
+      "buffer.energy",
+      "currentMercuryFluxPerTick",
+      "totalMercuryFluxToConvert"
+    ],
+    "reason": "Java succeedWhen held already at tick 0, before runAfterDelay(1) inserted the fuel/shard, so the Java snapshot is the pre-action state and asserts nothing about the behaviour; Rust probes after the action."
+  },
+  "theurgy:mercury_catalyst_shard_is_consumed": {
+    "class": "java-vacuous",
+    "fields": [
+      "progress",
+      "property lit",
+      "mercuryFluxHandler.energy",
+      "buffer.energy",
+      "currentMercuryFluxPerTick",
+      "totalMercuryFluxToConvert"
+    ],
+    "reason": "Java succeedWhen held already at tick 0, before runAfterDelay(1) inserted the fuel/shard, so the Java snapshot is the pre-action state and asserts nothing about the behaviour; Rust probes after the action."
+  },
+  "theurgy:calcination_oven_stops_without_input": {
+    "class": "java-vacuous",
+    "fields": [
+      "progress",
+      "property lit",
+      "mercuryFluxHandler.energy",
+      "buffer.energy",
+      "currentMercuryFluxPerTick",
+      "totalMercuryFluxToConvert"
+    ],
+    "reason": "Java succeedWhen held already at tick 0, before runAfterDelay(1) inserted the fuel/shard, so the Java snapshot is the pre-action state and asserts nothing about the behaviour; Rust probes after the action."
+  },
+  "theurgy:logistics_fluid_connector_restores_attached_target_on_load": {
+    "class": "java-environment",
+    "fields": [
+      "unexpected block"
+    ],
+    "reason": "The fluid inserter faces WEST with its support outside the 5x5x5 template (air); Java's passed snapshot has popped it (dropped item, canSurvive). Rust keeps it because /setblock on air is never shape-updated; canSurvive itself is covered by scenarios/review-fixes.mjs."
+  },
+  "theurgy:pyromantic_brazier_heat_calcination_oven": {
+    "class": "harness-latency",
+    "fields": [
+      "property lit"
+    ],
+    "reason": "Java passes at tick 2 (brazier remainingLitTime 1599) with the consumer LIT still false (re-checked only at gameTime%20==0). The Rust control-socket snapshot is ~8 ticks later (remainingLitTime 1592 in runs/game-1794248175799), crossing a %20 boundary in ~40% of runs."
+  },
+  "theurgy:pyromantic_brazier_heat_distiller": {
+    "class": "harness-latency",
+    "fields": [
+      "property lit"
+    ],
+    "reason": "Java passes at tick 2 (brazier remainingLitTime 1599) with the consumer LIT still false (re-checked only at gameTime%20==0). The Rust control-socket snapshot is ~8 ticks later (remainingLitTime 1592 in runs/game-1794248175799), crossing a %20 boundary in ~40% of runs."
+  },
+  "theurgy:pyromantic_brazier_heat_liquefaction_cauldron": {
+    "class": "harness-latency",
+    "fields": [
+      "property lit"
+    ],
+    "reason": "Java passes at tick 2 (brazier remainingLitTime 1599) with the consumer LIT still false (re-checked only at gameTime%20==0). The Rust control-socket snapshot is ~8 ticks later (remainingLitTime 1592 in runs/game-1794248175799), crossing a %20 boundary in ~40% of runs."
+  },
+  "theurgy:mercury_catalyst_shard_generates_flux": {
+    "class": "harness-latency",
+    "fields": [
+      "mercuryFluxHandler.energy"
+    ],
+    "reason": "Java passes at tick 3 with 20 flux = one tick of generation. Rust matches currentMercuryFluxPerTick (20) and totalMercuryFluxToConvert exactly; its first per-tick control-socket observation is 5 ticks later (energy 120 = 6 x 20)."
+  }
+}
