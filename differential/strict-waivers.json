@@ -225,5 +225,12 @@
       "mercuryFluxHandler.energy"
     ],
     "reason": "Java passes at tick 3 with 20 flux = one tick of generation. Rust matches currentMercuryFluxPerTick (20) and totalMercuryFluxToConvert exactly; its first per-tick control-socket observation is 5 ticks later (energy 120 = 6 x 20)."
+  },
+  "theurgy:distiller_insert_input": {
+    "class": "harness-latency",
+    "fields": [
+      "property lit"
+    ],
+    "reason": "Java passes at tick 2 in all 6 oracle runs, right after the brazier lit (remainingLitTime 1600), before the distiller re-checks heat at gameTime%20==0, so its LIT is still false. The Rust fixture needs several control-socket round trips (setblock+wait, container) before the snapshot and crosses a %20 boundary in some runs (runs/acceptance-2026-11-09T21-46-04.973Z)."
   }
 }
