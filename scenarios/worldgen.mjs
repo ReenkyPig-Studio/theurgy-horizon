@@ -45,9 +45,19 @@ export async function runCustom(call, assert) {
     const trace = JSON.parse(fs.readFileSync(process.env.THEURGY_WORLDGEN_ORACLE, 'utf8'));
     assert.ok(Array.isArray(trace.ores) && trace.ores.length > 0, 'Java worldgen trace contains no ores');
     const origin = trace.origin.split(',').map(Number);
+    // Java GameTest structures are loaded before setBlock. Load the distant
+    // fixture chunk here too; filling an unloaded Horizon chunk is not a valid
+    // worldgen oracle fixture.
+    await step('load Java fixture chunk', ['tp', String(origin[0]), '20', String(origin[2])]);
+    await step('Java fixture chunks loaded', ['wait', '20']);
+    await step('Java air above fixture', ['fill', String(origin[0] - 24), '16', String(origin[2] - 24), String(origin[0] + 24), '319', String(origin[2] + 24), 'minecraft:air']);
     await step('Java deepslate fixture', ['fill', String(origin[0] - 8), '0', String(origin[2] - 8), String(origin[0] + 8), '7', String(origin[2] + 8), 'minecraft:deepslate']);
     await step('Java stone fixture', ['fill', String(origin[0] - 8), '8', String(origin[2] - 8), String(origin[0] + 8), '15', String(origin[2] + 8), 'minecraft:stone']);
+    await step('world seed', ['command', 'seed']);
     await step('run placed feature', ['command', 'theurgy_worldgen', ...origin.map(String)]);
+    await step('inspect Java fixture', ['tp', String(origin[0]), '20', String(origin[2])]);
+    await step('generated stone ores', ['find-block', 'theurgy:sal_ammoniac_ore', '64']);
+    await step('generated deepslate ores', ['find-block', 'theurgy:deepslate_sal_ammoniac_ore', '64']);
     let checked = 0;
     for (const expected of trace.ores) {
       const actual = await step('Java ore position ' + checked, ['block', ...expected.pos.map(String)]);

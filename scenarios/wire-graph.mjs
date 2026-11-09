@@ -17,7 +17,10 @@ function packed(pos){return ((BigInt(pos[0])&0x3ffffffn)<<38n)|((BigInt(pos[2])&
 export async function runCustom(call,assert){
   const results=[];
   const step=async(name,args)=>{const reply=await call(args);results.push({name,args,reply});if(['give','setblock','tp','container','command'].includes(args[0]))await call(['wait','2']);return reply;};
-  const place=(name,p,id,state='')=>step(name,['setblock',...s(p),id+state]);
+  const place=async(name,p,id,state='')=>{
+    await step(name+' clear old fixture',['setblock',...s(p),'minecraft:air']);
+    return step(name,['setblock',...s(p),id+state]);
+  };
   const nbt=async p=>JSON.stringify(await call(['command',`data get block ${p.join(' ')}`]));
   const click=async(name,p)=>{
     await step(name+' approach',['tp',String(p[0]),String(p[1]),String(p[2]-2)]);
@@ -28,7 +31,10 @@ export async function runCustom(call,assert){
   const put=(name,item,count=1)=>step(name,['container',...s(SOURCE),item,String(count)]);
 
   await step('wire graph lab',['tp','44','80','36']);
+  await step('wire graph safe floor',['fill','38','79','36','50','79','44','minecraft:stone']);
   await step('wire graph chunks',['wait','40']);
+  await step('clear wire graph inventory',['command','clear','@s']);
+  await step('wire conservation in survival',['command','gamemode','survival','@s']);
   await place('source chest',SOURCE,'minecraft:chest');
   await place('wired extractor',EX,EXTRACTOR,'[facing=west]');
   await place('wired inserter',IN,INSERTER,'[facing=east]');
@@ -42,6 +48,8 @@ export async function runCustom(call,assert){
   const connected=await step('connected wires',['inventory']);
   assert.equal(wireCount(connected),1,'connect consumes exactly one wire');
   assert.ok(!held(connected).includes('wire_end_point'),'connect clears stored endpoint');
+  const serverConnected=await step('authoritative connected stack',['command','data','get','entity','@s','SelectedItem']);
+  assert.ok(!JSON.stringify(serverConnected).includes('wire_end_point'),'server stack must clear wire_end_point: '+JSON.stringify(serverConnected));
   const connectedNbt=await nbt(IN);
   assert.ok(connectedNbt.includes('wireConnections'),'clicked endpoint must persist Java wireConnections: '+connectedNbt);
   assert.ok(connectedNbt.includes(String(packed(EX))),'wire from must be packed BlockPos.asLong(EX)');
@@ -63,6 +71,8 @@ export async function runCustom(call,assert){
   assert.equal(total(await container('source after persisted apple',SOURCE)),0,'persisted wire must still extract');
   assert.equal(total(await container('destination after persisted apple',DEST)),4,'reload must not duplicate or lose items');
   assert.equal(wireCount(await step('wire count after reload',['inventory'])),1);
+  const serverReloaded=await step('authoritative reloaded stack',['command','data','get','entity','@s','SelectedItem']);
+  assert.ok(!JSON.stringify(serverReloaded).includes('wire_end_point'),'reload must not resurrect wire_end_point: '+JSON.stringify(serverReloaded));
 
   await click('select wire for disconnect',EX);
   await click('disconnect inserter',IN);

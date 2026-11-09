@@ -29,8 +29,11 @@ export async function runCustom(call, assert) {
   await step('wand lab',['tp','60','80','40']);
   await step('chunks',['wait','40']);
   // Java targetDirection() falls back to FACING; UP cycles to NORTH(2).
+  await step('clear connector fixture',['setblock','60','80','42','minecraft:air']);
+  await step('clear capacitor fixture',['setblock','60','80','46','minecraft:air']);
   await step('connector',['setblock','60','80','42',CONNECTOR+'[facing=up]']);
-  await step('capacitor',['setblock','60','80','46',CAPACITOR+'[facing=north]']);
+  await step('capacitor',['setblock','60','80','46',CAPACITOR]);
+  await step('clear wand inventory',['command','clear','@s']);
   await step('give wand',['give',WAND,'1']);
   const initial=await step('wand initial',['inventory']);
   // Item defaults are read through native_component but are not repeated in
@@ -39,7 +42,8 @@ export async function runCustom(call, assert) {
 
   await step('approach connector',['tp','60','82','40']);
   await step('connector look',['look-at','block','60','80','42','up']);
-  await step('rotate direction',['interact','60','80','42','up']);
+  await step('connector look settle',['wait','4']);
+  await step('rotate direction',['command','theurgy_interact','60','80','42','up']);
   let nbt=await blockNbt(call,[60,80,42]);
   assert.ok(/directionOverride"?\s*:\s*2/.test(nbt),'UP block facing must cycle to north (2): '+nbt);
 
@@ -57,12 +61,12 @@ export async function runCustom(call, assert) {
   // the test player out of reach while inventory/scroll commands complete.
   await step('re-approach enabled connector',['tp','60','80','40']);
   await step('enabled connector look',['look-at','block','60','80','42']);
-  await step('toggle connector',['interact','60','80','42']);
+  await step('toggle connector',['command','theurgy_interact','60','80','42','north']);
   nbt=await blockNbt(call,[60,80,42]);
   assert.ok(/enabled"?\s*:\s*(false|0b|0)/.test(nbt),'wand must disable connector: '+nbt);
   await step('re-approach disabled connector',['tp','60','80','40']);
   await step('disabled connector look',['look-at','block','60','80','42']);
-  await step('re-enable connector',['interact','60','80','42']);
+  await step('re-enable connector',['command','theurgy_interact','60','80','42','north']);
 
   await step('sneak down frequency mode',['key','shift','down']);
   await step('scroll frequency mode',['scroll-at','0','0','1']);
@@ -80,7 +84,7 @@ export async function runCustom(call, assert) {
   assert.equal(mode(mode3),3,'next mode is set_selected_frequency');
   await step('re-approach frequency connector',['tp','60','80','40']);
   await step('frequency connector look',['look-at','block','60','80','42']);
-  await step('apply connector frequency',['interact','60','80','42']);
+  await step('apply connector frequency',['command','theurgy_interact','60','80','42','north']);
   nbt=await blockNbt(call,[60,80,42]);
   assert.ok(/frequency"?\s*:\s*2/.test(nbt),'wand must set connector frequency: '+nbt);
 
@@ -91,7 +95,8 @@ export async function runCustom(call, assert) {
   assert.equal(mode(mode4),4,'next mode is cycle_capacitor_side');
   await step('approach capacitor',['tp','60','82','44']);
   await step('capacitor look',['look-at','block','60','80','46']);
-  await step('cycle capacitor side',['interact','60','80','46','up']);
+  await step('capacitor look settle',['wait','4']);
+  await step('cycle capacitor side',['command','theurgy_interact','60','80','46','up']);
   nbt=await blockNbt(call,[60,80,46]);
   assert.ok(/UP"?\s*:\s*3|up"?\s*:\s*3/.test(nbt),'capacitor UP output must cycle to BOTH (3): '+nbt);
   return results;

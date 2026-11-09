@@ -20,12 +20,15 @@ export async function runCustom(call, assert) {
     const reply = await call(args);
     if (check) check(reply);
     results.push({name, reply});
-    if (['give', 'setblock'].includes(args[0])) await call(['wait', '2']);
+    if (['give', 'setblock', 'tp', 'command'].includes(args[0])) await call(['wait', '2']);
     return reply;
   };
 
-  await step('tools lab', ['tp', '30', '80', '26']);
+  await step('tools lab', ['command', 'tp', '@s', '30', '80', '26']);
+  await step('tools safe floor', ['fill', '28', '79', '22', '32', '79', '36', 'minecraft:stone']);
   await step('tools chunks', ['wait', '40']);
+  await step('clear test inventory', ['command', 'clear', '@s']);
+  await step('wire conservation in survival', ['command', 'gamemode', 'survival', '@s']);
   await step('node a', ['setblock', '30', '80', '28', NODE]);
   await step('node b', ['setblock', '30', '80', '34', NODE]);
 
@@ -41,7 +44,7 @@ export async function runCustom(call, assert) {
   assert.ok(packed && BigInt(packed[1]) === expected,
     'wire_end_point.pos must use Java BlockPos.asLong packing, got ' + (packed?.[1] ?? 'missing'));
 
-  await step('approach node b', ['tp', '30', '80', '32']);
+  await step('approach node b', ['command', 'tp', '@s', '30', '80', '32']);
   await step('look node b', ['look-at', 'block', '30', '80', '34']);
   await step('connect endpoint', ['interact', '30', '80', '34']);
   const connected = await step('connected inventory', ['inventory']);
@@ -49,7 +52,7 @@ export async function runCustom(call, assert) {
   assert.ok(!hasWirePoint(connected), 'connect must clear wire_end_point');
 
   await step('give wire for self', ['give', WIRE, '1']);
-  await step('approach node a', ['tp', '30', '80', '26']);
+  await step('approach node a', ['command', 'tp', '@s', '30', '80', '26']);
   await step('look node a again', ['look-at', 'block', '30', '80', '28']);
   await step('store endpoint again', ['interact', '30', '80', '28']);
   assert.ok(hasWirePoint(await step('self endpoint inventory', ['inventory'])), 'second wire must store an endpoint');
@@ -64,7 +67,7 @@ export async function runCustom(call, assert) {
   assert.ok(!hasWirePoint(await step('cleared inventory', ['inventory'])), 'sneak-use on an endpoint must clear the endpoint');
 
   await step('stone', ['setblock', '30', '80', '24', 'minecraft:stone']);
-  await step('approach stone', ['tp', '30', '80', '26']);
+  await step('approach stone', ['command', 'tp', '@s', '30', '80', '26']);
   const beforeStone = count(await step('before stone inventory', ['inventory']), WIRE);
   await step('look stone', ['look-at', 'block', '30', '80', '24']);
   await step('wire on stone', ['interact', '30', '80', '24']);

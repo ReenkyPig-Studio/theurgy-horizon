@@ -8,11 +8,11 @@ const cases=[
  ['item_name','Special','minecraft:apple[minecraft:item_name="Special"]','minecraft:apple'],
 ];
 export async function runCustom(call,assert){const results=[];const step=async(name,args)=>{const r=await call(args);results.push({name,args,reply:r});if(['give','setblock','tp','container','command'].includes(args[0]))await call(['wait','2']);return r;};
-const place=(n,p,id,state='')=>step(n,['setblock',...s(p),id+state]);const nexus=p=>step('nexus '+p,['command','data','merge','block',...s(p),'{nexusId:"special-net"}']);
+const place=async(n,p,id,state='')=>{await step(n+' clear old fixture',['setblock',...s(p),'minecraft:air']);return step(n,['setblock',...s(p),id+state]);};const nexus=p=>step('nexus '+p,['command','data','merge','block',...s(p),'{nexusId:"special-net"}']);
 const click=async(name,p,sneak=false)=>{if(sneak)await step('disable transition',['command','data','merge','block',...s(p),'{enabled:0}']);if(sneak)await step('sneak down',['key','shift','down']);await step(name+' approach',['tp',String(p[0]),'82',String(p[2]-2)]);await step(name+' look',['look-at','block',...s(p)]);const r=await step(name,['interact',...s(p)]);if(sneak)await step('sneak up',['key','shift','up']);if(!sneak)await step('enable connector',['command','data','merge','block',...s(p),'{enabled:1}']);return r;};
 await step('special lab',['tp','72','82','68']);await step('chunks',['wait','40']);await place('source',SRC,'minecraft:chest');await place('extractor',EX,EXTRACTOR,'[facing=west]');await place('inserter',IN,INSERTER,'[facing=east]');await place('dest',DST,'minecraft:chest');await place('nexus',NEX,'theurgy:logistics_nexus');for(const p of [EX,IN,NEX])await nexus(p);
 for(const [kind,value,yes,no] of cases){
- await place('reset source '+kind,SRC,'minecraft:chest');await place('reset dest '+kind,DST,'minecraft:chest');await step('new special filter '+kind,['give',FILTER,'1']);
+ await place('reset source '+kind,SRC,'minecraft:chest');await place('reset dest '+kind,DST,'minecraft:chest');await step('clear returned special filters '+kind,['command','clear','@s']);await step('new special filter '+kind,['give',FILTER,'1']);
  const payload=kind==='item_name'?{value}:{id:value};
  const config=JSON.stringify({mode:'match_any',rules:[{type:'codedefinedgui:'+kind,payload,inverted:false}]});
  await step('configure '+kind,['command','item modify entity @s weapon.mainhand {"type":"minecraft:set_components","components":{"codedefinedgui:attribute_filter_config":'+config+'}}']);

@@ -16,6 +16,8 @@ export async function runCustom(call, assert) {
     return reply;
   };
   const place = async (name, pos, id, state = '') => {
+    await step(name + ' clear old fixture', ['setblock', ...S(pos), 'minecraft:air']);
+    await call(['wait', '2']);
     const reply = await step(name, ['setblock', ...S(pos), id + state]);
     await call(['wait', '2']);
     return reply;
@@ -36,6 +38,7 @@ export async function runCustom(call, assert) {
   // ---- No invented apparatus menu: Java's direct useItemOn ----------------
   const direct = [60, 80, 60];
   await step('direct interaction lab', ['tp', '60', '82', '58']);
+  await step('clear review fixture inventory', ['command', 'clear', '@s']);
   await place('direct distiller', direct, 'theurgy:distiller');
   await step('bread for direct insertion', ['give', 'minecraft:bread', '2']);
   await step('bread inventory sync', ['wait', '2']);
@@ -106,6 +109,8 @@ export async function runCustom(call, assert) {
   await click('select mercury capacitor', cap);
   await place('mercury placement support', [72, 79, 62], 'minecraft:stone');
   await step('mercury placement approach', ['tp', '72', '82', '61']);
+  await step('clear old mercury emitter target', ['setblock', ...S(emitter), 'minecraft:air']);
+  await call(['wait', '2']);
   await step('place selected mercury emitter', ['place', ...S(emitter), '--item', 'theurgy:mercury_flux_emitter']);
   const emitterSelection = await data('mercury selection persisted', emitter);
   assert.ok(text(emitterSelection).includes('selectedPoints') && text(emitterSelection).includes('blockPos'),
@@ -128,6 +133,7 @@ export async function runCustom(call, assert) {
   await put('selected source B item', sourceB, 'theurgy:alchemical_niter_crops_abundant');
   await put('unselected source item', unselected, 'theurgy:alchemical_niter_crops_abundant');
   await step('sulfuric emitter item', ['give', 'theurgy:sulfuric_flux_emitter', '1']);
+  await step('sulfuric emitter inventory sync', ['wait', '2']);
   await step('hold sulfuric emitter for selection', ['select', 'theurgy:sulfuric_flux_emitter']);
   await click('select source A', sourceA);
   await click('select source B', sourceB);
@@ -135,6 +141,8 @@ export async function runCustom(call, assert) {
   await click('select reformation result', result);
   await place('reformation placement support', [80, 79, 60], 'minecraft:stone');
   await step('reformation placement approach', ['tp', '80', '82', '59']);
+  await step('clear old sulfuric emitter target', ['setblock', ...S(re), 'minecraft:air']);
+  await call(['wait', '2']);
   await step('place selected sulfuric emitter', ['place', ...S(re), '--item', 'theurgy:sulfuric_flux_emitter']);
   const reSelection = await data('reformation selection persisted', re);
   assert.ok(text(reSelection).includes('sourcePedestals') && text(reSelection).includes('targetPedestal')
