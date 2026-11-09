@@ -14,11 +14,11 @@ export async function probe(call, pos) {
   return JSON.parse(text.slice(start));
 }
 
-export async function record(results, javaId, call, origin, locals = [[2, 2, 2]]) {
+export async function record(results, javaId, call, origin, locals = [[2, 2, 2]], captured = null) {
   const probes = [];
   for (const local of locals) {
     const pos = at(origin, local);
-    probes.push({local, state: await probe(call, pos)});
+    probes.push({local, state: captured?.get?.(JSON.stringify(local)) ?? await probe(call, pos)});
   }
   results.push({name: `diff:${javaId}`, args: [], reply: {javaId, origin, probes}});
 }

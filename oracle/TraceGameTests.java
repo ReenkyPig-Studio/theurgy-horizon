@@ -31,6 +31,7 @@ import java.util.function.Consumer;
 public final class TraceGameTests {
     private static final Gson GSON = new GsonBuilder().disableHtmlEscaping().create();
     private static BufferedWriter writer;
+    private static boolean recipesDumped;
 
     private TraceGameTests() {}
 
@@ -60,6 +61,21 @@ public final class TraceGameTests {
                 writer = Files.newBufferedWriter(dir.resolve("traces.jsonl"), StandardCharsets.UTF_8,
                         StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
                 Runtime.getRuntime().addShutdownHook(new Thread(TraceGameTests::close));
+            }
+            if (!recipesDumped) {
+                recipesDumped = true;
+                // Recipes RecipeManager actually loaded after neoforge:conditions
+                // were evaluated in this pinned Java 26.3 instance.
+                JsonObject recipes = new JsonObject();
+                recipes.addProperty("phase", "recipes");
+                JsonArray ids = new JsonArray();
+                info.getLevel().getServer().getRecipeManager().recipeMap().values().stream()
+                        .map(holder -> holder.id().identifier().toString() + "|" + BuiltInRegistries.RECIPE_TYPE.getKey(holder.value().getType()))
+                        .sorted()
+                        .forEach(ids::add);
+                recipes.add("ids", ids);
+                writer.write(GSON.toJson(recipes));
+                writer.newLine();
             }
             JsonObject root = new JsonObject();
             root.addProperty("id", info.id().toString());

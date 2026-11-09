@@ -32,6 +32,8 @@
     "fleet": "node matrix/fleet.mjs",
     "content": "node tools/build-content.mjs && node tools/content-check.mjs",
     "package": "node tools/package.mjs",
-    "providers:probe": "node matrix/provider-probe.mjs"
+    "acceptance": "node tools/acceptance.mjs",
+    "providers:probe": "node matrix/provider-probe.mjs",
+    "package:smoke": "node tools/package-smoke.mjs"
   }
 }

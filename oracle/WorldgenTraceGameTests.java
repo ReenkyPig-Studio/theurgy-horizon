@@ -49,6 +49,8 @@ public final class WorldgenTraceGameTests {
 
     private static void writeOreTrace(GameTestHelper helper) {
         try {
+            var rngProbe = new LegacyRandomSource(1L);
+            System.out.println("THEURGY_LEGACY_PROBE=" + rngProbe.nextInt(16) + "," + rngProbe.nextInt(16) + "," + rngProbe.nextInt(16));
             var level = helper.getLevel();
             var origin = helper.testInfo.getTestOrigin();
             var key = ResourceKey.create(Registries.PLACED_FEATURE, Theurgy.loc("sal_ammoniac_ore"));
@@ -56,6 +58,24 @@ public final class WorldgenTraceGameTests {
             var ores = new JsonArray();
             for (int attempt = 0; attempt < 16 && ores.isEmpty(); attempt++) {
                 origin = origin.east(attempt == 0 ? 0 : 16);
+            for (int x = origin.getX() - 24; x <= origin.getX() + 24; x++) {
+                for (int z = origin.getZ() - 24; z <= origin.getZ() + 24; z++) {
+                    for (int y = -64; y <= 200; y++) {
+                        var pos = new BlockPos(x, y, z);
+                        var state = level.getBlockState(pos);
+                        if (state.is(BlockRegistry.SAL_AMMONIAC_ORE.get()) || state.is(BlockRegistry.DEEPSLATE_SAL_AMMONIAC_ORE.get())) {
+                            level.setBlock(pos, (y < 8 ? Blocks.DEEPSLATE : Blocks.STONE).defaultBlockState(), 3);
+                        }
+                    }
+                }
+            }
+            for (int x = origin.getX() - 24; x <= origin.getX() + 24; x++) {
+                for (int z = origin.getZ() - 24; z <= origin.getZ() + 24; z++) {
+                    for (int y = 16; y <= 319; y++) {
+                        level.setBlock(new BlockPos(x, y, z), Blocks.AIR.defaultBlockState(), 3);
+                    }
+                }
+            }
             for (int x = origin.getX() - 8; x <= origin.getX() + 8; x++) {
                 for (int z = origin.getZ() - 8; z <= origin.getZ() + 8; z++) {
                     for (int y = 0; y <= 15; y++) {
