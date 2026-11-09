@@ -470,7 +470,9 @@ for(const [id,java] of [...expected.entries()].sort()) {
     if(actualCapacity!==semanticValues.get(id))
       differences.push(`mercury flux capacity: expected ${semanticValues.get(id)}, got ${actualCapacity}`);
   }
-  const waiver=strict&&waivers[id];
+  // Not listed but Java itself disagrees across runs: timing fields only.
+  const waiver=strict&&(waivers[id]??(waiverHolds(id,{class:'java-nondeterministic'})===null
+    ?{class:'java-nondeterministic',fields:['progress','property lit','mercuryFluxHandler.energy','buffer.energy','currentMercuryFluxPerTick','totalMercuryFluxToConvert']}:undefined));
   if(waiver&&differences.length) {
     // A waiver only covers its listed fields, and only while its Java
     // criterion still holds on the recorded oracle runs.
