@@ -25,6 +25,8 @@ export async function runCustom(call, assert) {
   };
 
   await step('tools lab', ['command', 'tp', '@s', '30', '80', '26']);
+  // Fresh worlds may have terrain above y=79 between the player and the nodes.
+  await step('tools clear air', ['fill', '28', '80', '22', '32', '85', '36', 'minecraft:air']);
   await step('tools safe floor', ['fill', '28', '79', '22', '32', '79', '36', 'minecraft:stone']);
   await step('tools chunks', ['wait', '40']);
   await step('clear test inventory', ['command', 'clear', '@s']);
