@@ -1,6 +1,19 @@
 # Проверки
 
-## Финальный принятый порт (2026-11-09)
+## Ревью 2026-11-09 (todo.md 18–23) — ожидает нового полного acceptance
+- Рендер GeckoLib переписан по GeckoLib 5.5.7; `scenarios/render.mjs` сравнивает силуэты с
+  вручную принятыми эталонами `scenarios/render-reference/*` (`tools/render-check.mjs`).
+- The Hermetica: страницы рецептов/multiblock/картинок/spotlight; `scenarios/book.mjs`
+  проверяет графические страницы записи Calcination Oven по пикселям.
+- Рецепты: `artifacts/recipe-oracle.json` RECIPE_ORACLE_MATCH против RecipeManager Java.
+- Differential: обычный 152/152 и строгий `artifacts/differential-strict.json` 152/152
+  (133 точных + 19 послаблений `differential/strict-waivers.json`, каждое перепроверяется
+  по всем Java oracle прогонам; сам Java недетерминирован в этих полях).
+- canSurvive/updateShape коннекторов и эмиттеров перенесён (`scenarios/review-fixes.mjs`).
+- INT-01/02/03 (JEI/EMI, Jade, KubeJS/AlmostUnified/Occultism) — OUT_OF_SCOPE: этих модов
+  в Horizon нет.
+
+## Ранее принятый порт (2026-11-09, снят ревью)
 - Единый прогон `runs/acceptance-2026-11-09T11-37-36.767Z/result.json` завершился
   **ACCEPTANCE_PASS**: 68/68 шагов с exit code 0, включая `npm test`, `npm run fast`,
   native plan/check/build, 24 headless-режима, Java `--trace`, GUI, LAN, differential,

@@ -274,9 +274,9 @@ This is the largest subsystem; each row is a separate escape surface for dupes a
 | CFG-03 | `ClientConfig.Rendering`: `renderSulfurSourceItem`, `enableItemHUD`, `enableInWorldHUD`, `enableHeldStackFitOutline`, `heldStackFitOutlineRenderMode`, `hudScale` (0.25..3), `wireLineWidth` (1..64), `useSimpleWireRenderer` | VERIFIED | `config/ClientConfig.java:12-90` | `native/theurgy/client.rs + render.rs` | test=isolated game client-features | run=runs\game-1794228220578 | result=PASS |
 | NET-01 | `Networking`/`MessageHandler` registration set: 18 messages (wire add/remove, selections, flux visuals, HUD request/sync, divination result, mode set, left-click empty, held-stack fit) | VERIFIED | `network/Networking.java`, `network/MessageHandler.java`, `network/messages/*.java` | `native/theurgy/*.rs + hooks` | test=isolated game multiplayer | run=runs\multiplayer-1794228295294 | result=PASS |
 | NET-02 | server authority: no client message may write block state without server validation | VERIFIED | `network/messages/Message*Selection.java`, `MessageSetMode.java` | `native/theurgy/host.rs` | test=isolated game multiplayer | run=runs\multiplayer-1794228295294 | result=PASS |
-| INT-01 | JEI/EMI recipe categories for 8 machine types | VERIFIED | `integration/{jei,emi}/**` | `native/theurgy/recipe_client.rs` | test=isolated game recipes | run=runs\game-1794228009841 | result=PASS |
-| INT-02 | Jade provider for mercury flux energy | VERIFIED | `integration/jade/*.java` | `native/theurgy/client.rs` | test=isolated game client-features | run=runs\game-1794228220578 | result=PASS |
-| INT-03 | KubeJS + AlmostUnified + Occultism integration (dummy + impl classes) | VERIFIED | `integration/{kubejs,almostunified,occultism}/**` | `native/theurgy/recipe_client.rs + filtered_transfer.rs + generated data` | test=isolated game content-rules + isolated game review-fixes + isolated game recipes + offline audit | run=runs\game-1794225295776 + runs\game-1794226734819 + runs\game-1794228009841 + runs\acceptance-2026-11-09T11-37-36.767Z\audit.log | result=PASS |
+| INT-01 | JEI/EMI recipe categories for 8 machine types | OUT_OF_SCOPE | `integration/{jei,emi}/**` | `native/theurgy/recipe_client.rs` | test=isolated game recipes | run=runs\game-1794228009841 | result=PASS |
+| INT-02 | Jade provider for mercury flux energy | OUT_OF_SCOPE | `integration/jade/*.java` | `native/theurgy/client.rs` | test=isolated game client-features | run=runs\game-1794228220578 | result=PASS |
+| INT-03 | KubeJS + AlmostUnified + Occultism integration (dummy + impl classes) | OUT_OF_SCOPE | `integration/{kubejs,almostunified,occultism}/**` | `native/theurgy/recipe_client.rs + filtered_transfer.rs + generated data` | test=isolated game content-rules + isolated game review-fixes + isolated game recipes + offline audit | run=runs\game-1794225295776 + runs\game-1794226734819 + runs\game-1794228009841 + runs\acceptance-2026-11-09T11-37-36.767Z\audit.log | result=PASS |
 | CLI-01 | item HUD + in-world HUD providers (block title, fluid storage, item storage, crafting progress, catalyst, flux handler) | VERIFIED | `content/render/inworldhud/**`, `content/render/itemhud/**` | `native/theurgy/render.rs` | test=isolated game client-features | run=runs\game-1794228220578 | result=PASS |
 | CLI-02 | particles (`colored_bubble`), outlines, cube model, render types, `ClientTicks` | VERIFIED | `content/particle/**`, `content/render/outliner/**`, `content/render/cube/**` | `native/theurgy/render.rs` | test=isolated game client-features | run=runs\game-1794228220578 | result=PASS |
 | CLI-03 | tooltips (`TooltipHandler`, `TooltipDataProvider`) | VERIFIED | `tooltips/*.java` | `native/theurgy/items.rs` | test=isolated game tooltips | run=runs\game-1794228260776 | result=PASS |
@@ -335,9 +335,9 @@ Rows are `VERIFIED` only when every reference in `tools/feature-evidence.mjs` re
 | 8 logistics (LOG) | 16 | 16 | 0 | 0 | 0 | 0 |
 | 9 items (ITM) | 10 | 10 | 0 | 0 | 0 | 0 |
 | 10 recipes/gen (REC/GEN) | 9 | 9 | 0 | 0 | 0 | 0 |
-| 11 config/network/integration/client | 11 | 11 | 0 | 0 | 0 | 0 |
+| 11 config/network/integration/client | 11 | 8 | 0 | 0 | 0 | 0 |
 
-Total: **135 checklist rows**. VERIFIED = 135, PORTED-UNVERIFIED = 0, PARTIAL = 0, UNPORTED = 0, N/A-CLIENT = 0.
+Total: **135 checklist rows**. VERIFIED = 132, PORTED-UNVERIFIED = 0, PARTIAL = 0, UNPORTED = 0, N/A-CLIENT = 0, OUT_OF_SCOPE = 3 (third-party mod integrations absent from Horizon).
 The 152-behaviour matrix is `artifacts/differential.json`; isolated-game runs are indexed by `artifacts/gui-evidence.json`; offline steps by `artifacts/offline-evidence.json`.
 
 ## 14. Definition of done for one row
