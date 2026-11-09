@@ -169,6 +169,10 @@ pub fn open_book(game: &mut crate::game::Game<'_>) -> bool {
     let _ = book_title;
     if let Ok(mut slot) = BOOK_UI.lock() {
         *slot = Some(BookUi { data, category: 0, entry: None, page: 0, list_page: 0 });
+        // The atlas (and its mod image slot) may have been rebuilt since.
+        if let Ok(mut uploaded) = UPLOADED_IMAGE.lock() {
+            *uploaded = None;
+        }
         true
     } else {
         game.native_mod_screen_close("theurgy");
@@ -216,34 +220,7 @@ pub fn render_post(
         });
         game.native_text(batch, title, [rect[0] + 57.0, rect[1] + 46.0], 0xE7D59A, false);
         if let Some(page) = page {
-            let kind = page.get("type").and_then(serde_json::Value::as_str).unwrap_or("");
-            let mut y = rect[1] + 64.0;
-            if let Some(item) = page.get("item").and_then(serde_json::Value::as_str) {
-                game.native_item(batch, item, [rect[0] + 12.0, y - 3.0], 24.0);
-                y += 27.0;
-            }
-            if let Some(images) = page.get("images").and_then(serde_json::Value::as_array) {
-                if let Some(image) = images.first().and_then(serde_json::Value::as_str) {
-                    let sprite = image.replace("textures/", "").trim_end_matches(".png").to_owned();
-                    if let Some([w, h]) = game.native_sprite_size(&sprite) {
-                        let width = 150.0f32.min(rect[2] - 24.0);
-                        let height = (width * h / w.max(1.0)).min(82.0);
-                        game.native_sprite(batch, &sprite, [0.0, 0.0, w, h], [rect[0] + 12.0, y, width, height]);
-                        y += height + 5.0;
-                    }
-                }
-            }
-            let body = value_text(&ui.data, page, "text");
-            y = draw_lines(game, batch, body, [rect[0] + 12.0, y], rect[2] - 24.0, 9, 0xE3E9DF);
-            for key in ["recipe_id_1", "recipe_id_2", "multiblock_id"] {
-                if let Some(id) = page.get(key).and_then(serde_json::Value::as_str) {
-                    game.native_text(batch, id, [rect[0] + 12.0, y], 0xA9C9B0, false);
-                    y += 10.0;
-                }
-            }
-            if body.is_empty() && !kind.is_empty() {
-                game.native_text(batch, kind, [rect[0] + 12.0, y], 0xA9C9B0, false);
-            }
+            draw_page(game, batch, &ui.data, page, rect, screen.mouse);
         }
         let count = pages.map_or(0, Vec::len);
         game.native_fill(batch, [rect[0] + 8.0, rect[1] + rect[3] - 22.0, 24.0, 14.0], 0xFF4A5C50);
@@ -267,6 +244,287 @@ pub fn render_post(
     }
     let pages = entries.len().div_ceil(per_page).max(1);
     game.native_text(batch, &format!("Entries: {}   Page {}/{}", entries.len(), ui.list_page + 1, pages), [rect[0] + 10.0, rect[1] + rect[3] - 19.0], 0xE7D59A, false);
+}
+
+/// Ticks each alternative of an ingredient stays on screen, as JEI/Modonomicon
+/// cycle tag ingredients.
+const CYCLE_TICKS: i64 = 30;
+/// Ticks each image of a multi-image page stays (BookImagePageRenderer cycles).
+const IMAGE_TICKS: i64 = 40;
+const SLOT: f32 = 18.0;
+/// horizon-client-render hud.rs MOD_IMAGE_SPRITE (the native_mod_image slot).
+const MOD_IMAGE_SPRITE: &str = "horizon/modimage";
+
+/// The image slot currently uploaded through `native_mod_image`.
+static UPLOADED_IMAGE: Mutex<Option<(String, [f32; 2])>> = Mutex::new(None);
+
+fn cycled<'a>(items: &'a [serde_json::Value], time: i64, salt: usize) -> Option<&'a str> {
+    if items.is_empty() {
+        return None;
+    }
+    let index = ((time / CYCLE_TICKS) as usize).wrapping_add(salt) % items.len();
+    items[index].as_str()
+}
+
+/// One item slot (`GuiGraphics` slot background + item), returns the item
+/// under the mouse for the hover line.
+fn draw_slot<'a>(
+    game: &crate::game::Game<'_>,
+    batch: &mut HudBatch,
+    items: Option<&'a [serde_json::Value]>,
+    at: [f32; 2],
+    time: i64,
+    salt: usize,
+    mouse: [f32; 2],
+    hovered: &mut Option<String>,
+) {
+    game.native_fill(batch, [at[0], at[1], SLOT, SLOT], 0xFF8B8B8B);
+    game.native_fill(batch, [at[0] + 1.0, at[1] + 1.0, SLOT - 2.0, SLOT - 2.0], 0xFF373737);
+    if let Some(item) = items.and_then(|items| cycled(items, time, salt)) {
+        game.native_item(batch, item, [at[0] + 1.0, at[1] + 1.0], 16.0);
+        if inside(mouse, [at[0], at[1], SLOT, SLOT]) {
+            *hovered = Some(item.to_owned());
+        }
+    }
+}
+
+fn result_items(result: Option<&serde_json::Value>) -> (Vec<serde_json::Value>, String) {
+    let Some(result) = result else { return (Vec::new(), String::new()); };
+    if let Some(item) = result.get("item").and_then(serde_json::Value::as_str) {
+        let count = result.get("count").and_then(serde_json::Value::as_i64).unwrap_or(1);
+        return (vec![serde_json::Value::from(item)], if count > 1 { count.to_string() } else { String::new() });
+    }
+    if let Some(fluid) = result.get("fluid").and_then(serde_json::Value::as_str) {
+        let amount = result.get("amount").and_then(serde_json::Value::as_i64).unwrap_or(0);
+        return (Vec::new(), format!("{amount} mB {fluid}"));
+    }
+    (Vec::new(), String::new())
+}
+
+/// BookCraftingRecipePageRenderer / Theurgy's Book*RecipePage: ingredient
+/// slots with cycling alternatives, an arrow and the result. Returns the
+/// height used.
+fn draw_recipe(
+    game: &crate::game::Game<'_>,
+    batch: &mut HudBatch,
+    recipe: &serde_json::Value,
+    at: [f32; 2],
+    width: f32,
+    time: i64,
+    mouse: [f32; 2],
+    hovered: &mut Option<String>,
+) -> f32 {
+    let kind = recipe.get("kind").and_then(serde_json::Value::as_str).unwrap_or("");
+    let (result, result_note) = result_items(recipe.get("result"));
+    if recipe.get("missing").is_some() {
+        game.native_text(batch, "missing recipe", at, 0xFF8080, false);
+        return 12.0;
+    }
+    if kind == "crafting" {
+        let grid = recipe.get("grid").and_then(serde_json::Value::as_array);
+        for index in 0..9 {
+            let cell = grid.and_then(|grid| grid.get(index)).and_then(serde_json::Value::as_array);
+            let x = at[0] + (index % 3) as f32 * SLOT;
+            let y = at[1] + (index / 3) as f32 * SLOT;
+            draw_slot(game, batch, cell.map(Vec::as_slice), [x, y], time, index, mouse, hovered);
+        }
+        game.native_text(batch, "=>", [at[0] + 3.0 * SLOT + 8.0, at[1] + SLOT + 5.0], 0xE7D59A, false);
+        draw_slot(game, batch, Some(&result), [at[0] + 3.0 * SLOT + 28.0, at[1] + SLOT], time, 0, mouse, hovered);
+        if !result_note.is_empty() {
+            game.native_text(batch, &result_note, [at[0] + 3.0 * SLOT + 48.0, at[1] + SLOT + 5.0], 0xFFFFFF, false);
+        }
+        if recipe.get("shapeless").and_then(serde_json::Value::as_bool) == Some(true) {
+            game.native_text(batch, "shapeless", [at[0] + 3.0 * SLOT + 8.0, at[1] + 3.0], 0xA9C9B0, false);
+        }
+        return 3.0 * SLOT + 4.0;
+    }
+    // Machine recipes: labelled input slots in a row, solvent/fluid, arrow, result.
+    let inputs = recipe.get("inputs").and_then(serde_json::Value::as_array);
+    let mut x = at[0];
+    for (index, input) in inputs.into_iter().flatten().enumerate() {
+        if x + SLOT > at[0] + width - 70.0 {
+            break;
+        }
+        let items = input.get("items").and_then(serde_json::Value::as_array);
+        draw_slot(game, batch, items.map(Vec::as_slice), [x, at[1]], time, index, mouse, hovered);
+        let count = input.get("count").and_then(serde_json::Value::as_i64).unwrap_or(1);
+        if count > 1 {
+            game.native_text(batch, &count.to_string(), [x + 11.0, at[1] + 10.0], 0xFFFFFF, true);
+        }
+        x += SLOT + 2.0;
+    }
+    let mut note_y = at[1] + SLOT + 3.0;
+    if let Some(fluid) = recipe.get("fluid").filter(|fluid| !fluid.is_null()) {
+        let id = fluid.get("fluid").and_then(serde_json::Value::as_str).unwrap_or("");
+        let amount = fluid.get("amount").and_then(serde_json::Value::as_i64).unwrap_or(0);
+        game.native_text(batch, &format!("+ {amount} mB {id}"), [at[0], note_y], 0x9FD3FF, false);
+        note_y += 10.0;
+    }
+    game.native_text(batch, "=>", [x + 4.0, at[1] + 5.0], 0xE7D59A, false);
+    if result.is_empty() {
+        game.native_text(batch, &result_note, [x + 20.0, at[1] + 5.0], 0x9FD3FF, false);
+    } else {
+        draw_slot(game, batch, Some(&result), [x + 20.0, at[1]], time, 0, mouse, hovered);
+        if !result_note.is_empty() {
+            game.native_text(batch, &result_note, [x + 40.0, at[1] + 5.0], 0xFFFFFF, false);
+        }
+    }
+    let mut details = Vec::new();
+    if let Some(time) = recipe.get("time").and_then(serde_json::Value::as_i64) {
+        details.push(format!("{time} ticks"));
+    }
+    if let Some(extra) = recipe.get("extra").and_then(serde_json::Value::as_object) {
+        for (key, value) in extra {
+            details.push(format!("{key}: {value}"));
+        }
+    }
+    if !details.is_empty() {
+        game.native_text(batch, &details.join("  "), [at[0], note_y], 0xA9C9B0, false);
+        note_y += 10.0;
+    }
+    note_y - at[1]
+}
+
+/// BookMultiblockPageRenderer replacement: every layer (top first, as the
+/// Modonomicon pattern) drawn as a slice of block-item icons.
+fn draw_multiblock(
+    game: &crate::game::Game<'_>,
+    batch: &mut HudBatch,
+    multiblock: &serde_json::Value,
+    at: [f32; 2],
+    width: f32,
+    mouse: [f32; 2],
+    hovered: &mut Option<String>,
+) -> f32 {
+    let Some(layers) = multiblock.get("layers").and_then(serde_json::Value::as_array) else { return 0.0; };
+    let mapping = multiblock.get("mapping").and_then(serde_json::Value::as_object);
+    let cell = 14.0f32;
+    let mut x = at[0];
+    let mut height = 0.0f32;
+    for (layer_index, layer) in layers.iter().enumerate() {
+        let Some(rows) = layer.as_array() else { continue; };
+        let columns = rows.iter().filter_map(serde_json::Value::as_str).map(|row| row.chars().count()).max().unwrap_or(0);
+        let layer_width = columns as f32 * cell;
+        if x + layer_width > at[0] + width {
+            break;
+        }
+        game.native_text(batch, &format!("Layer {}", layer_index + 1), [x, at[1]], 0xA9C9B0, false);
+        for (row_index, row) in rows.iter().filter_map(serde_json::Value::as_str).enumerate() {
+            for (column, symbol) in row.chars().enumerate() {
+                let cell_at = [x + column as f32 * cell, at[1] + 11.0 + row_index as f32 * cell];
+                game.native_fill(batch, [cell_at[0], cell_at[1], cell - 1.0, cell - 1.0], 0xFF34483A);
+                let block = mapping.and_then(|mapping| mapping.get(&symbol.to_string())).and_then(serde_json::Value::as_str);
+                if let Some(block) = block {
+                    game.native_item(batch, block, [cell_at[0], cell_at[1]], cell - 1.0);
+                    if inside(mouse, [cell_at[0], cell_at[1], cell, cell]) {
+                        *hovered = Some(block.to_owned());
+                    }
+                }
+            }
+            height = height.max(11.0 + (row_index + 1) as f32 * cell);
+        }
+        x += layer_width + 10.0;
+    }
+    height + 4.0
+}
+
+fn current_image(page: &serde_json::Value, time: i64) -> Option<(String, [f32; 2])> {
+    let images = page.get("imageData")?.as_array()?;
+    if images.is_empty() {
+        return None;
+    }
+    let image = &images[((time / IMAGE_TICKS) as usize) % images.len()];
+    let path = image.get("path")?.as_str()?.to_owned();
+    let size = image.get("size")?.as_array()?;
+    Some((path, [size.first()?.as_f64()? as f32, size.get(1)?.as_f64()? as f32]))
+}
+
+/// Uploads the shown page's image (once per change) into Horizon's mod image
+/// slot; drawing reads it back with `native_sprite`.
+pub fn frame(game: &mut crate::game::Game<'_>) {
+    if game.native_mod_screen() != Some("theurgy") {
+        return;
+    }
+    let time = game.world.game_time;
+    let wanted = BOOK_UI.lock().ok().and_then(|guard| {
+        let ui = guard.as_ref()?;
+        let entry = ui.data.entries.get(ui.entry?)?;
+        let page = entry.get("pages")?.as_array()?.get(ui.page)?;
+        current_image(page, time)
+    });
+    let Some((path, size)) = wanted else { return; };
+    let Ok(mut uploaded) = UPLOADED_IMAGE.lock() else { return; };
+    if uploaded.as_ref().is_some_and(|(current, _)| *current == path) {
+        return;
+    }
+    let Some(bytes) = game.native_data(&path) else { return; };
+    if bytes.len() < 8 {
+        return;
+    }
+    let width = u32::from_le_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]);
+    let height = u32::from_le_bytes([bytes[4], bytes[5], bytes[6], bytes[7]]);
+    if game.native_mod_image(width, height, &bytes[8..]) {
+        *uploaded = Some((path, size));
+    }
+}
+
+fn draw_page(
+    game: &crate::game::Game<'_>,
+    batch: &mut HudBatch,
+    data: &BookData,
+    page: &serde_json::Value,
+    rect: [f32; 4],
+    mouse: [f32; 2],
+) {
+    let time = game.world.game_time;
+    let left = rect[0] + 12.0;
+    let width = rect[2] - 24.0;
+    let bottom = rect[1] + rect[3] - 26.0;
+    let mut y = rect[1] + 62.0;
+    let mut hovered = None;
+    let kind = page.get("type").and_then(serde_json::Value::as_str).unwrap_or("");
+    // BookSpotlightPageRenderer: the item large and centred above the text.
+    if let Some(item) = page.get("item").and_then(|item| item.as_str().or_else(|| item.get("id").and_then(serde_json::Value::as_str))) {
+        let at = [rect[0] + rect[2] / 2.0 - 16.0, y];
+        game.native_fill(batch, [at[0] - 2.0, at[1] - 2.0, 36.0, 36.0], 0xFF34483A);
+        game.native_item(batch, item, at, 32.0);
+        if inside(mouse, [at[0], at[1], 32.0, 32.0]) {
+            hovered = Some(item.to_owned());
+        }
+        y += 38.0;
+    }
+    if let Some(recipes) = page.get("recipes").and_then(serde_json::Value::as_array) {
+        for recipe in recipes {
+            y += draw_recipe(game, batch, recipe, [left, y], width, time, mouse, &mut hovered) + 4.0;
+        }
+    }
+    if let Some(multiblock) = page.get("multiblock") {
+        y += draw_multiblock(game, batch, multiblock, [left, y], width, mouse, &mut hovered);
+    }
+    if let Some((path, [w, h])) = current_image(page, time) {
+        let uploaded = UPLOADED_IMAGE.lock().ok().and_then(|slot| slot.clone());
+        if uploaded.as_ref().is_some_and(|(current, _)| *current == path) {
+            let max_h = (bottom - y - 30.0).clamp(40.0, 110.0);
+            let scale = (max_h / h).min(width / w);
+            let (dw, dh) = (w * scale, h * scale);
+            game.native_fill(batch, [rect[0] + rect[2] / 2.0 - dw / 2.0 - 1.0, y - 1.0, dw + 2.0, dh + 2.0], 0xFF0E1511);
+            game.native_sprite(batch, MOD_IMAGE_SPRITE, [0.0, 0.0, w, h],
+                [rect[0] + rect[2] / 2.0 - dw / 2.0, y, dw, dh]);
+            y += dh + 5.0;
+        }
+    }
+    let body = value_text(data, page, "text");
+    let lines = (((bottom - y) / 10.0).floor().max(1.0)) as usize;
+    let end = draw_lines(game, batch, body, [left, y], width, lines, 0xE3E9DF);
+    if body.is_empty() && kind == "modonomicon:text" {
+        game.native_text(batch, kind, [left, end], 0xA9C9B0, false);
+    }
+    if let Some(item) = hovered {
+        let text_width = game.native_text_width(&item);
+        let at = [(mouse[0] + 8.0).min(rect[0] + rect[2] - text_width - 6.0), mouse[1] - 12.0];
+        game.native_fill(batch, [at[0] - 3.0, at[1] - 2.0, text_width + 6.0, 12.0], 0xF0100010);
+        game.native_text(batch, &item, at, 0xFFFFFF, false);
+    }
 }
 
 pub fn mouse_pressed(
@@ -411,7 +669,9 @@ pub fn item_decorations(
         game.native_item(batch, &format!("theurgy:jar_label_frame_{tier}_icon"), [x, y], 16.0);
     }
     game.native_item(batch, "theurgy:jar_label_icon", [x, y], 16.0);
-    if let Some(source) = source {
+    if let Some(source) = source
+        && crate::game::theurgy_config::get().render_sulfur_source_item
+    {
         game.native_item(batch, &source, [x + 5.0, y + 7.0], 6.0);
     }
 }
@@ -479,6 +739,10 @@ pub fn hud(
     batch: &mut HudBatch,
     corners: &mut horizon_client::extras_hud::Corners,
 ) {
+    let settings = crate::game::theurgy_config::get();
+    if !settings.enable_item_hud {
+        return;
+    }
     let mut lines = Vec::new();
     if let Some(stack) = game.native_carried_stack(game.selected as i32).cloned()
         && stack.item.as_ref() == "theurgy:mercurial_wand"
@@ -496,7 +760,8 @@ pub fn hud(
         lines.push(mode_name.to_owned());
         lines.push(format!("Frequency: {frequency}"));
     }
-    if let Some(hit) = game.native_raycast(6.0)
+    if settings.enable_in_world_hud
+        && let Some(hit) = game.native_raycast(6.0)
         && hit.block.starts_with("theurgy:")
     {
         lines.push(hit.block.clone());
@@ -528,11 +793,13 @@ pub fn hud(
     if lines.is_empty() {
         return;
     }
-    let height = 7.0 + lines.len() as f32 * 10.0;
-    let (x, y) = corners.place(horizon_client::extras::Corner::TopLeft, 196.0, height);
-    game.native_fill(batch, [x, y, 196.0, height], 0x7800_0000);
+    let scale = settings.hud_scale.clamp(0.25, 3.0);
+    let height = (7.0 + lines.len() as f32 * 10.0) * scale;
+    let width = 196.0 * scale;
+    let (x, y) = corners.place(horizon_client::extras::Corner::TopLeft, width, height);
+    game.native_fill(batch, [x, y, width, height], 0x7800_0000);
     for (index, line) in lines.iter().enumerate() {
-        game.native_text(batch, line, [x + 4.0, y + 4.0 + index as f32 * 10.0], if index == 0 { 0xE7D59A } else { 0xFFFFFF }, false);
+        game.native_text(batch, line, [x + 4.0 * scale, y + 4.0 * scale + index as f32 * 10.0 * scale], if index == 0 { 0xE7D59A } else { 0xFFFFFF }, false);
     }
 }
 

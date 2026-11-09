@@ -38,6 +38,12 @@ fn consume_fuel(game: &crate::game::Game<'_>, entity: &mut ModBlockEntity) -> bo
     true
 }
 
+fn decrement_lit_time(current: i32) -> i32 {
+    // PyromanticBrazierBlockEntity.tickServer decrements only positive values.
+    // With no fuel a malformed/legacy negative Java short remains untouched.
+    if current > 0 { current - 1 } else { current }
+}
+
 /// The pyromantic brazier's server tick: refuel from slot 0, decrement the
 /// remaining lit time, and mirror `lit` into the block state. It is the only
 /// heat provider in the ported apparatus; the crafting machines read it
@@ -46,11 +52,9 @@ pub fn tick(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut ModBlo
     if entity.id != BRAZIER {
         return;
     }
-    let mut remaining = host::int(&entity.nbt, "remainingLitTime", 0).max(0);
+    let mut remaining = host::int(&entity.nbt, "remainingLitTime", 0);
     let was_lit = remaining > 0;
-    if was_lit {
-        remaining -= 1;
-    }
+    remaining = decrement_lit_time(remaining);
     let has_fuel = entity.items.first().and_then(Option::as_ref).is_some();
     let mut turned_on = false;
     if remaining <= 0 && has_fuel {
@@ -82,9 +86,8 @@ pub fn tick(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut ModBlo
 /// - its own heat receiver was filled by a caloric flux emitter and has not
 ///   expired (`getIsHotUntil() > level.getGameTime`).
 ///
-/// Java re-checks every 20 game ticks and caches; the cache is an
-/// optimisation, not different state, so the port reads the source of truth
-/// on every call. That also avoids a stale cache after a save/reload.
+/// Like Java, re-checks only when `gameTime % 20 == 0` and otherwise returns
+/// the cached value (`data[6]`), so LIT lags heat by up to 20 ticks.
 pub fn heated(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut ModBlockEntity) -> bool {
     let now = game.world.game_time;
     if entity.data.len() < 7 {
@@ -130,6 +133,14 @@ pub fn mirror_lit(game: &mut crate::game::Game<'_>, pos: [i32; 3], state: &Craft
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn negative_java_short_is_preserved_without_fuel() {
+        assert_eq!(decrement_lit_time(-123), -123);
+        assert_eq!(decrement_lit_time(0), 0);
+        assert_eq!(decrement_lit_time(1), 0);
+        assert_eq!(decrement_lit_time(32_767), 32_766);
+    }
+
     #[test]
     fn hot_until_is_six_seconds_ahead() {
         assert_eq!(HEAT_TARGET_TICKS, 120);

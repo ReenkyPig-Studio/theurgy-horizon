@@ -389,11 +389,8 @@ fn store_energy_child(nbt: &mut Compound, key: &str, energy: i32) {
 }
 
 fn store_energy_child_or_discard(nbt: &mut Compound, key: &str, energy: i32) {
-    if energy == 0 {
-        nbt.remove(&JavaString::from(key));
-    } else {
-        store_energy_child(nbt, key, energy);
-    }
+    // SimpleMercuryFluxHandler.serialize always writes energy, including zero.
+    store_energy_child(nbt, key, energy.max(0));
 }
 
 fn stack_present(stack: &ItemStack) -> bool {
@@ -427,7 +424,7 @@ fn find_catalysation_recipe(
 ) -> Option<(Arc<str>, i32, i32)> {
     let recipes = game.native_recipes_of_type("theurgy:catalysation");
     for recipe in recipes {
-        let Some(ingredient) = game.native_recipe_ingredient(&recipe.json) else {
+        let Some(ingredient) = recipe.json.get("ingredient").and_then(|value| game.native_recipe_ingredient(value)) else {
             continue;
         };
         if ingredient.test(stack) {
@@ -478,7 +475,7 @@ fn tick_catalyst(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut M
     // Non-receiving: only internal generation can fill this buffer.
     let mut buffer = SimpleMercuryFluxHandler::with_energy(
         CATALYST_CAPACITY,
-        0,
+        CATALYST_CAPACITY,
         CATALYST_CAPACITY,
         stored_energy.clamp(0, CATALYST_CAPACITY),
     );
@@ -659,6 +656,7 @@ fn save_side_modes(nbt: &mut Compound, modes: &[(Direction, SideMode); 6]) {
 }
 
 fn tick_capacitor(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut ModBlockEntity) {
+    sync_enabled_from_redstone(game, pos);
     let energy = tank_energy(&entity.nbt, "mercuryFluxHandler").clamp(0, CAPACITOR_CAPACITY);
     store_energy_child_or_discard(&mut entity.nbt, "mercuryFluxHandler", energy);
     let modes = load_side_modes(&entity.nbt);

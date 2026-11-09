@@ -16,6 +16,12 @@ name = "theurgy_host"
 source = "host.rs"
 
 [[module]]
+id = "config"
+file = "crates/horizon-client/src/game.rs"
+name = "theurgy_config"
+source = "config.rs"
+
+[[module]]
 id = "registry"
 file = "crates/horizon-client/src/game.rs"
 name = "theurgy_registry"

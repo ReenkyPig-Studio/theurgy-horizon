@@ -7,6 +7,7 @@
 // then an input. Horizon opens no screen for these blocks.
 
 use horizon_client::items::ItemStack;
+use horizon_client::text::Text;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Interaction {
@@ -88,7 +89,7 @@ fn recipe_kind(block: &str) -> Option<&'static str> {
 
 /// `MonitoredItemStackHandler.isValid` for direct insertion. This also keeps a
 /// block item being placed from disappearing into the clicked machine first.
-fn accepts_input(game: &mut crate::game::Game<'_>, block: &str, stack: &ItemStack) -> bool {
+pub(crate) fn accepts_input(game: &crate::game::Game<'_>, block: &str, stack: &ItemStack) -> bool {
     let tag = match block {
         "theurgy:incubator_mercury_vessel" => Some("theurgy:alchemical_mercuries"),
         "theurgy:incubator_salt_vessel" => Some("theurgy:alchemical_salts"),
@@ -137,12 +138,20 @@ fn entity_pos(game: &crate::game::Game<'_>, pos: [i32; 3]) -> ([i32; 3], String,
     (entity_pos, block, kind)
 }
 
+fn vat_message(game: &mut crate::game::Game<'_>, block: &str, suffix: &str) {
+    let kind = if block == "theurgy:fermentation_vat" { "fermentation_vat" } else { "digestion_vat" };
+    let player = game.native_acting_id();
+    game.native_action_bar(player, Text::translate(
+        &format!("theurgy.behaviour.interaction.{kind}.{suffix}"), &[]));
+}
+
 /// Handles an apparatus click before Horizon's generic chest/barrel template.
 /// Returns without claiming a click for which Java returns `PASS`.
 pub fn right_click(
     game: &mut crate::game::Game<'_>,
     held: Option<&ItemStack>,
     pos: [i32; 3],
+    face: [i32; 3],
     canceled: &mut bool,
 ) {
     if *canceled || interaction(&game.native_block(pos)).is_none() {
@@ -151,8 +160,63 @@ pub fn right_click(
     let (entity_pos, block, kind) = entity_pos(game, pos);
     let slot_count = slots(kind);
 
-    if let Some(held) = held.filter(|stack| stack.count > 0) {
+    if kind == Interaction::DynamicOutput {
+        let is_open = game.native_block_property(pos, "open").as_deref() != Some("false");
+        let sneaking = game.has_shift_down() || game.keys.contains(&winit::keyboard::KeyCode::ShiftLeft);
+        let empty_hand = held.filter(|stack| stack.count > 0 && stack.item.as_ref() != "minecraft:air").is_none();
+        if !sneaking || !empty_hand {
+            if !is_open {
+                vat_message(game, &block, "closed");
+                *canceled = true;
+                return;
+            }
+            // Java returns PASS for ordinary interactions with an open vat:
+            // continue into DynamicOneOutputSlotItemHandlerBehaviour below.
+        } else {
+            if is_open {
+                if crate::game::theurgy_machines::vat_can_craft(game, entity_pos) {
+                    game.native_set_block_property_with(entity_pos, "open", "false", 2);
+                } else {
+                    vat_message(game, &block, "no_recipe");
+                }
+            } else {
+                game.native_set_block_property_with(entity_pos, "open", "true", 2);
+                if game.native_with_mod_block_entity(entity_pos, |entity| {
+                    let mut state = crate::game::theurgy_host::crafting(entity);
+                    let _ = state.stop();
+                    crate::game::theurgy_host::save_crafting(entity, &state);
+                }).is_some() {
+                    game.native_block_entity_sync(entity_pos);
+                }
+            }
+            // Both a rejected close and a successful toggle consume the click.
+            *canceled = true;
+            return;
+        }
+    }
+
+    if let Some(held) = held.filter(|stack| stack.count > 0 && stack.item.as_ref() != "minecraft:air") {
         if kind == Interaction::OneOutput || !accepts_input(game, &block, held) {
+            // A rejected block item still follows vanilla placement semantics:
+            // the click is not swallowed by the machine's item handler. The
+            // real Horizon command path does not run a second vanilla placement
+            // pass after this hook, so perform that same atomic placement here.
+            if kind != Interaction::OneOutput
+                && let Some(state) = game.res.items().get(&held.item).and_then(|info| info.block)
+            {
+                let target = [pos[0] + face[0], pos[1] + face[1], pos[2] + face[2]];
+                let target_state = game.world.block(target[0], target[1], target[2]);
+                let replaceable = game.with_level(|level, _, _| level.is_replaceable(target_state));
+                if replaceable {
+                    let dimension = game.dim.id();
+                    if game.native_set_block(dimension, target, state, 3) {
+                        if let Some(carried) = game.native_carried_stack(game.selected as i32) {
+                            carried.count = carried.count.saturating_sub(1);
+                        }
+                        *canceled = true;
+                    }
+                }
+            }
             return;
         }
         let candidates: &[usize] = match kind {

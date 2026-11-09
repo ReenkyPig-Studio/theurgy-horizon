@@ -13,6 +13,19 @@ const ACCUMULATOR: &str = "theurgy:sal_ammoniac_accumulator";
 const TANK: &str = "theurgy:sal_ammoniac_tank";
 const WATER_CAPACITY: i32 = 10_000;
 const TANK_CAPACITY: i32 = 2_000;
+/// AccumulationRecipe.DEFAULT_TIME.
+const DEFAULT_ACCUMULATION_TIME: i32 = 100;
+
+/// Item type (id + components, not count) of the solute slot, for
+/// MonitoredItemStackHandler.onContentTypeChanged.
+fn item_type_hash(stack: Option<&ItemStack>) -> i32 {
+    let Some(stack) = stack else { return 0 };
+    let mut hash = 0x811c_9dc5u32;
+    for byte in format!("{:?}|{:?}|{:?}", stack.item, stack.damage, stack.extra).bytes() {
+        hash = (hash ^ u32::from(byte)).wrapping_mul(0x0100_0193);
+    }
+    (hash | 1) as i32
+}
 
 fn key(pos: [i32; 3]) -> (i32, i32, i32) {
     (pos[0], pos[1], pos[2])
@@ -157,41 +170,47 @@ pub fn tick(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut ModBlo
         entity.data.extend([tank.amount, tank.capacity]);
         return;
     }
-    if entity.id != ACCUMULATOR || game.native_block([pos[0], pos[1] - 1, pos[2]]) != TANK {
+    if entity.id != ACCUMULATOR {
         return;
     }
     let mut water = read_tank(entity, 0, WATER_CAPACITY);
     let mut state = host::crafting(entity);
     let recipes = recipes(game);
-    let mut selected: Option<Accumulation> = None;
+    // RecipeCachedCheck.getRecipeFor + AccumulationRecipe.matches: the first
+    // matching recipe; output capacity is canCraft's concern, not matching.
+    let mut matched: Option<Accumulation> = None;
     for recipe in &recipes {
-        if let Some(solute) = &recipe.solute {
-            let Some(stack) = entity.items.first().and_then(Option::as_ref) else { continue };
-            if !solute_matches(game, solute, stack) {
-                continue;
-            }
-        } else if entity.items.first().is_some_and(Option::is_some) {
-            continue;
-        }
-        if let Some((wanted, amount)) = &recipe.evaporant
-            && (!fluid_matches(wanted, water.fluid.as_deref()) || water.amount < *amount)
-        {
-            continue;
-        }
-        let Some(output) = output_tank(game, pos) else { continue };
-        if fits(&output, &recipe.result.0, recipe.result.1) {
-            selected = Some(recipe.clone());
+        let stack = entity.items.first().and_then(Option::as_ref);
+        let solute_ok = match (&recipe.solute, stack) {
+            (Some(solute), Some(stack)) => solute_matches(game, solute, stack),
+            (None, None) => true,
+            _ => false,
+        };
+        let evaporant_ok = recipe.evaporant.as_ref()
+            .is_none_or(|(wanted, amount)| fluid_matches(wanted, water.fluid.as_deref()) && water.amount >= *amount);
+        if solute_ok && evaporant_ok {
+            matched = Some(recipe.clone());
             break;
         }
     }
-    let time = selected.as_ref().map_or(0, |r| r.time);
-    if state.total_time != time {
-        state.input_changed(time);
+    // CraftingBehaviour.getTotalTime: recipe time or AccumulationRecipe.DEFAULT_TIME.
+    let next_time = matched.as_ref().map_or(DEFAULT_ACCUMULATION_TIME, |r| r.time);
+    // Inventory.onContentTypeChanged -> CraftingBehaviour.onInputItemChanged:
+    // fires on item-type changes even without an output tank below.
+    let item_type = item_type_hash(entity.items.first().and_then(Option::as_ref));
+    if entity.data.get(7) == Some(&1) && entity.data.get(6) != Some(&item_type) {
+        state.input_changed(next_time);
     }
-    let has_input = water.amount > 0 || entity.items.first().is_some_and(Option::is_some);
-    let effects = state.tick(true, has_input, selected.is_some(), time);
-    if effects.craft_attempt {
-        if let Some(recipe) = selected {
+    // SalAmmoniacAccumulatorBlockEntity.tickServer: no output tank, no tick.
+    let has_tank = game.native_block([pos[0], pos[1] - 1, pos[2]]) == TANK;
+    if has_tank {
+        let can_craft = matched.as_ref().is_some_and(|recipe|
+            output_tank(game, pos).is_some_and(|output| fits(&output, &recipe.result.0, recipe.result.1)));
+        let has_input = water.amount > 0 || entity.items.first().is_some_and(Option::is_some);
+        let effects = state.tick(true, has_input, can_craft, next_time);
+        if effects.craft_attempt
+            && let Some(recipe) = matched
+        {
             // Output capacity was checked this tick, but the commit is atomic:
             // fill first, then consume only when the tank accepted it.
             if fill_below(game, pos, &recipe.result.0, recipe.result.1) {
@@ -213,11 +232,15 @@ pub fn tick(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut ModBlo
             }
         }
     }
-    write_tank(entity, 0, &water);
+    let item_type = item_type_hash(entity.items.first().and_then(Option::as_ref));
+    // Without a tank nothing ticked; leave the stored fluids untouched.
+    if has_tank {
+        write_tank(entity, 0, &water);
+    }
     host::save_crafting(entity, &state);
     entity.data.clear();
     entity.data.extend([state.progress, state.total_time, water.amount, water.capacity,
-        i32::from(state.is_processing), i32::from(state.could_craft_last_tick)]);
+        i32::from(state.is_processing), i32::from(state.could_craft_last_tick), item_type, 1]);
 }
 
 #[cfg(test)]

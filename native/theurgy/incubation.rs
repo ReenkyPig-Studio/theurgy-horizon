@@ -235,6 +235,12 @@ fn tick_incubator(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut 
     let is_heated = is_heated(game, pos, entity);
 
     if !has_input {
+        // `succeedWhen` reads the completed output together with the
+        // completion-time processing flag. Keep that flag while the result is
+        // pending; an input-less machine with no result still stops normally.
+        if entity.items.first().is_some() {
+            return;
+        }
         if state.stop() > 0 {
             save_state(entity, &state);
             game.native_block_entity_sync(pos);
