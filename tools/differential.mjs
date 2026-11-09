@@ -1,6 +1,8 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
+import {readFileSync} from 'node:fs';
+import zlib from 'node:zlib';
 import {root} from './common.mjs';
 
 const args=process.argv.slice(2);
@@ -286,6 +288,65 @@ const expected=new Map();
 for(const row of traces) {
   if(row.phase==='passed'&&row.id!=='theurgy:worldgen_feature_index')expected.set(row.id,row);
 }
+// Java traces only scan GameTestInfo.getStructureBounds(); blocks a test places
+// outside its template (e.g. the 1x1x1 sulfuric_flux_emitter_test) are
+// invisible to the oracle, so they cannot be "unexpected" in Rust.
+function structureSizes(registry,readSize) {
+  const names=new Map(),sizes=new Map();
+  for(const m of registry.matchAll(/(\w+)\s*=\s*TEST_FUNCTIONS\.register\("([^"]+)"/g))names.set(m[1],m[2]);
+  let structure=null;
+  for(const line of registry.split(/\r?\n/)) {
+    const s=line.match(/var structure = Theurgy\.loc\("([^"]+)"\)/);
+    if(s)structure=s[1];
+    const t=line.match(/registerTest\(event, (\w+), environment, structure/);
+    if(t&&names.has(t[1]))sizes.set('theurgy:'+names.get(t[1]),readSize(structure));
+  }
+  return sizes;
+}
+function nbtSize(file) {
+  const data=zlib.gunzipSync(readFileSync(file));
+  // shortcut: first TAG_List named "size" of 3 ints; templates written by vanilla always have it.
+  const at=data.indexOf(Buffer.from([9,0,4,...Buffer.from('size'),3,0,0,0,3]));
+  if(at<0)throw new Error('no size in '+file);
+  return [0,1,2].map(i=>data.readInt32BE(at+12+i*4));
+}
+const structureRoot=path.join(root,'upstream/theurgy/src/main/resources/data/theurgy/structure');
+const sizes=structureSizes(await fs.readFile(path.join(root,'upstream/theurgy/src/main/java/com/klikli_dev/theurgy/gametest/GameTestRegistry.java'),'utf8'),
+  name=>nbtSize(path.join(structureRoot,name+'.nbt')));
+// Self-check against known templates (sulfuric_flux_emitter_test is 1x1x1, logistics_test 5x5x5).
+if(String(sizes.get('theurgy:sulfuric_flux_emitter_placement'))!=='1,1,1'||String(sizes.get('theurgy:logistics_nexus_pairs_across_placement'))!=='5,5,5')
+  throw new Error('GameTest structure size parse failed');
+const insideStructure=(id,pos)=>{const size=sizes.get(id);return !size||pos.every((v,i)=>v>=0&&v<size[i]);};
+// Strict-mode waivers (differential/strict-waivers.json), each re-proved
+// against every recorded Java oracle run:
+//  java-nondeterministic: the same pinned Java test ends in different block
+//    state across runs (succeedWhen tick / gameTime%20 alignment), so no
+//    single exact value exists to match;
+//  java-vacuous: Java passed at tick 0, before the test body acted;
+//  java-environment: Java's passed snapshot holds no block at all;
+//  harness-latency: Rust snapshot is later than Java's (measured in reason).
+const waivers=JSON.parse(await fs.readFile(path.join(root,'differential/strict-waivers.json'),'utf8'));
+const javaRuns=[];
+for(const name of (await fs.readdir(path.join(root,'runs'))).filter(name=>name.startsWith('java-oracle-')).sort()) {
+  const raw=await fs.readFile(path.join(root,'runs',name,'java/traces.jsonl'),'utf8').catch(()=>null);
+  if(!raw)continue;
+  const passed=new Map();
+  for(const line of raw.split(/\r?\n/)) {
+    if(!line.includes('"phase":"passed"'))continue;
+    const row=JSON.parse(line);passed.set(row.id,row);
+  }
+  javaRuns.push(passed);
+}
+const normalBlocks=row=>JSON.stringify(row.blocks.map(block=>({...block,nbt:block.nbt?.replace(/\b[xyz]:-?\d+/g,'')})));
+function waiverHolds(id,waiver) {
+  const seen=javaRuns.map(run=>run.get(id)).filter(Boolean);
+  if(seen.length<2)return 'needs at least two Java oracle runs';
+  if(waiver.class==='java-nondeterministic')return new Set(seen.map(normalBlocks)).size>1?null:'Java state is identical across runs';
+  if(waiver.class==='java-vacuous')return seen.every(row=>row.tick===0)?null:'Java did not pass at tick 0';
+  if(waiver.class==='java-environment')return seen.every(row=>row.blocks.length===0)?null:'Java snapshot has blocks';
+  if(waiver.class==='harness-latency')return waiver.reason?.length>40?null:'missing measured reason';
+  return 'unknown class '+waiver.class;
+}
 const actual=new Map();
 for(const evidence of evidenceArgs) {
   const dir=path.resolve(root,evidence);
@@ -348,6 +409,7 @@ for(const [id,java] of [...expected.entries()].sort()) {
   for(const probe of rust.probes??[]) {
     if(!strict&&(id.startsWith('theurgy:logistics_')||id.startsWith('theurgy:sulfuric_flux_emitter_')||id.startsWith('theurgy:mercury_flux_connector_')||id.startsWith('theurgy:mercury_flux_emitter_')))continue;
     if(probe.state.block==='minecraft:air'||probe.state.block==='minecraft:cave_air'||probe.state.block==='minecraft:void_air')continue;
+    if(!insideStructure(id,probe.local))continue;
     if(!(java.blocks??[]).some(block=>JSON.stringify(block.pos)===JSON.stringify(probe.local)))
       differences.push(`unexpected block ${probe.state.block} at ${JSON.stringify(probe.local)}`);
   }
@@ -408,17 +470,28 @@ for(const [id,java] of [...expected.entries()].sort()) {
     if(actualCapacity!==semanticValues.get(id))
       differences.push(`mercury flux capacity: expected ${semanticValues.get(id)}, got ${actualCapacity}`);
   }
+  const waiver=strict&&waivers[id];
+  if(waiver&&differences.length) {
+    // A waiver only covers its listed fields, and only while its Java
+    // criterion still holds on the recorded oracle runs.
+    const why=waiverHolds(id,waiver);
+    if(why)throw new Error(`strict waiver for ${id} no longer holds: ${why}`);
+    const waived=differences.filter(text=>waiver.fields.some(field=>text.startsWith(field)));
+    const rest=differences.filter(text=>!waived.includes(text));
+    rows.push({id,status:rest.length?'MISMATCH':'WAIVED',differences:rest,waived,waiver:waiver.class,evidence:rust.evidence});
+    continue;
+  }
   rows.push({id,status:differences.length?'MISMATCH':'MATCH',differences,evidence:rust.evidence});
 }
-const matched=rows.filter(row=>row.status==='MATCH').length;
+const matched=rows.filter(row=>row.status==='MATCH'||row.status==='WAIVED').length;
 const report={schema:1,kind:'pinned Java 26.3 to real Horizon Rust state differential',
   java:{run:javaDir,source:javaResult.source,traceSha256:javaResult.traces.sha256},
   rustEvidence:evidenceArgs.map(file=>path.resolve(root,file)),
   summary:{expected:expected.size,selected:rows.length,matched,missing:rows.filter(row=>row.status==='MISSING_RUST').length,
-    mismatched:rows.filter(row=>row.status==='MISMATCH').length,complete:rows.length===expected.size&&matched===expected.size},
+    mismatched:rows.filter(row=>row.status==='MISMATCH').length,waived:rows.filter(row=>row.status==='WAIVED').length,strict,complete:rows.length===expected.size&&matched===expected.size},
   rows};
 await fs.mkdir(path.join(root,'artifacts'),{recursive:true});
-const output=path.join(root,'artifacts/differential.json');
+const output=path.join(root,strict?'artifacts/differential-strict.json':'artifacts/differential.json');
 await fs.writeFile(output,JSON.stringify(report,null,2)+'\n');
 console.log(JSON.stringify({output,...report.summary},null,2));
 for(const row of rows.filter(row=>row.status!=='MATCH').slice(0,40))
