@@ -334,8 +334,24 @@ const hermeticaReport=await enrichHermetica({dest,entries:hermeticaEntries,tagIt
 console.log(JSON.stringify({hermetica:hermeticaReport}));
 if(hermeticaReport.missingRecipes.length||hermeticaReport.missingMultiblocks.length||hermeticaReport.missingImages.length)
  throw new Error('Hermetica references unresolved content: '+JSON.stringify(hermeticaReport));
+const hermeticaLang=await readJson(path.join(dest,'assets/theurgy/lang/en_us.json'));
+// Modonomicon shows an empty-label link as the item's hover name / the
+// entry's title; resolve them here (vanilla names from the pinned 26.3 lang).
+const vanillaLang=await readJson(path.join(prepared,'assets/minecraft/lang/en_us.json'));
+const linkName=(kind,target)=>{
+ const [ns,id]=target.split(':');
+ if(kind==='item')return hermeticaLang[`item.${ns}.${id}`]??hermeticaLang[`block.${ns}.${id}`]??vanillaLang[`item.${ns}.${id}`]??vanillaLang[`block.${ns}.${id}`];
+ const entry=hermeticaEntries.find(e=>e.id===ns+':'+id.split('/').slice(1).join('/'));
+ return entry&&hermeticaLang[entry.name];
+};
+for(const [key,value] of Object.entries(hermeticaLang))
+ if(typeof value==='string')hermeticaLang[key]=value.replace(/\[\]\((item|entry):\/\/([^)]+)\)/g,(link,kind,target)=>{
+  const name=linkName(kind,target);
+  if(!name)throw new Error('Hermetica link without a name: '+link);
+  return `[${name}](${kind}://${target})`;
+ });
 const hermetica={book:await readJson(path.join(hermeticaRoot,'book.json')),categories:hermeticaCategories,
- entries:hermeticaEntries,translations:await readJson(path.join(dest,'assets/theurgy/lang/en_us.json'))};
+ entries:hermeticaEntries,translations:hermeticaLang};
 await fs.writeFile(path.join(dest,'data/theurgy/hermetica.json'),JSON.stringify(hermetica)+'\n');
 console.log(JSON.stringify({blocks:blocks.length,items:items.length,blockEntities:be.size,
  hermeticaCategories:hermeticaCategories.length,hermeticaEntries:hermeticaEntries.length,
