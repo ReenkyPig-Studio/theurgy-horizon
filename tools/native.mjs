@@ -77,6 +77,11 @@ if(cmd==='plan') {
     // real no-window/no-GPU loop at runtime.
     if(headless)args.push('--no-default-features');
     await run(path.join(config.rust,'bin/cargo.exe'),args);
+    // The launcher writes this beside a game it built with native mods;
+    // Horizon only reserves the mod image atlas slot (native_mod_image,
+    // Hermetica pictures) when it lists a mod (mods.rs built_with_native_mods).
+    if(base==='build')await fs.writeFile(path.join(target,'fast/native-mods.json'),
+      JSON.stringify({mods:[{id:'theurgy',version:'1.120.1'}]})+'\n');
   }
   console.log('Isolated stage:',stage);
 }

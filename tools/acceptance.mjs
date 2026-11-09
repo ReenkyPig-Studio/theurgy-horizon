@@ -129,6 +129,8 @@ try {
   const differentialArgs=['tools/differential.mjs'];
   for(const evidence of differentialEvidence)differentialArgs.push('--evidence',evidence);
   await command('differential-report',differentialArgs);
+  // Exact fields too; every waiver is re-proved against the Java oracle runs.
+  await command('differential-strict',[...differentialArgs,'--strict']);
   await command('package',['tools/package.mjs']);
   if(process.env.THEURGY_ACCEPTANCE_CLEAN_CACHES==='1') {
     await fs.rm(path.join(root,'target/horizon-headless-cargo'),{recursive:true,force:true});

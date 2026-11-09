@@ -21,7 +21,7 @@ const specs={
  'right_click_block','use_item','use_on','destroyed',
  'acting_position','play_tuning_fork','overlay','held_distance','scan_rod',
  'uuid_from_random','uuid_text','apply_block_item_components','inventory_tick',
- 'replace_held','fluid_use_on','state_for_placement','use_duration',
+ 'replace_held','fluid_use_on','state_for_placement','update_shape','can_survive','use_duration',
  'component_string_with_defaults',
  'translated_source_block','translated_source_tag','prepare_item_craft',
  'release_using','finish_using','tooltip',
