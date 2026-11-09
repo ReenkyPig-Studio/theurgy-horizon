@@ -154,6 +154,33 @@ export async function runCustom(call, assert) {
   assert.equal(countAt(await step('unselected source untouched', ['container', ...S(unselected)]), 0), 1,
     'a nearby unselected pedestal must never join the array');
 
+  // ---- canSurvive: attachments break with their support (Java updateShape /
+  // neighborChanged). Connector: any non-air support; emitter: sturdy face.
+  const blockAt = async pos => (await call(['block', ...S(pos)])).block;
+  await step('support lab clear', ['fill', '96', '79', '56', '104', '84', '64', 'minecraft:air']);
+  await step('support lab floor', ['fill', '96', '78', '56', '104', '78', '64', 'minecraft:stone']);
+  await step('support lab approach', ['tp', '100', '80', '56']);
+  for (const [label, id, facing] of [
+    ['connector', 'theurgy:logistics_fluid_inserter', 'west'],
+    ['emitter', 'theurgy:caloric_flux_emitter', 'west'],
+  ]) {
+    const pos = [100, 80, 60], support = [101, 80, 60];
+    await place(label + ' support', support, 'minecraft:stone');
+    await place(label + ' attached', pos, id, `[facing=${facing}]`);
+    // A bottom slab is not air but its west face is not sturdy.
+    await step(label + ' weaken support', ['setblock', ...S(support), 'minecraft:oak_slab']);
+    await call(['wait', '4']);
+    if (label === 'connector') {
+      assert.equal(await blockAt(pos), id, 'connector must stay on a non-air (even non-sturdy) support');
+      await step(label + ' remove support', ['setblock', ...S(support), 'minecraft:air']);
+    }
+    await call(['wait', '4']);
+    assert.equal(await blockAt(pos), 'minecraft:air', label + ' must break once its support no longer holds it');
+    const drops = await step(label + ' drop', ['entities']);
+    assert.ok(JSON.stringify(drops).includes(id), label + ' must drop itself: ' + JSON.stringify(drops).slice(0, 400));
+    await step(label + ' cleanup', ['command', 'kill', '@e[type=item]']);
+  }
+
   return observations;
 }
 
