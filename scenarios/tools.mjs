@@ -1,7 +1,8 @@
 // Real headless wire/endpoint behavior: store a WireEndPoint, connect two
 // logistics nodes, consume exactly one wire, and never write to non-endpoints.
 const WIRE = 'theurgy:copper_wire';
-const NODE = 'theurgy:logistics_connector_node';
+// facing=up: the node sits on the stone floor (Java canSurvive needs a non-air block behind it).
+const NODE = 'theurgy:logistics_connector_node[facing=up]';
 
 function held(inv) {
   const stack = inv?.held;
