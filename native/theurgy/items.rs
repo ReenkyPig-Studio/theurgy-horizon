@@ -1434,6 +1434,73 @@ pub fn destroyed(
     game.native_set_block(dimension, other, air, 3);
 }
 
+/// Java `canSurvive` of directional attachments. Logistics connectors/node/
+/// probe/proxy (`LogisticsItemConnectorBlock.canSurvive` and siblings) need
+/// any non-air block behind them; the three flux emitters
+/// (`CaloricFluxEmitterBlock.canSurvive`) need a sturdy face.
+/// `facing` is the block's FACING, `support_air`/`support_sturdy` describe the
+/// block at `pos.relative(facing.opposite())`.
+fn attachment_survives(block: &str, support_air: bool, support_sturdy: bool) -> Option<bool> {
+    if WIRE_ENDPOINTS.contains(&block) {
+        Some(!support_air)
+    } else if matches!(block, "theurgy:caloric_flux_emitter" | "theurgy:mercury_flux_emitter" | "theurgy:sulfuric_flux_emitter") {
+        Some(support_sturdy)
+    } else {
+        None
+    }
+}
+
+fn is_air_name(name: &str) -> bool {
+    matches!(name, "minecraft:air" | "minecraft:cave_air" | "minecraft:void_air")
+}
+
+/// `updateShape` (connectors) / `neighborChanged`+`destroyBlock` (emitters):
+/// when the support behind the block changes and no longer holds it, the
+/// block becomes air and drops, as Java.
+pub fn update_shape(
+    level: &crate::game::GameLevel<'_>,
+    state: horizon_world::registry::BlockStateId,
+    direction: horizon_core::geometry::Direction,
+    neighbour: horizon_world::registry::BlockStateId,
+    new: &mut Option<horizon_world::registry::BlockStateId>,
+) {
+    let Some(descriptor) = level.registry.state(state) else { return; };
+    if descriptor.properties.get("facing").map(String::as_str) != Some(facing_name(direction.opposite())) {
+        return;
+    }
+    let support_air = level.registry.state(neighbour).is_none_or(|other| is_air_name(&other.name));
+    let support_sturdy = level.behaviours.is_face_sturdy(neighbour, direction.opposite());
+    if attachment_survives(&descriptor.name, support_air, support_sturdy) == Some(false) {
+        *new = level.registry.default_state("minecraft:air");
+    }
+}
+
+/// `canSurvive` as asked by `BlockItem.canPlace`: refuse a spot without support.
+pub fn can_survive(
+    level: &crate::game::GameLevel<'_>,
+    pos: horizon_core::position::BlockPos,
+    state: horizon_world::registry::BlockStateId,
+    survives: &mut Option<bool>,
+) {
+    let Some(descriptor) = level.registry.state(state) else { return; };
+    let Some(facing) = descriptor.properties.get("facing") else { return; };
+    let Some(direction) = [
+        horizon_core::geometry::Direction::Down,
+        horizon_core::geometry::Direction::Up,
+        horizon_core::geometry::Direction::North,
+        horizon_core::geometry::Direction::South,
+        horizon_core::geometry::Direction::West,
+        horizon_core::geometry::Direction::East,
+    ].into_iter().find(|d| facing_name(*d) == facing) else { return; };
+    let [dx, dy, dz] = direction.opposite().normal();
+    let support = level.block_state(pos.offset(dx, dy, dz));
+    let support_air = level.registry.state(support).is_none_or(|other| is_air_name(&other.name));
+    let support_sturdy = level.behaviours.is_face_sturdy(support, direction);
+    if let Some(answer) = attachment_survives(&descriptor.name, support_air, support_sturdy) {
+        *survives = Some(answer);
+    }
+}
+
 /// `playerWillDestroy`: return true when this is the lower half of a double
 /// block broken in creative, where Java suppresses the duplicate drop. The
 /// caller decides how to suppress it; this function never cancels the break.
@@ -1462,6 +1529,19 @@ pub fn is_theurgy_item(item: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn attachments_follow_java_can_survive() {
+        // Connectors: any non-air support, even a non-sturdy one.
+        assert_eq!(attachment_survives("theurgy:logistics_fluid_inserter", true, false), Some(false));
+        assert_eq!(attachment_survives("theurgy:logistics_fluid_inserter", false, false), Some(true));
+        assert_eq!(attachment_survives("theurgy:logistics_mercury_flux_connector", true, true), Some(false));
+        // Emitters: sturdy face only.
+        assert_eq!(attachment_survives("theurgy:caloric_flux_emitter", false, false), Some(false));
+        assert_eq!(attachment_survives("theurgy:sulfuric_flux_emitter", false, true), Some(true));
+        assert_eq!(attachment_survives("theurgy:calcination_oven", true, false), None);
+        assert!(is_air_name("minecraft:cave_air") && !is_air_name("minecraft:stone"));
+    }
 
     #[test]
     fn double_high_set_matches_the_apparatus() {
