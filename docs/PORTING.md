@@ -61,7 +61,7 @@ Ctrl+C/SIGTERM сохраняет interrupted checkpoint. Изменение sch
    Локальный Horizon tools/neoforge_oracle.py рассчитан на 1.21.1 / NeoForge 21.1.259:
    его нельзя без адаптации выдать за oracle для текущего Java 26.3.
 4. node tools/native.mjs plan|stage|check|build — настоящий horizon-mixins + Cargo.
-   Создаёт target/horizon-stage, исходники launcher не меняет. Отдельный инкрементальный target/horizon-cargo.
+   Создаёт отдельный target/horizon-stages/<pid>, исходники launcher не меняет. Отдельный инкрементальный target/horizon-cargo.
    Сначала проверять core; тяжёлую игру пересобирать только после интеграции glue.
 5. npm run game — настоящий vanilla Horizon, isolated world/socket/save; не проверяет Theurgy.
 6. npm run game:theurgy — нативный executable после build; проверяет наличие блока theurgy:distiller.
@@ -74,6 +74,27 @@ Ctrl+C/SIGTERM сохраняет interrupted checkpoint. Изменение sch
 
 ## Дополнительная приёмочная проверка
 
+Полный последовательный прогон (без candidate proposals, с общим native lock):
+
+```powershell
+npm run acceptance
+```
+
+Он сохраняет `runs/acceptance-<timestamp>/result.json` и завершается FAIL при
+любом обязательном сбое или неполной differential matrix. Внутри одного прогона
+свежие headless/GUI binaries собираются один раз и переиспользуются только для
+этой же проверки; внешний `THEURGY_CACHE_BINARY` не подставляется. `--skip-java` и
+`--skip-gui` предназначены только для диагностики и выдают `ACCEPTANCE_PARTIAL`,
+а не финальный PASS. Для worldgen нужен свежий ненулевой Java trace:
+
+```powershell
+$env:THEURGY_WORLDGEN_ORACLE="runs/java-oracle-2026-11-07T21-43-52.670Z/java/worldgen.json"
+$env:THEURGY_WORLD_SEED="0"
+node tools/agent-harness.mjs custom:worldgen
+```
+
+Отдельные команды для отладки:
+
 ```powershell
 node tools/java-oracle.mjs --trace
 node tools/differential.mjs --all
@@ -82,6 +103,7 @@ node tools/agent-harness.mjs custom:filter-ui
 node tools/agent-harness.mjs custom:recipes
 node tools/agent-harness.mjs custom:render
 node tools/package.mjs
+node tools/package-smoke.mjs       # native + content именно из распакованного .hmod, isolated world
 ```
 
 `tools/differential.mjs` читает реальные Java traces и только `diff:`-probes из изолированных Horizon миров. `--allow-partial` предназначен исключительно для разработки и не является приёмочным критерием. `tools/multiplayer.mjs` создаёт отдельные LAN host/guest homes и не использует реальные сохранения игрока.
@@ -105,10 +127,9 @@ node tools/proposal.mjs runs/<run>/checkpoint.json crafting --approve-reviewed-c
 - Внешние GeckoLib/Modonomicon/JEI API не существуют автоматически в Horizon. Нужна замена/явный gap.
 
 ## Текущая граница
-Интегрированы native block entities, контейнеры/танки, рецепты и основные аппараты;
-есть реальные headless PASS всех аппаратов, distiller persistence/break и bounded chaos.
-Это уже не bootstrap-only, но полный parity ещё не объявляется: mercurial wand, rod attunement/scanning
-и persisted wire item graph имеют real-game PASS, фильтры сохраняют/возвращают компонентный stack,
-однако filter GUI, mod-fluid/flux/proxy graph,
-остальные item behaviours, GUI/renderer и Java
-differential traces требуют отдельных проверок. См. актуальный раздел VALIDATION.md.
+Интегрированы native block entities, контейнеры/танки, рецепты, все основные аппараты,
+предметы, логистика, worldgen и клиентские native replacements. Последний Java/Horizon
+контрольный срез содержит 152/152 MATCH и точный worldgen 17/17; GUI имеет отдельные
+реальные screenshots для renderer, книги, фильтров, wand/HUD и localized tooltips.
+Это ещё не финальное заявление об установке: полный fresh acceptance, LAN/package-smoke
+и обновление evidence выполняются только на binaries, собранных из текущего дерева.

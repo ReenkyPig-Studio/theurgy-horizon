@@ -1,5 +1,99 @@
 # Проверки
 
+## Финальный принятый порт (2026-11-09)
+- Единый прогон `runs/acceptance-2026-11-09T11-37-36.767Z/result.json` завершился
+  **ACCEPTANCE_PASS**: 68/68 шагов с exit code 0, включая `npm test`, `npm run fast`,
+  native plan/check/build, 24 headless-режима, Java `--trace`, GUI, LAN, differential,
+  packaging и установку распакованного пакета.
+- Java baseline: `runs/java-oracle-2026-11-09T12-20-59.621Z/result.json`,
+  **JAVA_STATE_ORACLE_PASS**, 153 traced tests; SHA256 traces
+  `b8b256f6f9f4260bd470675b67099decc43101887a233980b3baf628fa362005`.
+  `artifacts/differential.json`: **152/152 MATCH, 0 MISSING_RUST, 0 MISMATCH, complete=true**.
+- `docs/FEATURES.md` и `artifacts/feature-status.json`: **135/135 VERIFIED**, без
+  PORTED-UNVERIFIED/PARTIAL/UNPORTED. Связи проверяются `tools/feature-evidence.mjs`;
+  отсутствующий run/log/ID не даёт статуса VERIFIED.
+- Все 24 headless-режима успешны: основные аппараты, chaos, interactions, item/flux/logistics,
+  survival tools/divination, filters/content rules, incubation, real persistence/reload,
+  reformation, fluids, wire graph, advanced logistics, все list/attribute rules и vat
+  interactions. Run ID каждого режима сохранены в `artifacts/gui-evidence.json`.
+- Worldgen `runs/game-1794227872201`: 44 observations, 17/17 ore positions против
+  изолированной Java fixture, обе ore forms, persistence и запрет regeneration старых чанков.
+- GUI визуально проверен после прогона: renderer `runs/game-1794228087282` (87 observations)
+  показывает модели и reformation trails; particles/wires/fit/HUD `runs/game-1794228220578`;
+  wand wheel/modes `runs/game-1794228183851`; localized tooltip `runs/game-1794228260776`;
+  Hermetica, recipe catalog, filters и derivative HUD также успешны.
+- LAN `runs/multiplayer-1794228295294`: **THEURGY_MULTIPLAYER_PASS**, 17 observations,
+  authoritative guest edits, invalid-rule rejection и operator boundary.
+- Пакет `artifacts/theurgy-26.3-1.120.1-rust-horizon.hmod`: 3524 entries, 5 326 944 bytes,
+  SHA256 `853ec9661d42f797f99580ba20c78026dec208a1f1e5f49f3df6bc8d7eee687d`.
+  Два последовательных `tools/package.mjs --no-build` дали идентичный архив.
+- `artifacts/package-smoke.json`: **PACKAGE_SMOKE_PASS**. Пакет распакован, Rust native source
+  из него прошёл check/build и запустил `custom:filters` в `.local/package-smoke/game`;
+  evidence `runs/game-1794229001292`, log `runs/package-smoke-2026-11-09T12-46-20.870Z`.
+- Публикация в registry остаётся отдельным ограничением Horizon (`native` registry support),
+  но локальный установленный пакет и чистый запуск подтверждены. Финальный пункт `todo.md`
+  отмечен только после этих результатов.
+
+Разделы ниже — история промежуточных прогонов. Они не заменяют и не отменяют этот финальный
+acceptance; старые «ещё не проверено» относятся только к своим датированным checkpoints.
+
+## Исторический контрольный срез (2026-11-08, полная differential матрица)
+- Последний полный Java/NeoForge oracle: `runs/java-oracle-2026-11-07T21-43-52.670Z/result.json`,
+  `JAVA_STATE_ORACLE_PASS`, 153 traced tests (152 обязательных поведения + auxiliary worldgen).
+  `LegacyRandomSource(1).nextInt(16) = 11,1,6` подтверждён отдельным Java probe.
+- `artifacts/differential.json`: **152/152 MATCH, 0 MISSING_RUST, 0 MISMATCH**.
+  Отчёт содержит пути ко всем свежим isolated-game evidence и SHA Java traces. Подтверждены
+  calcination, liquefaction, distiller, vats, brazier, flux/capacitor/catalyst/emitters,
+  incubator, logistics/nexus/proxy/probe, reformation/pedestals, placements и все три
+  sulfur-attuned divination recipes. Это состояние матрицы на указанных evidence, а не
+  автоматическое доказательство чистой финальной установки.
+- Worldgen: `runs/game-1794119650821`, 44 observations; все **17/17** рудных позиций
+  совпали с isolated Java fixture `runs/java-oracle-2026-11-07T21-43-52.670Z/java/worldgen.json`.
+  Совпали seed, chunk RNG, origins, replacement targets и обе ore forms. Natural ore persistence
+  и запрет повторной генерации старых чанков также пройдены.
+- Divination crafting: `runs/game-1794119934894`, три recipe probes, **3/3 MATCH**.
+  Авторитетные per-sulfur shaped recipes сохраняют `divination_linked_block/tag`, включая
+  `minecraft:dirt` и `c:ores/copper`; локальный client callback больше не требуется.
+- Runtime config override: `runs/game-1794119599463`, 10 observations; isolated
+  `scenarios/client-features-config.json` отображает sal ammoniac ore в `minecraft:stone`.
+  Conditioned content rules: `runs/game-1794119606372`, 16 observations.
+- Изолированный LAN host/guest: `runs/multiplayer-1794119236742`,
+  `THEURGY_MULTIPLAYER_PASS`, 17 observations. Проверены authoritative filter edits,
+  отклонение invalid rule и operator-permission boundary.
+- Остались fresh GUI/regression/package acceptance и финальная clean native сборка после
+  удаления исследовательского attunement-hook. Пункт «Мод на 100% перенесён на раст»
+  по-прежнему не отмечен.
+
+## Последний чистый кандидат (2026-11-08)
+- Свежая GUI-сборка без диагностических `TOOLTIP_*` маркеров: `runs/game-1794131810522`,
+  `custom:tooltips`, 16 observations. Survival inventory screenshot действительно показывает
+  `Glass Divination Rod` и `The divination rod is attuned to Sal Ammoniac Ore`; hover начинается
+  с пустой области, чтобы не поднимать stack в курсор. Чтение linked component использует
+  authoritative stack NBT, а block id локализуется через `block.<namespace>.<path>`.
+- `npm test`: 37/37; `npm run fast`: PASS; `npm run test:modules`: 40/40. В
+  `tools/module-tests.mjs` исправлен поиск Windows link-search paths при использовании
+  `target/native-agent-cache`; это tooling fix, не ослабление assertions.
+- Content: 480 accepted / 788 conditionally disabled recipes, 108 attunement recipes,
+  32 blocks, 393 items, 29 block entities, 389 NeoForge tag files, Hermetica 3/96/392.
+- Два подряд `tools/package.mjs --no-build` дали одинаковый архив: 3524 entries,
+  SHA256 `39275a3e1f883fbb80c0021e807045ae14968deb7b1968a972ef6ce8854cadaf`.
+  Это package checkpoint до завершения полного acceptance и clean-package smoke.
+- Wand GUI `runs/game-1794131750933` (45 observations): настоящий wheel input,
+  server-authoritative direction/enabled/frequency/capacitor side modes. `custom:client-features`
+  `runs/game-1794131761286` (37 observations) дополнительно подтверждает видимые particles,
+  wires, fit outlines, HUD и source display.
+- Divination timed use: linked rod больше не заявляет click до `start_mod_use`, поэтому
+  `native_living_entity_use_item_finish` действительно вызывается. Изолированный nearest-ore
+  fixture `runs/game-1794130123158` (23 observations) нашёл `[40,88,40]` с 2D bucket 0;
+  естественные руды в fixture airspace очищены, ожидаемая Java nearest-result семантика не изменена.
+- Incubator completion regression: `runs/game-1794138818034` подтверждает output вместе с
+  `isProcessing=1`; после исправления `artifacts/differential.json` снова 152/152 MATCH.
+  `tools/acceptance.mjs` теперь вызывает Java oracle с `--trace`, поэтому fresh state baseline
+  обязателен и не подменяется 148 smoke tests.
+- Renderer re-review: исправлены texel-координаты, повторное деление размеров кубов и
+  fallback для `draw.light == 0`; `runs/game-1794130299084` (65 observations) содержит
+  реальные цветные GeckoLib/native screenshots. Старые невалидные screenshots не используются
+  как evidence. Полный acceptance и clean-package smoke ещё обязательны.
 ## Актуальный native/headless прогон (Horizon 2944480)
 - Native source/executable/content используют один pin `294448014fba585f8d5d09dd8886f482493b6417`.
 - `node tools/native.mjs build-headless`: реальный fast build с `--no-default-features`, без запуска GUI.
@@ -202,7 +296,7 @@
 
 Остальные группы ещё проходят проверку. Эти записи не означают завершение `todo.md` целиком и не отмечают последний пункт.
 
-## Не проверено / не сделано
+## Историческая начальная неготовность (снята поздними прогонами)
 - Полная компиляция horizon-client с glue и игровой bootstrap: не завершена этим сетапом.
 - Весь рой 32 ролей: конфигурация готова, в smoke запускалась пара, не все 32.
 - Candidate code не был принят, скомпилирован или исполнен.
