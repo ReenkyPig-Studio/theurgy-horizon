@@ -1,0 +1,77 @@
+{
+  "summary": [
+    {
+      "subsystem": "1 registries (REG)",
+      "rows": 13,
+      "verified": 13,
+      "portedUnverified": 0
+    },
+    {
+      "subsystem": "2 common crafting (CB)",
+      "rows": 14,
+      "verified": 14,
+      "portedUnverified": 0
+    },
+    {
+      "subsystem": "3 machines (HEA/MA)",
+      "rows": 29,
+      "verified": 29,
+      "portedUnverified": 0
+    },
+    {
+      "subsystem": "4 sal ammoniac (SAL)",
+      "rows": 6,
+      "verified": 6,
+      "portedUnverified": 0
+    },
+    {
+      "subsystem": "5 flux (FLU)",
+      "rows": 11,
+      "verified": 11,
+      "portedUnverified": 0
+    },
+    {
+      "subsystem": "6 incubator (INC)",
+      "rows": 7,
+      "verified": 7,
+      "portedUnverified": 0
+    },
+    {
+      "subsystem": "7 reformation (REF)",
+      "rows": 9,
+      "verified": 9,
+      "portedUnverified": 0
+    },
+    {
+      "subsystem": "8 logistics (LOG)",
+      "rows": 16,
+      "verified": 16,
+      "portedUnverified": 0
+    },
+    {
+      "subsystem": "9 items (ITM)",
+      "rows": 10,
+      "verified": 10,
+      "portedUnverified": 0
+    },
+    {
+      "subsystem": "10 recipes/gen (REC/GEN)",
+      "rows": 9,
+      "verified": 9,
+      "portedUnverified": 0
+    },
+    {
+      "subsystem": "11 config/network/integration/client",
+      "rows": 11,
+      "verified": 11,
+      "portedUnverified": 0
+    }
+  ],
+  "total": {
+    "rows": 135,
+    "verified": 135,
+    "portedUnverified": 0
+  },
+  "unverified": [],
+  "evidenceFailures": []
+}
