@@ -82,8 +82,11 @@ for(let index=0;index<lines.length;index++) {
     else {tests.push('offline '+step);runs.push(log);}
   }
   const complete=missing.length===0&&tests.length>0;
-  const status=complete?'VERIFIED':'PORTED-UNVERIFIED';
-  if(!complete)evidenceFailures.push({id,missing});
+  // JEI/EMI, Jade, KubeJS/AlmostUnified/Occultism do not exist in Horizon
+  // (todo.md review 2026-11-09): the native replacements are extras, not parity.
+  const outOfScope=/^INT-0[123]$/.test(id);
+  const status=outOfScope?'OUT_OF_SCOPE':complete?'VERIFIED':'PORTED-UNVERIFIED';
+  if(!complete&&!outOfScope)evidenceFailures.push({id,missing});
   statuses.set(id,status);
   cells[3]=' '+status+' ';
   cells[5]=' `'+rustOwner(id,cells[5].trim())+'` ';
@@ -128,7 +131,7 @@ const table=[
   '|---|---|---|---|---|---|---|',
   ...summary.map(row=>`| ${row.subsystem} | ${row.rows} | ${row.verified} | ${row.portedUnverified} | 0 | 0 | 0 |`),
   '',
-  `Total: **${total.rows} checklist rows**. VERIFIED = ${total.verified}, PORTED-UNVERIFIED = ${total.portedUnverified}, PARTIAL = 0, UNPORTED = 0, N/A-CLIENT = 0.`,
+  `Total: **${total.rows} checklist rows**. VERIFIED = ${total.verified}, PORTED-UNVERIFIED = ${total.portedUnverified}, PARTIAL = 0, UNPORTED = 0, N/A-CLIENT = 0, OUT_OF_SCOPE = ${[...statuses.values()].filter(s=>s==='OUT_OF_SCOPE').length} (third-party mod integrations absent from Horizon).`,
   'The 152-behaviour matrix is `artifacts/differential.json`; isolated-game runs are indexed by `artifacts/gui-evidence.json`; offline steps by `artifacts/offline-evidence.json`.',
   '',
   '## 14. Definition of done for one row',
@@ -146,5 +149,5 @@ lines=lines.filter(line=>{
 });
 await fs.writeFile(documentPath,lines.join('\n'));
 await fs.writeFile(path.join(root,'artifacts/feature-status.json'),JSON.stringify({summary,total,
-  unverified:[...statuses].filter(([,status])=>status!=='VERIFIED').map(([id])=>id),evidenceFailures},null,2)+'\n');
+  unverified:[...statuses].filter(([,status])=>status!=='VERIFIED'&&status!=='OUT_OF_SCOPE').map(([id])=>id),evidenceFailures},null,2)+'\n');
 console.log(JSON.stringify({total,evidenceFailures},null,2));
