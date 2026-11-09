@@ -11,15 +11,9 @@
 //   4. mid-progress work is conserved: a machine that is destroyed or that
 //      loses its heat neither duplicates nor vaporises its stock.
 //
-// HONEST LIMITATION (never faked here): `tools/game.mjs` only wires the real
-// `quit` + relaunch on the SAME world (`reload()`) into the *machine* and
-// *chaos-machines* runners. The generic custom-mode dispatcher (which runs this
-// module) exposes nothing but `call`, so `horizon-ctl quit` from here would
-// end the run without a relaunch and `launch` is not ours to call (the mode
-// owner controls world/home/socket). We therefore do NOT simulate a reload.
-// Mid-progress persistence is exercised indirectly through the commands that
-// are available (NBT read/merge on the live block entity, plus `save`), and the
-// limitation is recorded in the returned results.
+// The generic dispatcher supports the real `reload` command on the SAME
+// isolated home/world/socket. The final section below uses it to prove both
+// mid-progress crafting and the Java signed-short brazier field.
 //
 // The NBT-level round-trip of the exact same boundary is additionally covered
 // by the pure Rust unit tests in `native/theurgy/host.rs`
@@ -189,6 +183,12 @@ export async function runCustom(call, assert) {
   //    forward, and runtime-only flags must not be treated as saved work.
   // =========================================================================
   {
+    // A previous run intentionally installs a heater here for the reload
+    // probe. The cold fixture must remove it and the old block entity first.
+    await call(['setblock', '4', '79', '4', 'minecraft:air']);
+    await call(['setblock', '4', '81', '4', 'minecraft:air']);
+    await call(['setblock', ...s(POS.oven), 'minecraft:air']);
+    await settle();
     await call(['setblock', ...s(POS.oven), 'theurgy:calcination_oven']);
     await settle();
     const placed = await call(['block', ...s(POS.oven)]);
@@ -308,19 +308,62 @@ export async function runCustom(call, assert) {
   }
 
   // =========================================================================
-  // 4. Honest limitation record. A real save/reload is NOT performed here.
+  // 4. Real same-world save/reload: signed Java short + mid-progress craft.
   // =========================================================================
-  ok(
-    'reload limitation documented',
-    'custom modes only receive `call`; quit+relaunch on the same world is owned by ' +
-      'tools/game.mjs machine/chaos runners. No reload was simulated. The NBT ' +
-      'round-trip boundary is covered by host.rs unit tests.'
-  );
+  {
+    const shortBrazier = P(12, 80, 4);
+    await call(['setblock', ...s(shortBrazier), 'minecraft:air']);
+    await call(['setblock', ...s(shortBrazier), 'theurgy:pyromantic_brazier']);
+    await settle();
+    await call(mergeNbt(shortBrazier, '{remainingLitTime:-123}'));
+
+    // Reset the old cold oven, then run a real recipe far enough to have
+    // nonzero progress before the reload. No fixture progress is invented.
+    await call(['setblock', ...s(POS.oven), 'minecraft:air']);
+    await call(['setblock', ...s(POS.oven), 'theurgy:calcination_oven']);
+    await call(['setblock', '4', '79', '4', 'minecraft:air']);
+    await call(['setblock', '4', '79', '4', 'theurgy:pyromantic_brazier']);
+    await call(['container', '4', '79', '4', 'minecraft:coal', '4']);
+    await call(['container', ...s(POS.oven), 'minecraft:armadillo_scute', '1']);
+    await settle(30);
+    const beforeNbt = nbtText(await call(getNbt(POS.oven)));
+    const beforeProgress = nbtInt(beforeNbt, 'progress');
+    check('real recipe has nonzero progress before reload', beforeProgress !== null && beforeProgress > 0,
+      'progress=' + beforeProgress);
+    check('negative brazier short survives live ticks', nbtInt(nbtText(await call(getNbt(shortBrazier))), 'remainingLitTime') === -123);
+
+    const capacitor = P(14, 80, 4);
+    await call(['setblock', ...s(capacitor), 'minecraft:air']);
+    await call(['setblock', ...s(capacitor), 'theurgy:mercury_capacitor']);
+    await call(mergeNbt(capacitor, '{mercuryFluxHandler:{energy:640},sideModes:{NORTH:3}}'));
+    await settle(2);
+
+    await call(['save']);
+    await call(['reload']);
+    await settle(4);
+    const shortAfter = nbtInt(nbtText(await call(getNbt(shortBrazier))), 'remainingLitTime');
+    check('negative Java short survives save/reload exactly', shortAfter === -123,
+      'remainingLitTime=' + shortAfter);
+    const afterNbt = nbtText(await call(getNbt(POS.oven)));
+    const afterProgress = nbtInt(afterNbt, 'progress');
+    const afterTotal = nbtInt(afterNbt, 'totalTime');
+    check('mid-progress work survives save/reload', afterProgress !== null && afterProgress > 0,
+      'before=' + beforeProgress + ' after=' + afterProgress);
+    check('recipe totalTime survives save/reload', afterTotal === 100,
+      'totalTime=' + afterTotal);
+    check('reloaded crafting values stay non-negative', afterProgress >= 0 && afterTotal >= 0);
+    const capacitorAfter = nbtText(await call(getNbt(capacitor)));
+    check('capacitor flux survives save/reload', nbtInt(capacitorAfter, 'energy') === 640,
+      capacitorAfter.slice(0, 240));
+    check('capacitor side mode survives save/reload', nbtInt(capacitorAfter, 'NORTH') === 3,
+      capacitorAfter.slice(0, 240));
+    ok('real same-world reload completed', 'crafting progress and remainingLitTime were read back after relaunch');
+  }
 
   return results;
 }
 
-// Offline self-check: shape, determinism, lab containment, honest limitation.
+// Offline self-check: shape, determinism, lab containment and reload assertions.
 // `node tools/agent-harness.mjs persistence` runs the live game; this helper is
 // for future offline tests and never claims a reload happened.
 export function selfTest() {

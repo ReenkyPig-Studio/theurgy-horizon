@@ -269,8 +269,13 @@ export function reformationPlan() {
   setSlot('source A holds one source item', P.sourceA, RECIPE.source, RECIPE.sources[0]);
   setSlot('source B holds one source item', P.sourceB, RECIPE.source, RECIPE.sources[1]);
   setFlux('flux is set above the recipe cost', RECIPE.flux + 7);
+  cmd('target carries all Java components', ['data', 'merge', 'block', ...S(P.target),
+    `{Items:[{Slot:0b,id:"${RECIPE.target}",count:1,components:{"minecraft:custom_name":"ReformationMarker"}}]}`], P.target);
   cmd('craft window', ['wait', String(CRAFT_WINDOW)]);
   expectPedestal('success crafts exactly once', P.result, RECIPE.result, RECIPE.resultCount);
+  data('result preserves target components', P.result, (r, assert) => {
+    assert.ok(JSON.stringify(r).includes('ReformationMarker'), 'ReformationRecipe.assemble must copy target components');
+  });
   expectFlux('success consumed the exact flux', 7);
   expectPedestal('success consumed source A exactly', P.sourceA, null, 0);
   expectPedestal('success consumed source B exactly', P.sourceB, null, 0);

@@ -8,7 +8,7 @@ function count(r,id){return slots(r).reduce((n,v)=>{const x=v?.item&&typeof v.it
 function held(r){return String(r?.held?.components??'');}
 export async function runCustom(call,assert){
  const results=[];const step=async(name,args)=>{const r=await call(args);results.push({name,args,reply:r});if(['give','setblock','tp','container','command'].includes(args[0]))await call(['wait','2']);return r;};
- const place=(name,p,id,state='')=>step(name,['setblock',...s(p),id+state]);
+ const place=async(name,p,id,state='')=>{await step(name+' clear old fixture',['setblock',...s(p),'minecraft:air']);return step(name,['setblock',...s(p),id+state]);};
  const nexus=async(p,id)=>step('nexus '+p,['command','data','merge','block',...s(p),'{nexusId:"'+id+'"}']);
  const click=async(name,p,sneak=false)=>{
    if(sneak)await step('disable for filter change',['command','data','merge','block',...s(p),'{enabled:0}']);
@@ -21,6 +21,7 @@ export async function runCustom(call,assert){
    return r;
  };
  const filter=async(mode,item,respect=false)=>{
+   await step('clear returned filters',['command','clear','@s']);
    await step('new filter',['give',FILTER,'1']);
    const components='{"codedefinedgui:list_filter_contents":[{"slot":0,"item":{"id":"'+item+'","count":1}}],"codedefinedgui:list_filter_config":{"mode":"'+mode+'","respect_data_components":'+respect+'}}';
    await step('configure '+mode+' '+item,['command','item modify entity @s weapon.mainhand {"type":"minecraft:set_components","components":'+components+'}']);

@@ -20,7 +20,10 @@ export async function runInteractions(call,assert) {
     await step('clear lower '+p.join(','),['setblock',...s(p),'minecraft:air']);
     await step('clear upper '+p.join(','),['setblock',p[0],p[1]+1,p[2],'minecraft:air'].map(String));
     await tp([p[0]+0.5,p[1]+1,p[2]+2.5]);
-    return step('place distiller '+p.join(','),['place',...s(p),'--item','theurgy:distiller']);
+    const placed=await step('place distiller '+p.join(','),['place',...s(p),'--item','theurgy:distiller']);
+    await step('reset distiller contents '+p.join(','),['command','data','merge','block',...s(p),'{Items:[]}']);
+    await step('clear old dropped items '+p.join(','),['command','kill','@e[type=item]']);
+    return placed;
   };
   const put=async p=>step('seed '+p.join(','),['container',...s(p),'minecraft:bread','1']);
   const mine=async(p,upper)=>{

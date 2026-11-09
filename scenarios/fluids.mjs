@@ -115,13 +115,14 @@ export async function runCustom(call, assert) {
   await step('fluids lab chunks', ['wait', '40']);
 
   // -- 1. Salt recipe: water only, no solute --------------------------------
-  // ACC below TANK at (70,79,8). 1000 mB water -> 10 cycles * (100 mB water, 10 mB gas).
+  // ACC above TANK at (70,79,8). sal_ammoniac_from_water: 1000 mB water -> 100 mB gas.
+  // A fresh BE has totalTime 0, so CraftingBehaviour.tickServer (progress++
+  // then progress >= totalTime) crafts on the first tick after the merge;
+  // only the outcome is asserted, not a pre-tick snapshot.
   const acc1 = [70, 80, 8], tank1 = [70, 79, 8];
   await placePair(acc1, tank1);
-  await step('salt water', mergeFluid(acc1, 'minecraft:water', 1000));
-  const water1 = await readTank(acc1, 'accumulator water');
-  assert.equal(water1.fluid, 'minecraft:water', 'accumulator water tank must hold water');
-  assert.equal(water1.amount, 1000, 'accumulator water tank must hold the merged 1000 mB');
+  await step('salt water', mergeFluid(acc1, 'minecraft:water', 1000),
+    r => assert.match(JSON.stringify(r), /Modified block data/, 'water merge must apply'));
   await step('salt wait', ['wait', '320']);
   const outTank1 = await readTank(tank1, 'tank after salt');
   assert.equal(outTank1.fluid, SAL, 'salt recipe must produce theurgy:sal_ammoniac in the tank below');
@@ -242,7 +243,9 @@ export async function runCustom(call, assert) {
   const acc8 = [98, 80, 8], tank8 = [98, 79, 8];
   await placePair(acc8, tank8);
   await step('persist tank', mergeFluid(tank8, SAL, 740));
-  await step('persist water', mergeFluid(acc8, 'minecraft:water', 1000));
+  // 500 mB is below sal_ammoniac_from_water's 1000 mB evaporant, so no recipe
+  // matches and both tanks must come back exactly as written.
+  await step('persist water', mergeFluid(acc8, 'minecraft:water', 500));
   await step('persist save', ['save']);
   await step('persist relocation', ['tp', '0', '80', '0']);
   await step('persist unload', ['wait', '40']);
@@ -253,20 +256,15 @@ export async function runCustom(call, assert) {
   assert.equal(persistTank.amount, 740, 'tank amount must survive save/reload exactly');
   const persistWater = await readTank(acc8, 'persisted accumulator');
   assert.equal(persistWater.fluid, 'minecraft:water', 'accumulator water must survive save/reload');
-  assert.equal(persistWater.amount, 1000, 'accumulator water must survive save/reload exactly');
-  // Continue crafting on the reloaded state: it must resume, not restart from a
-  // corrupt tank.
-  await step('persist resume wait', ['wait', '320']);
+  assert.equal(persistWater.amount, 500, 'accumulator water must survive save/reload exactly');
+  // The reloaded accumulator must still craft: top up to the 1000 mB evaporant.
+  await step('persist top up', mergeFluid(acc8, 'minecraft:water', 1000));
+  await step('persist resume wait', ['wait', '20']);
   const resumed = await readTank(tank8, 'tank after resume');
-  assert.ok(resumed.amount > 740, 'a reloaded accumulator must keep producing, saw ' + resumed.amount + ' mB');
-  assert.ok(resumed.amount <= TANK_CAPACITY, 'resumed tank must stay within capacity, saw ' + resumed.amount + ' mB');
   assert.equal(resumed.fluid, SAL, 'resumed production must stay sal ammoniac');
+  assert.equal(resumed.amount, 840, 'one craft adds exactly 100 mB to the reloaded 740 mB');
   const resumedWater = await readTank(acc8, 'accumulator drained');
-  const produced = resumed.amount - 740;
-  const expectedWater = 1000 - produced * 10;
-  assert.ok(Math.abs(resumedWater.amount - Math.max(0, expectedWater)) <= 100,
-    'water consumption must track production at 100 mB water per 10 mB gas (produced ' + produced +
-    ', water ' + resumedWater.amount + ', expected ~' + expectedWater + ')');
+  assert.equal(resumedWater.amount, 0, 'the craft consumes the full 1000 mB evaporant');
   await clearPair(acc8, tank8);
 
   return results;

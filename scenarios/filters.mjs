@@ -11,6 +11,7 @@ export async function runCustom(call,assert){
   const step=async(name,args)=>{const reply=await call(args);results.push({name,args,reply});if(['give','setblock','tp','command'].includes(args[0]))await call(['wait','2']);return reply;};
   await step('filter lab',['tp','70','82','68']);
   await step('filter chunks',['wait','40']);
+  await step('clear test inventory',['command','clear','@s']);
   await step('connector',['setblock','70','80','70',CONNECTOR+'[facing=up]']);
   await step('give filter',['command','give @s '+FILTER+'[minecraft:custom_name="Marked Filter"] 1']);
   let inv=await step('filter initial',['inventory']);
