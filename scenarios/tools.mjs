@@ -30,6 +30,8 @@ export async function runCustom(call, assert) {
   await step('tools clear air', ['fill', '28', '80', '22', '32', '85', '36', 'minecraft:air']);
   await step('tools safe floor', ['fill', '28', '79', '22', '32', '79', '36', 'minecraft:stone']);
   await step('tools chunks', ['wait', '40']);
+  // In a fresh world the player falls before the floor exists; stand on it now.
+  await step('tools lab on floor', ['command', 'tp', '@s', '30', '80', '26']);
   await step('clear test inventory', ['command', 'clear', '@s']);
   await step('wire conservation in survival', ['command', 'gamemode', 'survival', '@s']);
   await step('node a', ['setblock', '30', '80', '28', NODE]);
