@@ -63,13 +63,13 @@
     {
       "subsystem": "11 config/network/integration/client",
       "rows": 11,
-      "verified": 11,
+      "verified": 8,
       "portedUnverified": 0
     }
   ],
   "total": {
     "rows": 135,
-    "verified": 135,
+    "verified": 132,
     "portedUnverified": 0
   },
   "unverified": [],
