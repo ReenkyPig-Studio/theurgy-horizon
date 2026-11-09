@@ -29,7 +29,7 @@ export async function runCustom(call,assert){
    assert.ok(JSON.stringify(serverStack).includes('codedefinedgui:list_filter_contents'),'actual list_filter_contents must be on authoritative held stack: '+JSON.stringify(serverStack));
  };
  await step('filter matching lab',['tp','12','82','8']);await step('chunks',['wait','40']);
- await place('source',SRC,'minecraft:chest');await place('extractor',EX,EXTRACTOR,'[facing=west]');await place('inserter',IN,INSERTER,'[facing=east]');await place('dest',DST,'minecraft:chest');await place('nexus',NEX,'theurgy:logistics_nexus');
+ await place('source',SRC,'minecraft:chest');await place('dest',DST,'minecraft:chest');await place('extractor',EX,EXTRACTOR,'[facing=west]');await place('inserter',IN,INSERTER,'[facing=east]');await place('nexus',NEX,'theurgy:logistics_nexus');
  for(const p of [EX,IN,NEX])await nexus(p,'matching-items');
  await filter('allow','minecraft:apple');await click('attach allow apple',EX);
  await step('seed apple',['container',...s(SRC),'minecraft:apple','1']);await step('seed cookie',['container',...s(SRC),'minecraft:cookie','1']);await step('allow wait',['wait','60']);
@@ -50,7 +50,7 @@ export async function runCustom(call,assert){
  assert.equal(count(await step('sink allowed cookie',['container',...s(DST)]),'minecraft:cookie'),2);
  assert.equal(count(await step('sink rejected apple',['container',...s(SRC)]),'minecraft:apple'),2,'inserter filter must independently reject');
  await click('remove sink filter',IN,true);
- await place('reset source',SRC,'minecraft:chest');await place('reset dest',DST,'minecraft:chest');
+ await step('reset source',['command','data','merge','block',...s(SRC),'{Items:[]}']);await step('reset dest',['command','data','merge','block',...s(DST),'{Items:[]}']);
  await step('plain apple fixture',['command','item replace block 12 80 10 container.0 with minecraft:apple 1']);
  await step('named apple fixture',['command','item replace block 12 80 10 container.1 with minecraft:apple[minecraft:custom_name="Special"] 1']);
  await filter('allow','minecraft:apple',true);
@@ -64,7 +64,7 @@ export async function runCustom(call,assert){
  assert.equal(count(await step('exact named moved',['container',...s(DST)]),'minecraft:apple'),1);
  assert.equal(count(await step('exact plain rejected',['container',...s(SRC)]),'minecraft:apple'),1,'respect_data_components distinguishes named apple');
  await click('remove exact filter',EX,true);
- await place('fluid source',TANK_SRC,'theurgy:sal_ammoniac_tank');await place('fluid extractor',FLUID_EX,'theurgy:logistics_fluid_extractor','[facing=west]');await place('fluid inserter',FLUID_IN,'theurgy:logistics_fluid_inserter','[facing=east]');await place('fluid dest',TANK_DST,'theurgy:sal_ammoniac_tank');await place('fluid nexus',FLUID_NEX,'theurgy:logistics_nexus');
+ await place('fluid source',TANK_SRC,'theurgy:sal_ammoniac_tank');await place('fluid dest',TANK_DST,'theurgy:sal_ammoniac_tank');await place('fluid extractor',FLUID_EX,'theurgy:logistics_fluid_extractor','[facing=west]');await place('fluid inserter',FLUID_IN,'theurgy:logistics_fluid_inserter','[facing=east]');await place('fluid nexus',FLUID_NEX,'theurgy:logistics_nexus');
  for(const p of [FLUID_EX,FLUID_IN,FLUID_NEX])await nexus(p,'matching-fluids');
  await filter('allow','minecraft:water_bucket');await click('attach water filter',FLUID_EX);
  await step('seed water',['command','data','merge','block',...s(TANK_SRC),'{fluids:[{Fluid:"minecraft:water",Amount:1000}]}']);await step('water wait',['wait','60']);
