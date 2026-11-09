@@ -20,7 +20,9 @@ export async function runCustom(call,assert){
  // Infinite world water source: extract, never remove the source block.
  const water=[12,80,60],ex=[11,80,60],input=[14,80,60],tank=[13,80,60];
  await place('world water',water,'minecraft:water');await place('world extractor',ex,'theurgy:logistics_fluid_extractor','[facing=west]');
- await place('world inserter',input,'theurgy:logistics_fluid_inserter','[facing=east]');await place('world tank',tank,'theurgy:sal_ammoniac_tank');
+ // Tank first: it is the inserter's support (Java canSurvive), and clearing the
+// spilled water there afterwards would break an already placed inserter.
+await place('world tank',tank,'theurgy:sal_ammoniac_tank');await place('world inserter',input,'theurgy:logistics_fluid_inserter','[facing=east]');
  for(const p of [ex,input])await nexus(p,'world-fluid');
  await step('world transfer',['wait','60']);
  assert.ok(amount(await data('world target',tank))>0,'world source fills tank');
@@ -49,7 +51,7 @@ export async function runCustom(call,assert){
  const chestA=[40,80,60],itemProbeA=[41,80,60],itemProxy=[43,80,60],chestB=[46,80,60],itemProbeB=[45,80,60],itemIn=[48,80,60],chestDst=[47,80,60];
  await place('item chest A',chestA,'minecraft:chest');await place('item probe A',itemProbeA,'theurgy:logistics_capability_probe','[facing=east]');
  await place('item proxy',itemProxy,'theurgy:logistics_capability_proxy');await place('item chest B',chestB,'minecraft:chest');
- await place('item probe B',itemProbeB,'theurgy:logistics_capability_probe','[facing=west]');await place('item inserter',itemIn,'theurgy:logistics_item_inserter','[facing=east]');await place('item destination',chestDst,'minecraft:chest');
+ await place('item probe B',itemProbeB,'theurgy:logistics_capability_probe','[facing=west]');await place('item destination',chestDst,'minecraft:chest');await place('item inserter',itemIn,'theurgy:logistics_item_inserter','[facing=east]');
  for(const p of [itemProbeA,itemProxy,itemProbeB,itemIn])await nexus(p,'proxy-items');
  await put('item source A bread',chestA,'minecraft:bread');await put('item source B apple',chestB,'minecraft:apple');
  await step('proxy item transfers',['wait','200']);
@@ -61,7 +63,7 @@ export async function runCustom(call,assert){
  // Source capacitor -> connector A -> connector B -> target capacitor.
  const sourceCap=[62,80,60],connectorA=[61,80,60],connectorB=[67,80,60],targetCap=[66,80,60];
  await place('source capacitor',sourceCap,'theurgy:mercury_capacitor');await place('flux connector A',connectorA,'theurgy:logistics_mercury_flux_connector','[facing=west]');
- await place('flux connector B',connectorB,'theurgy:logistics_mercury_flux_connector','[facing=east]');await place('target capacitor',targetCap,'theurgy:mercury_capacitor');
+ await place('target capacitor',targetCap,'theurgy:mercury_capacitor');await place('flux connector B',connectorB,'theurgy:logistics_mercury_flux_connector','[facing=east]');
  for(const p of [connectorA,connectorB])await nexus(p,'flux-net');
  await merge('charge source capacitor',sourceCap,'{mercuryFluxHandler:{energy:500},sideModes:{WEST:3}}');
  await step('flux connector transfer',['wait','300']);
