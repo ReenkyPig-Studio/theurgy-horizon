@@ -19,7 +19,8 @@ const steps=[];
 // step; --allow-dirty exists only for diagnostics and yields PARTIAL.
 const allowDirty=args.includes('--allow-dirty');
 const git=gitArgs=>execFileSync('git',gitArgs,{cwd:root,encoding:'utf8'}).trim();
-const dirtyFiles=()=>git(['status','--porcelain','--untracked-files=all']).split(/\r?\n/).filter(Boolean);
+// trimEnd only: porcelain's leading status column (" M path") is significant.
+const dirtyFiles=()=>execFileSync('git',['status','--porcelain','--untracked-files=all'],{cwd:root,encoding:'utf8'}).trimEnd().split(/\r?\n/).filter(Boolean);
 async function trackedTreeHash() {
   // SHA-256 over every tracked path and its current bytes (the working tree,
   // not only the index), so the result names exactly what was tested.
