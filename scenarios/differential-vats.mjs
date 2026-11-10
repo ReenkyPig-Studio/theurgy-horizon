@@ -9,16 +9,20 @@ async function breakAt(call, pos) {
   return broken;
 }
 async function extract(call, pos) {
-  await call(['command', 'clear', '@s']);
   await call(['tp', String(pos[0]), String(pos[1] + 2), String(pos[2] - 3)]);
   await call(['look-at', 'block', ...pos.map(String)]);
+  // Java extracts through the API with nothing in hand; in a fresh world the
+  // player may pick up seeds the cleared grass dropped, so empty hands last.
+  await call(['command', 'kill', '@e[type=item]']);
+  await call(['command', 'clear', '@s']);
   await call(['interact', ...pos.map(String)]);
   await wait(call, 2);
 }
 async function closeLid(call, pos) {
-  await call(['command', 'clear', '@s']);
   await call(['tp', String(pos[0]), String(pos[1] + 2), String(pos[2] - 3)]);
   await call(['look-at', 'block', ...pos.map(String)]);
+  await call(['command', 'kill', '@e[type=item]']);
+  await call(['command', 'clear', '@s']);
   await call(['key', 'shift', 'down']);
   await call(['interact', ...pos.map(String)]);
   await call(['key', 'shift', 'up']);
