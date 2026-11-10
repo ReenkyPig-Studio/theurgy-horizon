@@ -1,37 +1,40 @@
 {
   "status": "PACKAGE_SMOKE_PASS",
-  "package": "artifacts\\theurgy-26.3-1.120.1-rust-horizon.hmod",
-  "sha256": "12a0a0f87ef5cdeb597ab4a3f69dfd23a340d9d40da457626827da3bfdd0e5c6",
+  "package": "artifacts/theurgy-26.3-1.120.1-content.hmod + artifacts/theurgy-26.3-1.120.1-native.hnmod",
+  "sha256": {
+    "content": "b3a725630e4a38476bf6727cd981aae8297ad4258ada2e9c71898c03f333997f",
+    "native": "31e9460b69162238a85e78301fa2d2b5ca705ac5a783f9e22341cd200feb4663"
+  },
   "contentFiles": 3448,
   "nativeFiles": 92,
   "nativeRoot": ".local\\package-smoke\\native",
   "scenarios": [
     {
       "scenario": "all",
-      "evidence": "runs/game-1794311342343",
+      "evidence": "runs/game-1794319640984",
       "home": ".local/package-smoke/game-all"
     },
     {
       "scenario": "custom:filters",
-      "evidence": "runs/game-1794311476421",
+      "evidence": "runs/game-1794319773107",
       "home": ".local/package-smoke/game-custom-filters"
     },
     {
       "scenario": "flux",
-      "evidence": "runs/game-1794311512116",
+      "evidence": "runs/game-1794319808149",
       "home": ".local/package-smoke/game-flux"
     },
     {
       "scenario": "fluids",
-      "evidence": "runs/game-1794311554237",
+      "evidence": "runs/game-1794319847049",
       "home": ".local/package-smoke/game-fluids"
     },
     {
       "scenario": "persistence",
-      "evidence": "runs/game-1794311676199",
+      "evidence": "runs/game-1794319965831",
       "home": ".local/package-smoke/game-persistence"
     }
   ],
-  "evidence": "runs/game-1794311342343",
-  "log": "runs\\package-smoke-2026-11-10T11-40-40.651Z"
+  "evidence": "runs/game-1794319640984",
+  "log": "runs\\package-smoke-2026-11-10T13-58-10.007Z"
 }

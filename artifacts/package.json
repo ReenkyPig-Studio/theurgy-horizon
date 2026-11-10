@@ -1,10 +1,19 @@
 {
-  "schema": 1,
-  "file": "artifacts/theurgy-26.3-1.120.1-rust-horizon.hmod",
-  "sha256": "12a0a0f87ef5cdeb597ab4a3f69dfd23a340d9d40da457626827da3bfdd0e5c6",
-  "bytes": 6810222,
-  "entries": 3541,
-  "nativeFiles": 93,
+  "schema": 2,
+  "packages": {
+    "content": {
+      "file": "artifacts/theurgy-26.3-1.120.1-content.hmod",
+      "sha256": "b3a725630e4a38476bf6727cd981aae8297ad4258ada2e9c71898c03f333997f",
+      "bytes": 6619542,
+      "entries": 3448
+    },
+    "native": {
+      "file": "artifacts/theurgy-26.3-1.120.1-native.hnmod",
+      "sha256": "31e9460b69162238a85e78301fa2d2b5ca705ac5a783f9e22341cd200feb4663",
+      "bytes": 190702,
+      "entries": 93
+    }
+  },
   "nativeBytes": 995876,
   "manifests": {
     "horizon": "294448014fba585f8d5d09dd8886f482493b6417",
