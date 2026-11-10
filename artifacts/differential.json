@@ -2,26 +2,26 @@
   "schema": 1,
   "kind": "pinned Java 26.3 to real Horizon Rust state differential",
   "java": {
-    "run": "runs/java-oracle-2026-11-09T18-11-23.902Z",
+    "run": "runs/java-oracle-2026-11-10T11-16-36.813Z",
     "source": {
       "tag": "release/v26.3-1.120.1",
       "revision": "33b959c9ed0da1de2aff649e9728c1a03470b1bd",
       "minecraft": "26.3"
     },
-    "traceSha256": "b2529360f7021ee5addd4a508bbc8cd7517c6c5fd53ec978e974ba9a46c03b35"
+    "traceSha256": "4ebbcdc7fb9e82cb5e7141027d66060d24d23db2b3474e2b7fe142ebf2a3b446"
   },
   "rustEvidence": [
-    "runs/game-1794247925784",
-    "runs/game-1794247988565",
-    "runs/game-1794248062670",
-    "runs/game-1794248120487",
-    "runs/game-1794248175799",
-    "runs/game-1794248222880",
-    "runs/game-1794248277342",
-    "runs/game-1794248361137",
-    "runs/game-1794248417943",
-    "runs/game-1794248471760",
-    "runs/game-1794249000689"
+    "runs/game-1794309433648",
+    "runs/game-1794309495279",
+    "runs/game-1794309565244",
+    "runs/game-1794309619854",
+    "runs/game-1794309662733",
+    "runs/game-1794309710491",
+    "runs/game-1794309763795",
+    "runs/game-1794309848381",
+    "runs/game-1794309905879",
+    "runs/game-1794309949445",
+    "runs/game-1794310345331"
   ],
   "summary": {
     "expected": 152,
@@ -29,6 +29,8 @@
     "matched": 152,
     "missing": 0,
     "mismatched": 0,
+    "waived": 0,
+    "strict": false,
     "complete": true
   },
   "rows": [
@@ -36,913 +38,913 @@
       "id": "theurgy:calcination_oven_be_only_lower",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794247925784"
+      "evidence": "runs/game-1794309433648"
     },
     {
       "id": "theurgy:calcination_oven_blocked_output_does_not_consume_input",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794247925784"
+      "evidence": "runs/game-1794309433648"
     },
     {
       "id": "theurgy:calcination_oven_break_lower_destroys_upper",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794247925784"
+      "evidence": "runs/game-1794309433648"
     },
     {
       "id": "theurgy:calcination_oven_break_upper_destroys_lower",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794247925784"
+      "evidence": "runs/game-1794309433648"
     },
     {
       "id": "theurgy:calcination_oven_drops_items_when_broken",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794247925784"
+      "evidence": "runs/game-1794309433648"
     },
     {
       "id": "theurgy:calcination_oven_extract_output",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794247925784"
+      "evidence": "runs/game-1794309433648"
     },
     {
       "id": "theurgy:calcination_oven_input_consumed_output_produced",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794247925784"
+      "evidence": "runs/game-1794309433648"
     },
     {
       "id": "theurgy:calcination_oven_insert_input",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794247925784"
+      "evidence": "runs/game-1794309433648"
     },
     {
       "id": "theurgy:calcination_oven_lit_during_processing",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794247925784"
+      "evidence": "runs/game-1794309433648"
     },
     {
       "id": "theurgy:calcination_oven_placement",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794247925784"
+      "evidence": "runs/game-1794309433648"
     },
     {
       "id": "theurgy:calcination_oven_processing_starts",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794247925784"
+      "evidence": "runs/game-1794309433648"
     },
     {
       "id": "theurgy:calcination_oven_stops_without_heat",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794247925784"
+      "evidence": "runs/game-1794309433648"
     },
     {
       "id": "theurgy:calcination_oven_stops_without_input",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794247925784"
+      "evidence": "runs/game-1794309433648"
     },
     {
       "id": "theurgy:caloric_flux_emitter_enabled",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248471760"
+      "evidence": "runs/game-1794309949445"
     },
     {
       "id": "theurgy:caloric_flux_emitter_energy",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248471760"
+      "evidence": "runs/game-1794309949445"
     },
     {
       "id": "theurgy:caloric_flux_emitter_placement",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248471760"
+      "evidence": "runs/game-1794309949445"
     },
     {
       "id": "theurgy:caloric_flux_emitter_redstone",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248222880"
+      "evidence": "runs/game-1794309710491"
     },
     {
       "id": "theurgy:digestion_vat_blocked_output_does_not_consume_inputs",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248120487"
+      "evidence": "runs/game-1794309619854"
     },
     {
       "id": "theurgy:digestion_vat_drops_items",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248120487"
+      "evidence": "runs/game-1794309619854"
     },
     {
       "id": "theurgy:digestion_vat_extract_output",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248120487"
+      "evidence": "runs/game-1794309619854"
     },
     {
       "id": "theurgy:digestion_vat_facing",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248471760"
+      "evidence": "runs/game-1794309949445"
     },
     {
       "id": "theurgy:digestion_vat_insert_fluid",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248120487"
+      "evidence": "runs/game-1794309619854"
     },
     {
       "id": "theurgy:digestion_vat_insert_input",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248120487"
+      "evidence": "runs/game-1794309619854"
     },
     {
       "id": "theurgy:digestion_vat_lid_closes",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248120487"
+      "evidence": "runs/game-1794309619854"
     },
     {
       "id": "theurgy:digestion_vat_placement",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248471760"
+      "evidence": "runs/game-1794309949445"
     },
     {
       "id": "theurgy:distiller_be_only_lower",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248062670"
+      "evidence": "runs/game-1794309565244"
     },
     {
       "id": "theurgy:distiller_break_lower_destroys_upper",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248062670"
+      "evidence": "runs/game-1794309565244"
     },
     {
       "id": "theurgy:distiller_break_upper_destroys_lower",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248062670"
+      "evidence": "runs/game-1794309565244"
     },
     {
       "id": "theurgy:distiller_drops_items_when_broken",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248062670"
+      "evidence": "runs/game-1794309565244"
     },
     {
       "id": "theurgy:distiller_extract_output",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248062670"
+      "evidence": "runs/game-1794309565244"
     },
     {
       "id": "theurgy:distiller_input_consumed_output_produced",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248062670"
+      "evidence": "runs/game-1794309565244"
     },
     {
       "id": "theurgy:distiller_insert_input",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248062670"
+      "evidence": "runs/game-1794309565244"
     },
     {
       "id": "theurgy:distiller_lit_during_processing",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248062670"
+      "evidence": "runs/game-1794309565244"
     },
     {
       "id": "theurgy:distiller_placement",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248062670"
+      "evidence": "runs/game-1794309565244"
     },
     {
       "id": "theurgy:distiller_processing_starts",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248062670"
+      "evidence": "runs/game-1794309565244"
     },
     {
       "id": "theurgy:distiller_stops_without_heat",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248062670"
+      "evidence": "runs/game-1794309565244"
     },
     {
       "id": "theurgy:divination_rod_craft_abundant_copper_sulfur",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794249000689"
+      "evidence": "runs/game-1794310345331"
     },
     {
       "id": "theurgy:divination_rod_craft_abundant_dirt_sulfur",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794249000689"
+      "evidence": "runs/game-1794310345331"
     },
     {
       "id": "theurgy:divination_rod_craft_t1",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794249000689"
+      "evidence": "runs/game-1794310345331"
     },
     {
       "id": "theurgy:fermentation_vat_blocked_output_does_not_consume_inputs",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248120487"
+      "evidence": "runs/game-1794309619854"
     },
     {
       "id": "theurgy:fermentation_vat_drops_items",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248120487"
+      "evidence": "runs/game-1794309619854"
     },
     {
       "id": "theurgy:fermentation_vat_extract_output",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248120487"
+      "evidence": "runs/game-1794309619854"
     },
     {
       "id": "theurgy:fermentation_vat_facing",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248471760"
+      "evidence": "runs/game-1794309949445"
     },
     {
       "id": "theurgy:fermentation_vat_has_output_false",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248120487"
+      "evidence": "runs/game-1794309619854"
     },
     {
       "id": "theurgy:fermentation_vat_has_output_true",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248120487"
+      "evidence": "runs/game-1794309619854"
     },
     {
       "id": "theurgy:fermentation_vat_insert_fluid",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248120487"
+      "evidence": "runs/game-1794309619854"
     },
     {
       "id": "theurgy:fermentation_vat_insert_input",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248120487"
+      "evidence": "runs/game-1794309619854"
     },
     {
       "id": "theurgy:fermentation_vat_lid_closes",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248120487"
+      "evidence": "runs/game-1794309619854"
     },
     {
       "id": "theurgy:fermentation_vat_placement",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248471760"
+      "evidence": "runs/game-1794309949445"
     },
     {
       "id": "theurgy:incubator_blocked_output_does_not_consume_vessel_inputs",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248277342"
+      "evidence": "runs/game-1794309763795"
     },
     {
       "id": "theurgy:incubator_break_lower_destroys_upper",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248277342"
+      "evidence": "runs/game-1794309763795"
     },
     {
       "id": "theurgy:incubator_break_upper_destroys_lower",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248277342"
+      "evidence": "runs/game-1794309763795"
     },
     {
       "id": "theurgy:incubator_connection_states_default_false",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248471760"
+      "evidence": "runs/game-1794309949445"
     },
     {
       "id": "theurgy:incubator_extract_items",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248277342"
+      "evidence": "runs/game-1794309763795"
     },
     {
       "id": "theurgy:incubator_extract_output",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248277342"
+      "evidence": "runs/game-1794309763795"
     },
     {
       "id": "theurgy:incubator_inputs_consumed_output_produced",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248277342"
+      "evidence": "runs/game-1794309763795"
     },
     {
       "id": "theurgy:incubator_insert_mercury",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248277342"
+      "evidence": "runs/game-1794309763795"
     },
     {
       "id": "theurgy:incubator_insert_salt",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248277342"
+      "evidence": "runs/game-1794309763795"
     },
     {
       "id": "theurgy:incubator_insert_sulfur",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248277342"
+      "evidence": "runs/game-1794309763795"
     },
     {
       "id": "theurgy:incubator_mercury_vessel_connection",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248277342"
+      "evidence": "runs/game-1794309763795"
     },
     {
       "id": "theurgy:incubator_placement",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248471760"
+      "evidence": "runs/game-1794309949445"
     },
     {
       "id": "theurgy:incubator_processing_starts",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248277342"
+      "evidence": "runs/game-1794309763795"
     },
     {
       "id": "theurgy:incubator_removing_vessel_connection",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248277342"
+      "evidence": "runs/game-1794309763795"
     },
     {
       "id": "theurgy:incubator_salt_vessel_connection",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248277342"
+      "evidence": "runs/game-1794309763795"
     },
     {
       "id": "theurgy:incubator_stops_without_heat",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248277342"
+      "evidence": "runs/game-1794309763795"
     },
     {
       "id": "theurgy:incubator_sulfur_vessel_connection",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248277342"
+      "evidence": "runs/game-1794309763795"
     },
     {
       "id": "theurgy:incubator_valid_multiblock",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248277342"
+      "evidence": "runs/game-1794309763795"
     },
     {
       "id": "theurgy:lc_block_entity_only_on_lower_half",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794247988565"
+      "evidence": "runs/game-1794309495279"
     },
     {
       "id": "theurgy:lc_breaking_lower_destroys_upper",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794247988565"
+      "evidence": "runs/game-1794309495279"
     },
     {
       "id": "theurgy:lc_breaking_upper_destroys_lower",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794247988565"
+      "evidence": "runs/game-1794309495279"
     },
     {
       "id": "theurgy:lc_drops_items_when_broken",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794247988565"
+      "evidence": "runs/game-1794309495279"
     },
     {
       "id": "theurgy:lc_extract_output_item",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794247988565"
+      "evidence": "runs/game-1794309495279"
     },
     {
       "id": "theurgy:lc_extract_solvent_fluid",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794247988565"
+      "evidence": "runs/game-1794309495279"
     },
     {
       "id": "theurgy:lc_input_consumed_output_produced",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794247988565"
+      "evidence": "runs/game-1794309495279"
     },
     {
       "id": "theurgy:lc_insert_input_item",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794247988565"
+      "evidence": "runs/game-1794309495279"
     },
     {
       "id": "theurgy:lc_insert_solvent_fluid",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794247988565"
+      "evidence": "runs/game-1794309495279"
     },
     {
       "id": "theurgy:lc_lit_state_true_during_processing",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794247988565"
+      "evidence": "runs/game-1794309495279"
     },
     {
       "id": "theurgy:lc_placement_creates_two_block_structure",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794247988565"
+      "evidence": "runs/game-1794309495279"
     },
     {
       "id": "theurgy:lc_processing_requires_input",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794247988565"
+      "evidence": "runs/game-1794309495279"
     },
     {
       "id": "theurgy:lc_processing_requires_solvent",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794247988565"
+      "evidence": "runs/game-1794309495279"
     },
     {
       "id": "theurgy:lc_processing_starts",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794247988565"
+      "evidence": "runs/game-1794309495279"
     },
     {
       "id": "theurgy:lc_processing_stops_when_heat_removed",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794247988565"
+      "evidence": "runs/game-1794309495279"
     },
     {
       "id": "theurgy:logistics_capability_proxy_fluid_forwarding",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248361137"
+      "evidence": "runs/game-1794309848381"
     },
     {
       "id": "theurgy:logistics_capability_proxy_fluid_round_robin",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248361137"
+      "evidence": "runs/game-1794309848381"
     },
     {
       "id": "theurgy:logistics_capability_proxy_placement",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248471760"
+      "evidence": "runs/game-1794309949445"
     },
     {
       "id": "theurgy:logistics_extractor_placement",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248471760"
+      "evidence": "runs/game-1794309949445"
     },
     {
       "id": "theurgy:logistics_fluid_connector_restores_attached_target_on_load",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248361137"
+      "evidence": "runs/game-1794309848381"
     },
     {
       "id": "theurgy:logistics_fluid_extracts_world_source",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248361137"
+      "evidence": "runs/game-1794309848381"
     },
     {
       "id": "theurgy:logistics_inserter_placement",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248471760"
+      "evidence": "runs/game-1794309949445"
     },
     {
       "id": "theurgy:logistics_item_connector_restores_attached_target_on_load",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248361137"
+      "evidence": "runs/game-1794309848381"
     },
     {
       "id": "theurgy:logistics_item_extractor_targets_in_any_registration_order",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248361137"
+      "evidence": "runs/game-1794309848381"
     },
     {
       "id": "theurgy:logistics_item_extractor_targets_in_any_registration_order_reversed",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248361137"
+      "evidence": "runs/game-1794309848381"
     },
     {
       "id": "theurgy:logistics_item_extractor_transfers_items",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248361137"
+      "evidence": "runs/game-1794309848381"
     },
     {
       "id": "theurgy:logistics_nexus_be_accepts_item_uuid",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248361137"
+      "evidence": "runs/game-1794309848381"
     },
     {
       "id": "theurgy:logistics_nexus_pairs_across_placement",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248361137"
+      "evidence": "runs/game-1794309848381"
     },
     {
       "id": "theurgy:logistics_node_only_connects_when_attached_to_nexus",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248361137"
+      "evidence": "runs/game-1794309848381"
     },
     {
       "id": "theurgy:logistics_node_placement",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248471760"
+      "evidence": "runs/game-1794309949445"
     },
     {
       "id": "theurgy:mercury_capacitor_disabled_does_not_receive_flux",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248222880"
+      "evidence": "runs/game-1794309710491"
     },
     {
       "id": "theurgy:mercury_capacitor_has_correct_capacity",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248471760"
+      "evidence": "runs/game-1794309949445"
     },
     {
       "id": "theurgy:mercury_capacitor_no_ping_pong",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248222880"
+      "evidence": "runs/game-1794309710491"
     },
     {
       "id": "theurgy:mercury_capacitor_placement",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248471760"
+      "evidence": "runs/game-1794309949445"
     },
     {
       "id": "theurgy:mercury_capacitor_receives_flux",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248222880"
+      "evidence": "runs/game-1794309710491"
     },
     {
       "id": "theurgy:mercury_capacitor_side_modes",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248471760"
+      "evidence": "runs/game-1794309949445"
     },
     {
       "id": "theurgy:mercury_capacitor_starts_empty",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248471760"
+      "evidence": "runs/game-1794309949445"
     },
     {
       "id": "theurgy:mercury_catalyst_disabled_still_generates_flux",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248222880"
+      "evidence": "runs/game-1794309710491"
     },
     {
       "id": "theurgy:mercury_catalyst_placement",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248471760"
+      "evidence": "runs/game-1794309949445"
     },
     {
       "id": "theurgy:mercury_catalyst_rejected_placeable_dont_duplicate",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248222880"
+      "evidence": "runs/game-1794309710491"
     },
     {
       "id": "theurgy:mercury_catalyst_shard_generates_flux",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248222880"
+      "evidence": "runs/game-1794309710491"
     },
     {
       "id": "theurgy:mercury_catalyst_shard_is_consumed",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248222880"
+      "evidence": "runs/game-1794309710491"
     },
     {
       "id": "theurgy:mercury_flux_connector_buffer_empty",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248471760"
+      "evidence": "runs/game-1794309949445"
     },
     {
       "id": "theurgy:mercury_flux_connector_exposes_capability",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248471760"
+      "evidence": "runs/game-1794309949445"
     },
     {
       "id": "theurgy:mercury_flux_connector_forwards_flux",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248222880"
+      "evidence": "runs/game-1794309710491"
     },
     {
       "id": "theurgy:mercury_flux_connector_forwards_to_multiple",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248222880"
+      "evidence": "runs/game-1794309710491"
     },
     {
       "id": "theurgy:mercury_flux_connector_placement",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248471760"
+      "evidence": "runs/game-1794309949445"
     },
     {
       "id": "theurgy:mercury_flux_emitter_energy",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248471760"
+      "evidence": "runs/game-1794309949445"
     },
     {
       "id": "theurgy:mercury_flux_emitter_flux_transfer",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248222880"
+      "evidence": "runs/game-1794309710491"
     },
     {
       "id": "theurgy:mercury_flux_emitter_linking",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248222880"
+      "evidence": "runs/game-1794309710491"
     },
     {
       "id": "theurgy:mercury_flux_emitter_placement",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248471760"
+      "evidence": "runs/game-1794309949445"
     },
     {
       "id": "theurgy:pyromantic_brazier_drops_items_when_broken",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248175799"
+      "evidence": "runs/game-1794309662733"
     },
     {
       "id": "theurgy:pyromantic_brazier_fuel_consumed",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248175799"
+      "evidence": "runs/game-1794309662733"
     },
     {
       "id": "theurgy:pyromantic_brazier_fuel_leaves_remainder",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248175799"
+      "evidence": "runs/game-1794309662733"
     },
     {
       "id": "theurgy:pyromantic_brazier_heat_calcination_oven",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248175799"
+      "evidence": "runs/game-1794309662733"
     },
     {
       "id": "theurgy:pyromantic_brazier_heat_distiller",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248175799"
+      "evidence": "runs/game-1794309662733"
     },
     {
       "id": "theurgy:pyromantic_brazier_heat_liquefaction_cauldron",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248175799"
+      "evidence": "runs/game-1794309662733"
     },
     {
       "id": "theurgy:pyromantic_brazier_insert_fuel",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248175799"
+      "evidence": "runs/game-1794309662733"
     },
     {
       "id": "theurgy:pyromantic_brazier_lit_state_updates",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248175799"
+      "evidence": "runs/game-1794309662733"
     },
     {
       "id": "theurgy:pyromantic_brazier_placement",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248471760"
+      "evidence": "runs/game-1794309949445"
     },
     {
       "id": "theurgy:pyromantic_brazier_rejected_placeable_dont_duplicate",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248175799"
+      "evidence": "runs/game-1794309662733"
     },
     {
       "id": "theurgy:pyromantic_brazier_rejects_non_burnable",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248175799"
+      "evidence": "runs/game-1794309662733"
     },
     {
       "id": "theurgy:pyromantic_brazier_remove_fuel",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248175799"
+      "evidence": "runs/game-1794309662733"
     },
     {
       "id": "theurgy:pyromantic_brazier_stacked_fuel_shrinks",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248175799"
+      "evidence": "runs/game-1794309662733"
     },
     {
       "id": "theurgy:pyromantic_brazier_stops_heat_no_fuel",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248175799"
+      "evidence": "runs/game-1794309662733"
     },
     {
       "id": "theurgy:reformation_result_extract",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248417943"
+      "evidence": "runs/game-1794309905879"
     },
     {
       "id": "theurgy:reformation_result_placement",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248471760"
+      "evidence": "runs/game-1794309949445"
     },
     {
       "id": "theurgy:reformation_source_extract",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248417943"
+      "evidence": "runs/game-1794309905879"
     },
     {
       "id": "theurgy:reformation_source_insert",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248417943"
+      "evidence": "runs/game-1794309905879"
     },
     {
       "id": "theurgy:reformation_source_placement",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248471760"
+      "evidence": "runs/game-1794309949445"
     },
     {
       "id": "theurgy:reformation_source_rejects_invalid_held_item",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248417943"
+      "evidence": "runs/game-1794309905879"
     },
     {
       "id": "theurgy:reformation_target_insert",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248417943"
+      "evidence": "runs/game-1794309905879"
     },
     {
       "id": "theurgy:reformation_target_placement",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248471760"
+      "evidence": "runs/game-1794309949445"
     },
     {
       "id": "theurgy:sal_ammoniac_accumulator_insert_item",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248471760"
+      "evidence": "runs/game-1794309949445"
     },
     {
       "id": "theurgy:sal_ammoniac_accumulator_insert_water",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248471760"
+      "evidence": "runs/game-1794309949445"
     },
     {
       "id": "theurgy:sal_ammoniac_accumulator_placement",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248471760"
+      "evidence": "runs/game-1794309949445"
     },
     {
       "id": "theurgy:sal_ammoniac_tank_extract_fluid",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248471760"
+      "evidence": "runs/game-1794309949445"
     },
     {
       "id": "theurgy:sal_ammoniac_tank_insert_fluid",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248471760"
+      "evidence": "runs/game-1794309949445"
     },
     {
       "id": "theurgy:sal_ammoniac_tank_persistence",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248471760"
+      "evidence": "runs/game-1794309949445"
     },
     {
       "id": "theurgy:sal_ammoniac_tank_placement",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248471760"
+      "evidence": "runs/game-1794309949445"
     },
     {
       "id": "theurgy:sulfuric_flux_emitter_energy",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248471760"
+      "evidence": "runs/game-1794309949445"
     },
     {
       "id": "theurgy:sulfuric_flux_emitter_insufficient_mercury_flux",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248417943"
+      "evidence": "runs/game-1794309905879"
     },
     {
       "id": "theurgy:sulfuric_flux_emitter_linking",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248417943"
+      "evidence": "runs/game-1794309905879"
     },
     {
       "id": "theurgy:sulfuric_flux_emitter_placement",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248471760"
+      "evidence": "runs/game-1794309949445"
     },
     {
       "id": "theurgy:sulfuric_flux_emitter_processing",
       "status": "MATCH",
       "differences": [],
-      "evidence": "runs/game-1794248417943"
+      "evidence": "runs/game-1794309905879"
     }
   ]
 }
