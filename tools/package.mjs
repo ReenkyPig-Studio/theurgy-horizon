@@ -43,7 +43,12 @@ await walk(path.join(root,'native/theurgy'),async file=>{
 await addFile('mixins/theurgy/REUSE.toml',path.join(root,'upstream/theurgy/REUSE.toml'));
 await addFile('mixins/theurgy/NOTICE.md',path.join(root,'THIRD_PARTY_NOTICES.md'));
 entries.sort((a,b)=>a.name.localeCompare(b.name));
-const nativeFiles=entries.filter(entry=>entry.name==='horizon-native.json'||entry.name.startsWith('mixins/'));
+// Two mods (docs/api/mod-files.md): a content .hmod (horizon-mod.toml, assets/,
+// data/; nothing compiles) and a native .hnmod (horizon-native.json,
+// mixins/theurgy/), both mod id theurgy. The registry publishes code as .hnmod.
+const isNative=entry=>entry.name==='horizon-native.json'||entry.name.startsWith('mixins/');
+const nativeFiles=entries.filter(isNative);
+const contentEntries=entries.filter(entry=>!isNative(entry));
 if(nativeFiles.length>512)throw new Error('native file limit exceeded');
 const nativeBytes=nativeFiles.reduce((sum,entry)=>sum+entry.bytes.length,0);
 if(nativeBytes>64*1024*1024)throw new Error('native unpacked size limit exceeded');
@@ -60,6 +65,7 @@ function crc32(bytes) {
   for(const byte of bytes)crc=(crc>>>8)^table[(crc^byte)&0xFF];
   return (crc^0xFFFFFFFF)>>>0;
 }
+function zip(entries) {
 const local=[],central=[];
 let offset=0;
 for(const entry of entries) {
@@ -113,11 +119,18 @@ end.writeUInt32LE(offset,16);
 end.writeUInt16LE(0,20);
 const archive=Buffer.concat([...local,centralBytes,end]);
 if(archive.length>64*1024*1024)throw new Error('64 MiB package limit exceeded');
-const out=path.join(root,'artifacts/theurgy-26.3-1.120.1-rust-horizon.hmod');
-await fs.mkdir(path.dirname(out),{recursive:true});
-await fs.writeFile(out,archive);
-const sha256=createHash('sha256').update(archive).digest('hex');
-await fs.writeFile(path.join(root,'artifacts/package.json'),JSON.stringify({schema:1,file:out,sha256,
-  bytes:archive.length,entries:entries.length,nativeFiles:nativeFiles.length,nativeBytes,
+return archive;
+}
+await fs.mkdir(path.join(root,'artifacts'),{recursive:true});
+await fs.rm(path.join(root,'artifacts/theurgy-26.3-1.120.1-rust-horizon.hmod'),{force:true});
+const packages={};
+for(const [kind,list,name] of [['content',contentEntries,'theurgy-26.3-1.120.1-content.hmod'],
+  ['native',nativeFiles,'theurgy-26.3-1.120.1-native.hnmod']]) {
+  const archive=zip(list);
+  await fs.writeFile(path.join(root,'artifacts',name),archive);
+  packages[kind]={file:'artifacts/'+name,sha256:createHash('sha256').update(archive).digest('hex'),
+    bytes:archive.length,entries:list.length};
+}
+await fs.writeFile(path.join(root,'artifacts/package.json'),JSON.stringify({schema:2,packages,nativeBytes,
   manifests:{horizon:HORIZON,mixins:MIXINS,minecraft:'26.3',theurgy:'1.120.1'}},null,2)+'\n');
-console.log(JSON.stringify({file:out,sha256,bytes:archive.length,entries:entries.length,nativeFiles:nativeFiles.length},null,2));
+console.log(JSON.stringify(packages,null,2));
