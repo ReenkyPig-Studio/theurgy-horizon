@@ -7,15 +7,24 @@ import {readZipEntries} from './zip.mjs';
 
 // Build and run the actual packaged native source, not the checkout's native/
 // directory. The only game home is an owned, isolated .local directory.
-const packageFile=path.join(root,'artifacts/theurgy-26.3-1.120.1-rust-horizon.hmod');
+// Two mods: content .hmod (resources only) and native .hnmod (code only).
 const manifest=JSON.parse(await fs.readFile(path.join(root,'artifacts/package.json'),'utf8'));
-const archive=await fs.readFile(packageFile);
-const sha256=createHash('sha256').update(archive).digest('hex');
-if(sha256!==manifest.sha256)throw new Error('package manifest hash mismatch');
 const work=path.join(root,'.local/package-smoke');
 await fs.rm(work,{recursive:true,force:true});
 await fs.mkdir(work,{recursive:true});
-const entries=readZipEntries(packageFile);
+const sha256={};
+const entries=[];
+for(const kind of ['content','native']) {
+  const file=path.join(root,manifest.packages[kind].file);
+  sha256[kind]=createHash('sha256').update(await fs.readFile(file)).digest('hex');
+  if(sha256[kind]!==manifest.packages[kind].sha256)throw new Error(kind+' package manifest hash mismatch');
+  for(const [name,bytes] of readZipEntries(file)) {
+    const native=name==='horizon-native.json'||name.startsWith('mixins/');
+    if(native!==(kind==='native'))throw new Error(`${name} does not belong in the ${kind} package`);
+    entries.push([name,bytes]);
+  }
+}
+const packageFile=manifest.packages.content.file+' + '+manifest.packages.native.file;
 let contentFiles=0,nativeFiles=0;
 for(const [name,bytes] of entries) {
   if(!bytes||name.includes('..')||name.startsWith('/')||name.includes('\\'))throw new Error('unsafe package entry '+name);
@@ -82,7 +91,7 @@ for(const scenario of scenarios) {
   runsByScenario.push({scenario,evidence,home:'.local/package-smoke/game-'+label});
 }
 const evidence=runsByScenario[0].evidence;
-const result={status:'PACKAGE_SMOKE_PASS',package:path.relative(root,packageFile),sha256,contentFiles,nativeFiles,
+const result={status:'PACKAGE_SMOKE_PASS',package:packageFile,sha256,contentFiles,nativeFiles,
   nativeRoot:path.relative(root,nativeRoot),scenarios:runsByScenario,evidence,log:path.relative(root,out)};
 await fs.writeFile(path.join(root,'artifacts/package-smoke.json'),JSON.stringify(result,null,2)+'\n');
 console.log('THEURGY_PACKAGE_SMOKE_PASS',JSON.stringify(result));
