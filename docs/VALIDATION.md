@@ -1,6 +1,12 @@
 # Проверки
 
-## Ревью 2026-11-09 (todo.md 18–23) — ожидает нового полного acceptance
+## Финальный принятый порт (2026-11-10)
+- `runs/acceptance-2026-11-10T10-33-11.082Z/result.json`: **ACCEPTANCE_PASS**, 70/70 шагов, коммит `cbac68491c4c9ee256c129d39c665e97053e6978`,
+  чистое дерево; пакет SHA256 `12a0a0f87ef5cdeb597ab4a3f69dfd23a340d9d40da457626827da3bfdd0e5c6`, clean-package smoke all/filters/flux/fluids/persistence.
+- `artifacts/differential.json` 152/152 MATCH; `artifacts/differential-strict.json` 152/152 (21 послабление,
+  каждое перепроверено по Java oracle прогонам); `docs/FEATURES.md` 132 VERIFIED + 3 OUT_OF_SCOPE.
+
+## Ревью 2026-11-09 (todo.md 18–23)
 - Рендер GeckoLib переписан по GeckoLib 5.5.7; `scenarios/render.mjs` сравнивает силуэты с
   вручную принятыми эталонами `scenarios/render-reference/*` (`tools/render-check.mjs`).
 - The Hermetica: страницы рецептов/multiblock/картинок/spotlight; `scenarios/book.mjs`
