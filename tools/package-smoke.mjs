@@ -86,7 +86,8 @@ for(const scenario of scenarios) {
     HORIZON_DEV_MOD:path.join(work,'content'),
     THEURGY_GUI:'0',
   });
-  const evidence=[...output.matchAll(/Evidence:\s*(.+)/g)].at(-1)?.[1]?.trim();
+  const evidenceAbs=[...output.matchAll(/Evidence:\s*(.+)/g)].at(-1)?.[1]?.trim();
+  const evidence=evidenceAbs&&path.relative(root,path.resolve(root,evidenceAbs)).replaceAll('\\','/');
   if(!evidence)throw new Error('package game '+scenario+' did not emit evidence');
   runsByScenario.push({scenario,evidence,home:'.local/package-smoke/game-'+label});
 }

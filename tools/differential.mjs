@@ -362,7 +362,7 @@ for(const evidence of evidenceArgs) {
       if(!args.includes('--all'))throw new Error('Duplicate Rust differential probe '+id);
       continue;
     }
-    actual.set(id,{...row.reply,evidence:dir});
+    actual.set(id,{...row.reply,evidence:path.relative(root,dir).replaceAll('\\','/')});
   }
 }
 const methodIds={craftNormalT1Rod:'theurgy:divination_rod_craft_t1',
@@ -487,8 +487,8 @@ for(const [id,java] of [...expected.entries()].sort()) {
 }
 const matched=rows.filter(row=>row.status==='MATCH'||row.status==='WAIVED').length;
 const report={schema:1,kind:'pinned Java 26.3 to real Horizon Rust state differential',
-  java:{run:javaDir,source:javaResult.source,traceSha256:javaResult.traces.sha256},
-  rustEvidence:evidenceArgs.map(file=>path.resolve(root,file)),
+  java:{run:path.relative(root,javaDir).replaceAll('\\','/'),source:javaResult.source,traceSha256:javaResult.traces.sha256},
+  rustEvidence:evidenceArgs.map(file=>path.relative(root,path.resolve(root,file)).replaceAll('\\','/')),
   summary:{expected:expected.size,selected:rows.length,matched,missing:rows.filter(row=>row.status==='MISSING_RUST').length,
     mismatched:rows.filter(row=>row.status==='MISMATCH').length,waived:rows.filter(row=>row.status==='WAIVED').length,strict,complete:rows.length===expected.size&&matched===expected.size},
   rows};
