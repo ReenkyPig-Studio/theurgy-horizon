@@ -1,6 +1,5 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import {decodePng} from './png.mjs';
 
 // Native replacement data for Modonomicon page renderers
 // (BookCraftingRecipePageRenderer, BookMultiblockPageRenderer,
@@ -8,11 +7,9 @@ import {decodePng} from './png.mjs';
 // integration/modonomicon/page/* recipe pages). The book keeps every page;
 // this only resolves what those Java renderers resolve at runtime: recipe
 // JSON -> ingredient alternatives (tags expanded with the same merged tag
-// table as recipe conditions), multiblock patterns, and page images as raw
-// RGBA uploads for Horizon's native_mod_image slot.
+// table as recipe conditions) and multiblock patterns.
 
 const MAX_ALTERNATIVES=12;
-const MAX_IMAGE=1024;
 
 function ingredientItems(value,tagItems) {
   if(value===null||value===undefined)return [];
@@ -81,14 +78,10 @@ export function displayMultiblock(id,json) {
 async function exists(file){try{await fs.access(file);return true;}catch{return false;}}
 
 /**
- * Enriches the flattened Hermetica entries in place and writes page images
- * to `data/theurgy/hermetica_images/` as [u32 LE width][u32 LE height][RGBA].
+ * Enriches the flattened Hermetica entries in place.
  */
 export async function enrichHermetica({dest,entries,tagItems,textureRoots}) {
   const report={recipes:0,missingRecipes:[],multiblocks:0,missingMultiblocks:[],images:0,missingImages:[]};
-  const imageDir=path.join(dest,'data/theurgy/hermetica_images');
-  await fs.mkdir(imageDir,{recursive:true});
-  const written=new Map();
   for(const entry of entries) {
     for(const page of entry.pages??[]) {
       const recipeIds=['recipe_id_1','recipe_id_2'].map(key=>page[key]).filter(value=>typeof value==='string'&&value);
@@ -124,34 +117,13 @@ export async function enrichHermetica({dest,entries,tagItems,textureRoots}) {
         if(await exists(file)){page.multiblock=displayMultiblock(page.multiblock_id,JSON.parse(await fs.readFile(file,'utf8')));report.multiblocks++;}
         else report.missingMultiblocks.push(page.multiblock_id);
       }
-      if(Array.isArray(page.images)) {
-        page.imageData=[];
-        for(const image of page.images) {
-          const [namespace,texture]=image.split(':');
-          let file=null;
-          for(const rootDir of textureRoots) {
-            const candidate=path.join(rootDir,'assets',namespace,texture);
-            if(await exists(candidate)){file=candidate;break;}
-          }
-          if(!file){report.missingImages.push(image);continue;}
-          const name=texture.replaceAll('/','_').replace(/\.png$/,'')+'.bin';
-          if(!written.has(name)) {
-            let {width,height,pixels}=decodePng(await fs.readFile(file));
-            // native_mod_image takes at most MOD_IMAGE_SIZE per side.
-            const factor=Math.max(1,Math.ceil(Math.max(width,height)/MAX_IMAGE));
-            if(factor>1) {
-              const w=Math.floor(width/factor),h=Math.floor(height/factor),scaled=new Uint8Array(w*h*4);
-              for(let y=0;y<h;y++)for(let x=0;x<w;x++)for(let c=0;c<4;c++)
-                scaled[(y*w+x)*4+c]=pixels[((y*factor)*width+x*factor)*4+c];
-              width=w;height=h;pixels=scaled;
-            }
-            const header=Buffer.alloc(8);header.writeUInt32LE(width,0);header.writeUInt32LE(height,4);
-            await fs.writeFile(path.join(imageDir,name),Buffer.concat([header,Buffer.from(pixels)]));
-            written.set(name,[width,height]);
-            report.images++;
-          }
-          page.imageData.push({path:'data/theurgy/hermetica_images/'+name,size:written.get(name)});
-        }
+      // Page images are drawn straight from the GUI atlas
+      // (`assets/<ns>/textures/gui/...` -> sprite `<ns>:gui/...`); only check they exist.
+      for(const image of Array.isArray(page.images)?page.images:[]) {
+        const [namespace,texture]=image.split(':');
+        let found=false;
+        for(const rootDir of textureRoots)if(await exists(path.join(rootDir,'assets',namespace,texture))){found=true;break;}
+        if(found)report.images++;else report.missingImages.push(image);
       }
     }
   }

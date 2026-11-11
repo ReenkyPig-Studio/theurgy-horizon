@@ -95,20 +95,20 @@ export function fitFace(face){
 }
 
 /** Horizon's EulerXyz element matrix is Rz*Ry*Rx (bake.rs). */
-function euler(q){
+export function euler(q){
   const sy=-q[2][0];
   if(Math.abs(sy)<0.999999){
     return [Math.atan2(q[2][1],q[2][2]),Math.asin(sy),Math.atan2(q[1][0],q[0][0])].map(v=>v*180/Math.PI);
   }
   return [0,Math.asin(Math.max(-1,Math.min(1,sy)))*180/Math.PI,Math.atan2(-q[0][1],q[1][1])*180/Math.PI];
 }
-const round=value=>Math.abs(value)<1e-9?0:Number(value.toFixed(6));
+export const round=value=>Math.abs(value)<1e-9?0:Number(value.toFixed(6));
 
 /**
  * Converts one geo model to item-model elements under `itemPose` (the
  * GeoItemRenderer pose: scale, translate(0.5,0.51,0.5), renderer extras).
  */
-export function itemElements(geo,itemPose,{hidden=[],texture='#texture'}={}){
+export function itemElements(geo,itemPose,{hidden=[],texture='#texture',solid={}}={}){
   const geometry=geo['minecraft:geometry'][0];
   const tw=geometry.description.texture_width,th=geometry.description.texture_height;
   const bones=geometry.bones;
@@ -134,6 +134,8 @@ export function itemElements(geo,itemPose,{hidden=[],texture='#texture'}={}){
       const element={from,to,faces:{}};
       if(x||y||z)element.rotation={origin:[0,0,0],x,y,z};
       for(const face of faces){
+        // A bone drawn by a render layer with one whole sprite per face.
+        if(solid[bone.name]){element.faces[face.direction]={texture:solid[bone.name],uv:[0,0,16,16]};continue;}
         const fitted=fitFace(face);
         element.faces[face.direction]={texture,uv:fitted.uv.map(round),...(fitted.rotation?{rotation:fitted.rotation}:{})};
       }
@@ -167,7 +169,13 @@ export const GECKOLIB_ITEMS={
   incubator_mercury_vessel:{geo:'incubator_vessel',texture:'theurgy:block/incubator_vessel_gold'},
   incubator_salt_vessel:{geo:'incubator_vessel',texture:'theurgy:block/incubator_vessel_bronze'},
   incubator_sulfur_vessel:{geo:'incubator_vessel',texture:'theurgy:block/incubator_vessel_iron'},
-  logistics_nexus:{geo:'logistics_nexus',texture:'theurgy:block/logistics_nexus',hidden:['Portal','Connectors']},
+  // LogisticsNexusItemRenderer hides the Portal bone and its PortalLayer draws
+  // an End portal cube in its place. Item models have no rendertype_end_portal
+  // in Horizon (the placed block gets the real one, native/theurgy/portal.rs),
+  // so the icon uses the game's own end_portal texture (loaded from the
+  // player's Minecraft resources, not shipped in the mod).
+  logistics_nexus:{geo:'logistics_nexus',texture:'theurgy:block/logistics_nexus',hidden:['Connectors'],
+    solid:{Portal:'#portal'},textures:{portal:'minecraft:entity/end_portal/end_portal'}},
   sal_ammoniac_accumulator:{geo:'sal_ammoniac_accumulator',texture:'theurgy:block/sal_ammoniac_accumulator'},
   sal_ammoniac_tank:{geo:'sal_ammoniac_tank',texture:'theurgy:block/sal_ammoniac_tank'},
 };
@@ -185,8 +193,8 @@ export async function bakeGeckolibItems(dest){
     const geo=JSON.parse(await fs.readFile(path.join(assets,'geckolib/models/block',spec.geo+'.geo.json'),'utf8'));
     const modelFile=path.join(assets,'models/item',item+'.json');
     const base=JSON.parse(await fs.readFile(modelFile,'utf8'));
-    const elements=itemElements(geo,itemPose(item),{hidden:spec.hidden??[]});
-    const model={...base,textures:{texture:spec.texture,particle:spec.texture},elements};
+    const elements=itemElements(geo,itemPose(item),{hidden:spec.hidden??[],solid:spec.solid??{}});
+    const model={...base,textures:{texture:spec.texture,particle:spec.texture,...spec.textures},elements};
     delete model.parent;
     await fs.writeFile(modelFile,JSON.stringify(model,null,2)+'\n');
     await fs.writeFile(definitionFile,JSON.stringify({model:{type:'minecraft:model',model:special.base}},null,2)+'\n');
