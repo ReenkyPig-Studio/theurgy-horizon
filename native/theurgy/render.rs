@@ -749,10 +749,6 @@ fn geo_rotation(values: [f32; 3]) -> [f32; 3] {
     [-values[0], -values[1], values[2]]
 }
 
-/// Sprite GeckoLib's end-portal layer is approximated with: Horizon exposes
-/// no end-portal shader to native block entities.
-// HUD atlas keys drop the minecraft: namespace (hud.rs atlas_sprites).
-const PORTAL_SPRITE: &str = "block/obsidian";
 
 fn render_bone(
     game: &crate::game::Game<'_>,
@@ -783,7 +779,9 @@ fn render_bone(
     }
     draw.translate(bone_pivot.map(|value| -value));
     // LogisticsNexusPortalLayer replaces the Portal bone by an end portal.
-    let sprite = if bone.name == "Portal" && texture == "theurgy:block/logistics_nexus" { PORTAL_SPRITE } else { texture };
+    // Its cube is the 4px box AbstractEndPortalRenderer draws there, so its
+    // faces get the End portal surface (rendertype_end_portal) instead.
+    let portal = bone.name == "Portal" && texture == "theurgy:block/logistics_nexus";
     for cube in &bone.cubes {
         draw.push();
         // GeoCube.render: pivot (x mirrored), rotate ZYX, back.
@@ -792,8 +790,11 @@ fn render_bone(
         rotate_zyx(draw, geo_rotation(cube.rotation));
         draw.translate(cube_pivot.map(|value| -value));
         for face in geo_cube_faces(cube, bone.inflate, bone.mirror, texture_width, texture_height) {
-            let uv = if sprite == PORTAL_SPRITE { [0.0, 0.0, 16.0, 16.0] } else { face.uv };
-            game.native_draw_quad(draw, sprite, face.corners, uv, 0xFF_FFFF);
+            if portal {
+                crate::game::native_block_entity_draw::theurgy_portal::end_portal_quad(draw, face.corners);
+            } else {
+                game.native_draw_quad(draw, texture, face.corners, face.uv, 0xFF_FFFF);
+            }
         }
         draw.pop();
     }
@@ -910,25 +911,28 @@ fn draw_wire(
 ) {
     let settings = crate::game::theurgy_config::get();
     let Some(Tag::List(records)) = entity.nbt.get(&JavaString::from("wireConnections")) else { return; };
-    let width = settings.wire_line_width.clamp(1, 64) as f32 / 32.0;
+    // Half-width of the tube: the default width 2 is one texel thick.
+    let width = settings.wire_line_width.clamp(1, 64) as f32 / 64.0;
     for record in records {
         let Tag::Compound(record) = record else { continue; };
         let (Some(Tag::Long(from)), Some(Tag::Long(to))) = (record.get(&JavaString::from("from")), record.get(&JavaString::from("to"))) else { continue; };
         let from = wire_pos_from_long(*from);
         let to = wire_pos_from_long(*to);
         if from != pos && to != pos { continue; }
-        let start = [from[0] as f32 - pos[0] as f32 + 0.5, from[1] as f32 - pos[1] as f32 + 0.5, from[2] as f32 - pos[2] as f32 + 0.5];
-        let end = [to[0] as f32 - pos[0] as f32 + 0.5, to[1] as f32 - pos[1] as f32 + 0.5, to[2] as f32 - pos[2] as f32 + 0.5];
-        let steps = if settings.use_simple_wire_renderer { 1 } else { 8 };
-        for step in 0..steps {
-            let t0 = step as f32 / steps as f32;
-            let t1 = (step + 1) as f32 / steps as f32;
-            let a = [start[0] + (end[0] - start[0]) * t0, start[1] + (end[1] - start[1]) * t0, start[2] + (end[2] - start[2]) * t0];
-            let b = [start[0] + (end[0] - start[0]) * t1, start[1] + (end[1] - start[1]) * t1, start[2] + (end[2] - start[2]) * t1];
-            let min = [a[0].min(b[0]) - width, a[1].min(b[1]) - width, a[2].min(b[2]) - width];
-            let max = [a[0].max(b[0]) + width, a[1].max(b[1]) + width, a[2].max(b[2]) + width];
-            let face = Some(crate::game::native_block_entity_draw::CubeFace { sprite: "block/copper_block", uv: None });
-            game.native_draw_cube(draw, min.map(|value| value * 16.0), max.map(|value| value * 16.0), [face, face, face, face, face, face], 0xC87333);
+        // WireRenderer: the curve always runs from -> to, whichever end draws it.
+        let base = [0, 1, 2].map(|i| (from[i] - pos[i]) as f32 + 0.5);
+        let delta = [0, 1, 2].map(|i| f64::from(to[i] - from[i]));
+        let points: Vec<[f32; 3]> = if settings.use_simple_wire_renderer {
+            vec![[0.0; 3], delta.map(|v| v as f32)]
+        } else {
+            theurgy_engine::wire::slack_points(delta).to_vec()
+        };
+        for pair in points.windows(2) {
+            let [a, b] = [pair[0], pair[1]].map(|p| [0, 1, 2].map(|i| base[i] + p[i]));
+            for corners in theurgy_engine::wire::segment_quads(a, b, width) {
+                // WIRE_COLOR 0xFFB87333 on a plain white sprite.
+                game.native_draw_quad(draw, "block/white_concrete", corners, [7.0, 7.0, 9.0, 9.0], 0xB8_7333);
+            }
         }
     }
 }
@@ -1039,6 +1043,158 @@ fn draw_held_fit(
     }
 }
 
+/// One vanilla `CubeListBuilder.addBox` cube (pixel units), as baked by
+/// `ModelPart.Cube`: `tex` is `texOffs`, `grow` the `CubeDeformation`.
+#[derive(Clone, Copy, Debug)]
+pub(crate) struct VanillaCube {
+    pub tex: [f32; 2],
+    pub origin: [f32; 3],
+    pub size: [f32; 3],
+    pub grow: f32,
+    /// `EnumSet.of(Direction.NORTH)` visible faces instead of all six.
+    pub north_only: bool,
+}
+
+/// One vanilla `PartDefinition` child: `PartPose.offsetAndRotation` (pixels,
+/// radians) over its cubes, in a layer of `tex_size` texels.
+#[derive(Clone, Copy, Debug)]
+pub(crate) struct VanillaPart {
+    pub offset: [f32; 3],
+    pub rotation: [f32; 3],
+    pub cubes: &'static [VanillaCube],
+    pub tex_size: [f32; 2],
+}
+
+/// `ModelPart.Cube` + `ModelPart.Polygon`: block-unit corners already in
+/// `native_draw_quad` order and the UV rectangle in texels of 16 per side.
+/// Zero-area faces of flat cubes are dropped (they cover no pixels).
+pub(crate) fn vanilla_cube_faces(cube: &VanillaCube, tex_size: [f32; 2]) -> Vec<GeoFace> {
+    let [dx, dy, dz] = cube.size;
+    let min = cube.origin.map(|value| (value - cube.grow) / 16.0);
+    let max = [0, 1, 2].map(|i| (cube.origin[i] + cube.size[i] + cube.grow) / 16.0);
+    let v = [
+        [min[0], min[1], min[2]], [max[0], min[1], min[2]], [max[0], max[1], min[2]], [min[0], max[1], min[2]],
+        [min[0], min[1], max[2]], [max[0], min[1], max[2]], [max[0], max[1], max[2]], [min[0], max[1], max[2]],
+    ];
+    let [u, tv] = cube.tex;
+    let (u0, u1, u2, u3, u4, u5) = (u, u + dz, u + dz + dx, u + dz + dx + dx, u + dz + dx + dz, u + dz + dx + dz + dx);
+    let (v0, v1, v2) = (tv, tv + dz, tv + dz + dy);
+    // ModelPart.Cube constructor order, (u1, v1, u2, v2) per Polygon.
+    let polygons: [(&'static str, [usize; 4], [f32; 4], bool); 6] = [
+        ("down", [5, 4, 0, 1], [u1, v0, u2, v1], dx == 0.0 || dz == 0.0),
+        ("up", [2, 3, 7, 6], [u2, v1, u3, v0], dx == 0.0 || dz == 0.0),
+        ("west", [0, 4, 7, 3], [u0, v1, u1, v2], dz == 0.0 || dy == 0.0),
+        ("north", [1, 0, 3, 2], [u1, v1, u2, v2], dx == 0.0 || dy == 0.0),
+        ("east", [5, 1, 2, 6], [u2, v1, u4, v2], dz == 0.0 || dy == 0.0),
+        ("south", [4, 5, 6, 7], [u4, v1, u5, v2], dx == 0.0 || dy == 0.0),
+    ];
+    let mut faces = Vec::new();
+    for (direction, indices, [a, b, c, d], empty) in polygons {
+        if empty || (cube.north_only && direction != "north") { continue; }
+        // Polygon: vertex 0 takes (u2, v1), 1 (u1, v1), 2 (u1, v2), 3 (u2, v2);
+        // native_draw_quad starts at (u1, v1).
+        let corners = [v[indices[1]], v[indices[2]], v[indices[3]], v[indices[0]]];
+        let uv = [a / tex_size[0] * 16.0, b / tex_size[1] * 16.0, c / tex_size[0] * 16.0, d / tex_size[1] * 16.0];
+        faces.push(GeoFace { direction, corners, uv });
+    }
+    faces
+}
+
+const DIGESTION_NECK: &[VanillaCube] = &[
+    VanillaCube { tex: [0.0, 0.0], origin: [4.0, 17.0, 4.0], size: [8.0, 3.0, 8.0], grow: -0.1, north_only: false },
+    VanillaCube { tex: [0.0, 5.0], origin: [5.0, 20.0, 5.0], size: [6.0, 1.0, 6.0], grow: 0.2, north_only: false },
+];
+const DIGESTION_PLANE: &[VanillaCube] = &[
+    VanillaCube { tex: [-14.0, 13.0], origin: [0.0; 3], size: [14.0, 0.0, 14.0], grow: 0.0, north_only: false },
+];
+const DIGESTION_SIDE: &[VanillaCube] = &[
+    VanillaCube { tex: [1.0, 0.0], origin: [0.0; 3], size: [14.0, 16.0, 0.0], grow: 0.0, north_only: true },
+];
+const PI: f32 = std::f32::consts::PI;
+/// DigestionVatRenderer.createBaseLayer: neck, top, bottom (32x32).
+pub(crate) const DIGESTION_BASE_PARTS: [VanillaPart; 3] = [
+    VanillaPart { offset: [0.0, 37.0, 16.0], rotation: [PI, 0.0, 0.0], cubes: DIGESTION_NECK, tex_size: [32.0, 32.0] },
+    VanillaPart { offset: [1.0, 16.0, 1.0], rotation: [0.0; 3], cubes: DIGESTION_PLANE, tex_size: [32.0, 32.0] },
+    VanillaPart { offset: [1.0, 0.0, 1.0], rotation: [0.0; 3], cubes: DIGESTION_PLANE, tex_size: [32.0, 32.0] },
+];
+/// DigestionVatRenderer.createSidesLayer: front, back, left, right (16x16).
+pub(crate) const DIGESTION_SIDE_PARTS: [VanillaPart; 4] = [
+    VanillaPart { offset: [1.0, 16.0, 15.0], rotation: [PI, 0.0, 0.0], cubes: DIGESTION_SIDE, tex_size: [16.0, 16.0] },
+    VanillaPart { offset: [15.0, 16.0, 1.0], rotation: [0.0, 0.0, PI], cubes: DIGESTION_SIDE, tex_size: [16.0, 16.0] },
+    VanillaPart { offset: [1.0, 16.0, 1.0], rotation: [0.0, -PI / 2.0, PI], cubes: DIGESTION_SIDE, tex_size: [16.0, 16.0] },
+    VanillaPart { offset: [15.0, 16.0, 15.0], rotation: [0.0, PI / 2.0, PI], cubes: DIGESTION_SIDE, tex_size: [16.0, 16.0] },
+];
+
+/// `Direction.toYRot` for the horizontal facings.
+fn horizontal_y_rot(facing: &str) -> f32 {
+    match facing {
+        "south" => 0.0,
+        "west" => 90.0,
+        "east" => 270.0,
+        _ => 180.0,
+    }
+}
+
+/// DigestionStorageBehaviour.hasOutput: the output slot (3, after the three
+/// inputs) holds a stack. Client entities carry it in the update tag.
+fn digestion_has_output(entity: &ModBlockEntity) -> bool {
+    if entity.items.get(3).is_some_and(|stack| stack.is_some()) { return true; }
+    let Some(Tag::List(items)) = entity.nbt.get(&JavaString::from("Items")) else { return false; };
+    items.iter().any(|item| {
+        let Tag::Compound(record) = item else { return false; };
+        matches!(record.get(&JavaString::from("Slot")), Some(Tag::Byte(3)))
+            && crate::game::theurgy_logistics::template_stack(item).is_some()
+    })
+}
+
+fn submit_vanilla_part(
+    game: &crate::game::Game<'_>,
+    draw: &mut crate::game::native_block_entity_draw::BlockEntityDraw,
+    part: &VanillaPart,
+    sprite: &str,
+    hidden: Option<&str>,
+) {
+    draw.push();
+    // ModelPart.translateAndRotate: offset / 16, then rotationZYX.
+    draw.translate(part.offset.map(|value| value / 16.0));
+    rotate_zyx(draw, part.rotation.map(f32::to_degrees));
+    for cube in part.cubes {
+        for face in vanilla_cube_faces(cube, part.tex_size) {
+            if Some(face.direction) == hidden { continue; }
+            game.native_draw_quad(draw, sprite, face.corners, face.uv, 0xFF_FFFF);
+        }
+    }
+    draw.pop();
+}
+
+/// DigestionVatRenderer.submit (textures moved into the block atlas).
+fn draw_digestion_vat(
+    game: &crate::game::Game<'_>,
+    state: horizon_world::registry::BlockStateId,
+    entity: &ModBlockEntity,
+    draw: &mut crate::game::native_block_entity_draw::BlockEntityDraw,
+) {
+    let facing = game.native_block_state_property(state, "facing").unwrap_or("north");
+    let open = game.native_block_state_property(state, "open") != Some("false");
+    let active = digestion_has_output(entity);
+    draw.push();
+    draw.translate([0.5, 0.0, 0.5]);
+    draw.rotate_about([0.0, 1.0, 0.0], 180.0 - horizontal_y_rot(facing), [0.0; 3]);
+    draw.translate([-0.5, 0.0, -0.5]);
+    let base = if open { "theurgy:block/digestion_vat/digestion_vat_base_open" } else { "theurgy:block/digestion_vat/digestion_vat_base" };
+    // The 0-thick top/bottom planes have coplanar up+down quads; entitySolid
+    // culls the inward one, Horizon's block entity draw does not (top flickered).
+    for (part, hidden) in DIGESTION_BASE_PARTS.iter().zip([None, Some("down"), Some("up")]) {
+        submit_vanilla_part(game, draw, part, base, hidden);
+    }
+    let front = if active { "theurgy:block/digestion_vat/digestion_vat_side_front_active" } else { "theurgy:block/digestion_vat/digestion_vat_side_front" };
+    for (index, part) in DIGESTION_SIDE_PARTS.iter().enumerate() {
+        submit_vanilla_part(game, draw, part, if index == 0 { front } else { "theurgy:block/digestion_vat/digestion_vat_side" }, None);
+    }
+    draw.pop();
+    draw.keep();
+}
+
 /// Submit carried fluid geometry. GeckoLib model submission is handled by the
 /// same entry point below; only the cauldron adds quads here.
 pub fn submit(
@@ -1055,6 +1211,10 @@ pub fn submit(
     draw_wire(game, pos, entity, draw);
     draw_held_fit(game, pos, draw);
     draw_reformation(game, pos, state, entity, draw);
+    if block == "theurgy:digestion_vat" {
+        draw_digestion_vat(game, state, entity, draw);
+        return;
+    }
     if block == "theurgy:liquefaction_cauldron" {
         let color = cauldron_color(entity, 0xFFFF_FFFF);
         let sprite = cauldron_sprite(entity);
@@ -1155,6 +1315,12 @@ pub fn bounds(
     _entity: &ModBlockEntity,
     bounds: &mut [f32; 6],
 ) {
+    if matches!(_entity.nbt.get(&JavaString::from("wireConnections")), Some(Tag::List(records)) if !records.is_empty()) {
+        // A wire reaches WireItem's 32 blocks; default bounds would cull it
+        // as soon as its own node leaves the screen.
+        *bounds = [-32.0, -32.0, -32.0, 33.0, 33.0, 33.0];
+        return;
+    }
     if block == "theurgy:sulfuric_flux_emitter" {
         // DistHelper trails may extend to any selected pedestal in the Java
         // 16-block selection range; zero default bounds would cull submission.
@@ -1179,6 +1345,10 @@ pub fn bounds(
     }
     if block == "theurgy:liquefaction_cauldron" {
         *bounds = [-1.0, -1.0, -1.0, 2.0, 2.0, 2.0];
+    }
+    if block == "theurgy:digestion_vat" {
+        // Vat body plus the neck up to y = 21/16.
+        *bounds = [-0.5, -0.5, -0.5, 1.5, 2.0, 1.5];
     }
 }
 
@@ -1470,5 +1640,34 @@ mod tests {
         let s = CauldronRenderState::neutral();
         assert!(s.empty);
         assert!(cauldron_quads(&s).is_empty());
+    }
+
+    // DigestionVatRenderer.createSidesLayer: texOffs(1, 0) 14x16x0 NORTH.
+    #[test]
+    fn vanilla_side_cube_is_one_north_face() {
+        let faces = vanilla_cube_faces(&DIGESTION_SIDE[0], [16.0, 16.0]);
+        assert_eq!(faces.len(), 1);
+        assert_eq!(faces[0].direction, "north");
+        assert_eq!(faces[0].uv, [1.0, 0.0, 15.0, 16.0]);
+        // Polygon vertex 1 (v0 = min corner) first, at (u1, v1).
+        assert_eq!(faces[0].corners[0], [0.0, 0.0, 0.0]);
+        assert_eq!(faces[0].corners[2], [14.0 / 16.0, 1.0, 0.0]);
+    }
+
+    // createBaseLayer top/bottom: texOffs(-14, 13) 14x0x14 keeps up/down only.
+    #[test]
+    fn vanilla_plane_keeps_up_and_down() {
+        let faces = vanilla_cube_faces(&DIGESTION_PLANE[0], [32.0, 32.0]);
+        let dirs: Vec<_> = faces.iter().map(|f| f.direction).collect();
+        assert_eq!(dirs, ["down", "up"]);
+        assert_eq!(faces[1].uv, [7.0, 13.5, 14.0, 6.5]);
+    }
+
+    #[test]
+    fn vanilla_neck_inflates_box() {
+        let faces = vanilla_cube_faces(&DIGESTION_NECK[1], [32.0, 32.0]);
+        assert_eq!(faces.len(), 6);
+        let up = face(&faces, "up");
+        assert!(up.corners.iter().all(|c| close(c[1], 21.2 / 16.0)));
     }
 }
