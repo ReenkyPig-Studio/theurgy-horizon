@@ -3,81 +3,12 @@
 # SPDX-License-Identifier: CC0-1.0
 
 version = 1
-SPDX-PackageName = "theurgy"
-SPDX-PackageSupplier = "klikli-dev"
+SPDX-PackageName = "theurgy-horizon"
 SPDX-PackageDownloadLocation = "https://github.com/klikli-dev/theurgy"
 
-[[annotations]]
-path = "AGENTS.md"
-precedence = "aggregate"
-SPDX-FileCopyrightText = "2026 klikli-dev"
-SPDX-License-Identifier = "CC0-1.0"
-
-[[annotations]]
-path = "src/main/resources/**"
-precedence = "aggregate"
-SPDX-FileCopyrightText = "2024 klikli-dev"
-SPDX-License-Identifier = "CC-BY-4.0"
-
-[[annotations]]
-path = "src/main/templates/**"
-precedence = "aggregate"
-SPDX-FileCopyrightText = "2024 klikli-dev"
-SPDX-License-Identifier = "CC-BY-4.0"
-
-[[annotations]]
-path = "src/generated/resources/**"
-precedence = "aggregate"
-SPDX-FileCopyrightText = "2024 klikli-dev"
-SPDX-License-Identifier = "CC-BY-4.0"
-
-[[annotations]]
-path = ".github/**"
-precedence = "aggregate"
-SPDX-FileCopyrightText = "2022 klikli-dev"
-SPDX-License-Identifier = "CC0-1.0"
-
-[[annotations]]
-path = ".gitattributes"
-precedence = "aggregate"
-SPDX-FileCopyrightText = "2022 klikli-dev"
-SPDX-License-Identifier = "CC0-1.0"
-
-[[annotations]]
-path = ".gitignore"
-precedence = "aggregate"
-SPDX-FileCopyrightText = "2022 klikli-dev"
-SPDX-License-Identifier = "CC0-1.0"
-
-[[annotations]]
-path = "settings.gradle"
-precedence = "aggregate"
-SPDX-FileCopyrightText = "2022 klikli-dev"
-SPDX-License-Identifier = "CC0-1.0"
-
-[[annotations]]
-path = "build.gradle"
-precedence = "aggregate"
-SPDX-FileCopyrightText = "2022 klikli-dev"
-SPDX-License-Identifier = "CC0-1.0"
-
-[[annotations]]
-path = "gradle.properties"
-precedence = "aggregate"
-SPDX-FileCopyrightText = "2022 klikli-dev"
-SPDX-License-Identifier = "CC0-1.0"
-
-[[annotations]]
-path = "gradle/**"
-precedence = "aggregate"
-SPDX-FileCopyrightText = "2015 the original author or authors."
-SPDX-License-Identifier = "Apache-2.0"
-
-[[annotations]]
-path = "gradlew**"
-precedence = "aggregate"
-SPDX-FileCopyrightText = "2015 the original author or authors."
-SPDX-License-Identifier = "Apache-2.0"
+# Horizon (Rust) port of Theurgy. Third-party exceptions inside content/theurgy
+# (Modonomicon theme sprites, NeoForge `c:` tag JSON) are listed in
+# THIRD_PARTY_NOTICES.md and content/theurgy/THIRD_PARTY_NOTICES.md.
 
 [[annotations]]
 path = "CHANGELOG.md"
@@ -86,20 +17,19 @@ SPDX-FileCopyrightText = "2022 klikli-dev"
 SPDX-License-Identifier = "CC0-1.0"
 
 [[annotations]]
-path = ".claude/skills/git-commit/SKILL.md"
+path = ["content/theurgy/assets/**", "content/theurgy/data/**"]
 precedence = "aggregate"
-SPDX-FileCopyrightText = "AungMyoKyaw"
-SPDX-License-Identifier = "MIT"
-
-[[annotations]]
-path = ".claude/skills/neoforge-updater/SKILL.md"
-precedence = "aggregate"
-SPDX-FileCopyrightText = "2026 klikli-dev"
-SPDX-License-Identifier = "MIT"
-
-[[annotations]]
-path = ".claude/skills/neoforge-updater/references/**/index.md"
-precedence = "aggregate"
-SPDX-FileCopyrightText = "ChampionAsh5357"
+SPDX-FileCopyrightText = "2024 klikli-dev"
 SPDX-License-Identifier = "CC-BY-4.0"
 
+[[annotations]]
+path = ["native/**", "tools/**", "scenarios/**", "differential/**", "oracle/**", "test/**", "docs/**", "content/theurgy/horizon-mod.toml", "README.md", "THIRD_PARTY_NOTICES.md"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = ["2022 klikli-dev", "2026 Theurgy Horizon port contributors"]
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = ["artifacts/**", "Cargo.toml", "Cargo.lock", "package.json", "config.example.json", "upstream.lock.json", ".gitignore"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 Theurgy Horizon port contributors"
+SPDX-License-Identifier = "CC0-1.0"
