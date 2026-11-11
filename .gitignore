@@ -1,9 +1,11 @@
 /upstream/
 /target/
 /content/**/target/
-/.agents/
 /runs/
 /.local/
+/config.json
+/artifacts/*.hmod
+/artifacts/*.hnmod
+/node_modules/
 .env
 *.key
-PORT_NOTES.md
