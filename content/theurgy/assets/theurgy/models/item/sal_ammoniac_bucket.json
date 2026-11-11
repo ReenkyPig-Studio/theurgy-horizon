@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "minecraft:item/bucket",
+    "layer1": "theurgy:item/sal_ammoniac_bucket_fluid"
+  }
+}

@@ -105,7 +105,8 @@
   },
   "textures": {
     "texture": "theurgy:block/logistics_nexus",
-    "particle": "theurgy:block/logistics_nexus"
+    "particle": "theurgy:block/logistics_nexus",
+    "portal": "minecraft:entity/end_portal/end_portal"
   },
   "elements": [
     {
@@ -1030,6 +1031,84 @@
             6.769231,
             1.777778,
             8
+          ]
+        }
+      },
+      "rotation": {
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "x": 0,
+        "y": 45,
+        "z": 54.736
+      }
+    },
+    {
+      "from": [
+        -1.772075,
+        -5.913246,
+        9.541634
+      ],
+      "to": [
+        6.227925,
+        2.086754,
+        17.541634
+      ],
+      "faces": {
+        "west": {
+          "texture": "#portal",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#portal",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "north": {
+          "texture": "#portal",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#portal",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#portal",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#portal",
+          "uv": [
+            0,
+            0,
+            16,
+            16
           ]
         }
       },

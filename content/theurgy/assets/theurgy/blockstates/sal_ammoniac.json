@@ -1,9 +1,7 @@
 {
-  "multipart": [
-    {
-      "apply": {
-        "model": "theurgy:block/sal_ammoniac"
-      }
+  "variants": {
+    "": {
+      "model": "theurgy:block/sal_ammoniac"
     }
-  ]
+  }
 }

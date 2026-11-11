@@ -1,5 +1,38 @@
 {
+  "render_type": "minecraft:translucent",
+  "ambientocclusion": false,
   "textures": {
-    "particle": "theurgy:block/sal_ammoniac/still"
-  }
+    "particle": "theurgy:block/sal_ammoniac/still",
+    "still": "theurgy:block/sal_ammoniac/still",
+    "flow": "theurgy:block/sal_ammoniac/flow",
+    "overlay": "theurgy:block/sal_ammoniac/overlay"
+  },
+  "elements": [
+    {
+      "from": [
+        7.99,
+        7.99,
+        7.99
+      ],
+      "to": [
+        8.01,
+        8.01,
+        8.01
+      ],
+      "faces": {
+        "up": {
+          "texture": "#still",
+          "cullface": "up"
+        },
+        "down": {
+          "texture": "#flow",
+          "cullface": "down"
+        },
+        "north": {
+          "texture": "#overlay",
+          "cullface": "north"
+        }
+      }
+    }
+  ]
 }

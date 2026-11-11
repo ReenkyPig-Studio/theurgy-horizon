@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "theurgy:block/digestion_vat/digestion_vat_base_open"
+  }
+}
