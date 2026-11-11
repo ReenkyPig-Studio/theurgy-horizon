@@ -4,6 +4,7 @@
   "properties": {
     "hardness": 1,
     "explosion_resistance": 1,
-    "requires_tool": false
+    "requires_tool": false,
+    "render_shape": "MODEL"
   }
 }

@@ -1,9 +1,22 @@
 {
-  "template": "minecraft:stone",
+  "template": "minecraft:glass",
   "item": true,
   "properties": {
     "hardness": 1,
     "explosion_resistance": 1,
-    "requires_tool": false
+    "requires_tool": false,
+    "sounds": "minecraft:copper_block"
+  },
+  "shapes": {
+    "default": [
+      [
+        0.0625,
+        0,
+        0.0625,
+        0.9375,
+        0.8125,
+        0.9375
+      ]
+    ]
   }
 }

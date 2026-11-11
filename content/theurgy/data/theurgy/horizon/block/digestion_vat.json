@@ -1,10 +1,23 @@
 {
-  "template": "minecraft:stone",
+  "template": "minecraft:glass",
   "item": true,
   "properties": {
     "hardness": 1,
     "explosion_resistance": 1,
-    "requires_tool": false
+    "requires_tool": false,
+    "sounds": "minecraft:decorated_pot"
+  },
+  "shapes": {
+    "default": [
+      [
+        0.0625,
+        0,
+        0.0625,
+        0.9375,
+        1,
+        0.9375
+      ]
+    ]
   },
   "state_properties": {
     "facing": {
