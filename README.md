@@ -1,63 +1,76 @@
-<!--
-SPDX-FileCopyrightText: 2022 klikli-dev
+# Theurgy for Horizon
 
-SPDX-License-Identifier: MIT
--->
+A Rust port of [Theurgy](https://github.com/klikli-dev/theurgy) by klikli-dev to
+**Horizon 26.3**. This repository is a fork of the original mod: the Java/NeoForge
+sources were removed in the first commit of this branch and replaced by a native
+Horizon implementation that reuses Theurgy's original assets and data.
 
-# Theurgy 
+- Ported from: [`release/v26.3-1.120.1`](https://github.com/klikli-dev/theurgy/releases/tag/release/v26.3-1.120.1),
+  commit `33b959c9ed0da1de2aff649e9728c1a03470b1bd` (Minecraft 26.3, NeoForge 26.3.0.76), pinned in `upstream.lock.json`.
+- Target: Horizon nightly-2026-11-03 (`2944480`), pinned in `native/theurgy/horizon-mixin.toml`.
+- Not affiliated with or endorsed by klikli-dev. Please do not report issues with this port upstream.
 
+## Installing
 
-## Curseforge
+The mod is two files with the id `theurgy`; both are required:
 
-https://www.curseforge.com/minecraft/mc-mods/theurgy
+| File | Contents |
+| --- | --- |
+| `theurgy-26.3-1.120.1-content.hmod` | resources: `horizon-mod.toml`, `assets/`, `data/` |
+| `theurgy-26.3-1.120.1-native.hnmod` | native code: `horizon-native.json`, `mixins/theurgy/` (built by the launcher) |
 
-## Maven
+They are produced by `npm run package` into `artifacts/` (not committed; attach them to a
+release). Their SHA256 is recorded in `artifacts/package.json`.
 
-See https://cloudsmith.io/~klikli-dev/repos/mods/groups/ for available versions.
+## What is covered
 
-```gradle
-repositories {
+Machines, items, logistics, recipes, world generation and the Hermetica guide book are ported.
+JEI/EMI, Jade and KubeJS integrations are out of scope because those mods do not exist on Horizon.
+The feature matrix is in [docs/FEATURES.md](docs/FEATURES.md); what was actually verified, and
+how, is in [docs/VALIDATION.md](docs/VALIDATION.md) and `artifacts/*.json`
+(the docs are written in Russian).
 
-  ...
+## Layout
 
-  maven {
-    url "https://dl.cloudsmith.io/public/klikli-dev/mods/maven/"
-    content {
-        includeGroup "com.klikli_dev"
-    }
-  }
-  
-  ...
-  
-}
+| Path | Purpose |
+| --- | --- |
+| `content/theurgy/` | content addon (generated from upstream resources by `tools/build-content.mjs`) |
+| `native/theurgy/` | Horizon glue (`*.rs`, `horizon-mixin.toml`) |
+| `native/theurgy/engine/` | pure Rust core, testable without the game |
+| `scenarios/`, `differential/`, `oracle/` | in-game scenarios and the Java differential oracle |
+| `tools/`, `test/` | build, packaging and test tooling (Node.js, no npm dependencies) |
+| `docs/` | porting notes, feature matrix, validation log |
+
+## Building and testing
+
+Requires Node.js, the Horizon launcher (it provides the Rust toolchain and `horizon-mixins`)
+and a pristine Horizon source checkout.
+
+```powershell
+copy config.example.json config.json   # then set your local paths
+git worktree add --detach upstream/theurgy release/v26.3-1.120.1   # read-only Java reference
+
+npm run doctor          # check toolchain, Horizon and the upstream pin
+npm test                # offline tool/content tests
+npm run fast            # pure Rust engine tests, no game
+npm run test:modules    # module tests of the native glue
+npm run native:build    # real Horizon build with the mod
+npm run game:headless   # all machines in an isolated headless world
+npm run acceptance      # full acceptance: core + native + Java differential + GUI + LAN + package
+npm run package         # write the .hmod / .hnmod into artifacts/
 ```
 
-```gradle
-dependencies {
- 
-    ...
-    
-    implementation "com.klikli_dev:theurgy-${minecraft_version}-neoforge:${theurgy_version}"
-    
-    ...
-    
-}
-```
+Game tests only use isolated `.local/<mode>` homes and worlds; they never touch player saves.
+More detail: [docs/PORTING.md](docs/PORTING.md).
 
-## Thanks
+## Git remotes
 
-[![Hosted By: Cloudsmith](https://img.shields.io/badge/OSS%20hosting%20by-cloudsmith-blue?logo=cloudsmith&style=for-the-badge)](https://cloudsmith.com)
-
-Package repository hosting is graciously provided by [Cloudsmith](https://cloudsmith.com).
-Cloudsmith is the only fully hosted, cloud-native, universal package management solution, that
-enables your organization to create, store and share packages in any format, to any place, with total
-confidence.
+`upstream` is `https://github.com/klikli-dev/theurgy.git`. The port lives on the
+`horizon/26.3` branch, which starts at the upstream tag `release/v26.3-1.120.1`.
 
 ## Licensing
 
-Copyright 2022 klikli-dev
-
-Code is licensed under the MIT license, view [LICENSES/MIT](./LICENSES/MIT.txt).   
-Assets are licensed under the CC-BY-SA-4.0 license, view [LICENSES/CC-BY-SA-4.0](./LICENSES/CC-BY-4.0.txt).   
-
-There are third party code and assets in this project which may be under different licenses and copyrights. We follow the [REUSE Standard for Software Licensing](https://reuse.software/), so you can look up the license terms for each file, or use the [REUSE tool](https://github.com/fsfe/reuse-tool) to generate an SPDX report.
+Same as upstream Theurgy: code is **MIT**, assets and data are **CC-BY-4.0**
+(© klikli-dev); see `LICENSES/`, `REUSE.toml` and
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for Modonomicon and NeoForge material.
+The upstream changelog is kept as `CHANGELOG.md`.
