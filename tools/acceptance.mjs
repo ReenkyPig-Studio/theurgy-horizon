@@ -48,7 +48,7 @@ const differentialModes=[
   'logistics','pedestals','placements',
 ];
 const guiDifferentialModes=['divination-recipes'];
-const customModes=['worldgen','filter-ui','book','recipes','client','render','wand','client-features','tooltips'];
+const customModes=['worldgen','filter-ui','book','recipes','client','render','wire-render','wand','client-features','tooltips'];
 const headlessBinary=path.join(root,'target/horizon-headless-cargo/fast/horizon-client.exe');
 const guiBinary=path.join(root,'target/horizon-cargo/fast/horizon-client.exe');
 const headlessModes=['all','machines','chaos-machines','interactions','items','flux','logistics','tools','divination','config-attunement','filters','content-rules','incubation-chaos','persistence','reformation','fluids','wire-graph','logistics-advanced','filter-matching','attribute-filters','standard-attributes','special-attributes','review-fixes','vat-interactions'];
