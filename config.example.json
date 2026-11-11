@@ -1,8 +1,8 @@
 {
   "rust": "C:/Users/<you>/AppData/Roaming/horizon-launcher/rust/1.99.1-x86_64-pc-windows-gnu",
   "cargoHome": "C:/Users/<you>/AppData/Roaming/horizon-launcher/cargo",
-  "horizonSource": "<path to pristine Horizon sources, revision 2944480>",
-  "horizonVersion": "C:/Users/<you>/AppData/Roaming/horizon-launcher/versions/nightly-2026-11-03-2944480",
-  "horizonNativeVersion": "C:/Users/<you>/AppData/Roaming/horizon-launcher/versions/nightly-2026-11-03-2944480",
-  "mixins": "C:/Users/<you>/AppData/Roaming/horizon-launcher/native/tools/ddd9700b2199/bin/horizon-mixins.exe"
+  "horizonSource": "<path to pristine Horizon sources, revision fdc87ae>",
+  "horizonVersion": "C:/Users/<you>/AppData/Roaming/horizon-launcher/versions/nightly-2026-11-08-fdc87ae",
+  "horizonNativeVersion": "C:/Users/<you>/AppData/Roaming/horizon-launcher/versions/nightly-2026-11-08-fdc87ae",
+  "mixins": "C:/Users/<you>/AppData/Roaming/horizon-launcher/native/tools/5a64af938ec8/bin/horizon-mixins.exe"
 }

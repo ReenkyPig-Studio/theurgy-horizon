@@ -10,7 +10,7 @@ impl Game<'_> {
             return self.native_fluid_insert(pos, face, fluid, amount);
         }
         if !self.native_simulates() { return amount; }
-        let Some(FluidAt::Mod(tanks)) = self.native_fluid_at(self.dim.id(), pos) else { return amount; };
+        let Some(FluidAt::Mod { tanks, .. }) = self.native_fluid_at(self.dim.id(), pos) else { return amount; };
         let key = (pos[0], pos[1], pos[2]);
         let n = tanks.tanks.len();
         let reached = tanks.faces[face as usize].clone();
@@ -54,11 +54,14 @@ impl Game<'_> {
         max: i32,
     ) -> Option<(String, i32)> {
         if from == to { return None; }
+        // Only built-in storage gives the receipt that restores the drained tanks.
+        let source = self.native_fluid_at(dimension, from)?;
+        if matches!(source, FluidAt::Custom) { return None; }
         let fluid = self.native_fluid_tanks(dimension, from, from_face)?
             .into_iter().find(|tank| tank.can_drain && tank.amount > 0)?.fluid?;
         if !accept(&fluid) { return None; }
         let max = max.min(self.fluid_room(dimension, from, from_face, to, to_face)?);
-        let (fluid, taken, receipt) = self.fluid_take(dimension, from, from_face, max)?;
+        let (fluid, taken, receipt) = self.fluid_take(source, from, from_face, max)?;
         let left = self.theurgy_fluid_insert(to, to_face, &fluid, taken);
         if left > 0 {
             let all_back = if receipt.is_empty() {

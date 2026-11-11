@@ -8,10 +8,10 @@ commit 33b959c9ed0da1de2aff649e9728c1a03470b1bd; NeoForge 26.3.0.76 / Minecraft 
 См. upstream.lock.json: doctor проверяет commit, clean source и версии.
 Ранее ошибочно использовалась default-ветка 26.1.2; старые checkpoints не evidence нового source pin.
 Цель: Horizon / Minecraft 26.3. Rust — установленный launcher toolchain 1.99.1 GNU.
-Pristine Horizon для native stage и game: `294448014fba585f8d5d09dd8886f482493b6417`
-(nightly-2026-11-03-2944480). Исходник, executable и prepared resources должны совпадать;
+Pristine Horizon для native stage и game: `fdc87aecdbd116bf1e08adcd062fcbaea8c2e2ca`
+(nightly-2026-11-08-fdc87ae). Исходник, executable и prepared resources должны совпадать;
 старый c9d474d вызывал mismatch registry state order и больше не используется для игры.
-Mixins: ddd9700b21997c95d95ac6ee5ecafe3830cf622a, CLI schema 6.
+Mixins: 5a64af938ec86b00d53d16a408aabc0038fb3e57, CLI schema 6.
 config.json — локальные пути (gitignored); шаблон — config.example.json.
 
 ## Перенос на другую ревизию Horizon

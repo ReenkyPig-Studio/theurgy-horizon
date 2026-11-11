@@ -101,7 +101,7 @@ fn build(mesher: &Mesher<'_>) -> Option<Sal> {
 /// `pad` is the section `mesh_reusing` just meshed.
 pub(crate) fn add(mesher: &Mesher<'_>, pad: &Padded, out: &mut SectionMesh) {
     let Some((tables, ids)) = tables(mesher) else { return };
-    let shade = (mesher.nether_shading, mesher.shader_pack_lighting, mesher.separate_ao);
+    let shade = (mesher.nether_shading, mesher.shader_pack_lighting, mesher.separate_ao, mesher.shader_pack);
     let mut any = false;
     for y in 0..16 {
         for z in 0..16 {

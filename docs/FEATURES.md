@@ -13,7 +13,7 @@ tag `release/v26.3-1.120.1`, commit `33b959c9ed0da1de2aff649e9728c1a03470b1bd`,
 Minecraft `26.3`, NeoForge `26.3.0.76`, release `1.120.1`
 (upstream `gradle.properties` still says `1.120.0`; the tag/JAR is `1.120.1` — do not "fix" upstream).
 
-Horizon pin (`config.json` `horizonSource`): `294448014fba585f8d5d09dd8886f482493b6417` (`nightly-2026-11-03-2944480`).
+Horizon pin (`config.json` `horizonSource`): `fdc87aecdbd116bf1e08adcd062fcbaea8c2e2ca` (`nightly-2026-11-08-fdc87ae`).
 Rust toolchain: launcher `1.99.1-x86_64-pc-windows-gnu`. Native manifest:
 `native/theurgy/horizon-mixin.toml` (modules `host registry machines heat flux incubation fluids
 reformation logistics items render` + `engine` crate; injections `be_create be_ticks be_container

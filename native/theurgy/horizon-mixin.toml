@@ -3,7 +3,7 @@ id = "theurgy"
 version = "1.120.1"
 
 [compatibility]
-horizon_revision = "294448014fba585f8d5d09dd8886f482493b6417"
+horizon_revision = "fdc87aecdbd116bf1e08adcd062fcbaea8c2e2ca"
 
 [[crate]]
 id = "engine"

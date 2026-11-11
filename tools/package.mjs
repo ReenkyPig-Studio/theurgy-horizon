@@ -6,7 +6,7 @@ import {root,run} from './common.mjs';
 
 // The manifest pin is the single source of truth (tools/horizon-port.mjs --apply rewrites it).
 const HORIZON=(await fs.readFile(path.join(root,'native/theurgy/horizon-mixin.toml'),'utf8')).match(/horizon_revision\s*=\s*"([0-9a-f]{40})"/)[1];
-const MIXINS='ddd9700b21997c95d95ac6ee5ecafe3830cf622a';
+const MIXINS='5a64af938ec86b00d53d16a408aabc0038fb3e57';
 const skipBuild=process.argv.includes('--no-build');
 if(!skipBuild) {
   await run(process.execPath,['tools/build-content.mjs'],{cwd:root});

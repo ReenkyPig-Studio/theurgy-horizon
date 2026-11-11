@@ -7,7 +7,7 @@ Horizon implementation that reuses Theurgy's original assets and data.
 
 - Ported from: [`release/v26.3-1.120.1`](https://github.com/klikli-dev/theurgy/releases/tag/release/v26.3-1.120.1),
   commit `33b959c9ed0da1de2aff649e9728c1a03470b1bd` (Minecraft 26.3, NeoForge 26.3.0.76), pinned in `upstream.lock.json`.
-- Target: Horizon nightly-2026-11-03 (`2944480`), pinned in `native/theurgy/horizon-mixin.toml`.
+- Target: Horizon nightly-2026-11-08 (`fdc87ae`), pinned in `native/theurgy/horizon-mixin.toml`.
 - Not affiliated with or endorsed by klikli-dev. Please do not report issues with this port upstream.
 
 
