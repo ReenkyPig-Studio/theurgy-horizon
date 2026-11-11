@@ -46,7 +46,7 @@ await addFile('mixins/theurgy_native/NOTICE.md',path.join(root,'THIRD_PARTY_NOTI
 entries.sort((a,b)=>a.name.localeCompare(b.name));
 // Two mods (docs/api/mod-files.md): a content .hmod (horizon-mod.toml, assets/,
 // data/; nothing compiles) and a native .hnmod (horizon-native.json,
-// mixins/theurgy_native/): mod ids theurgy_assets and theurgy_native. The registry publishes code as .hnmod.
+// mixins/theurgy_native/): mod ids theurgy (content: it must own the theurgy namespace) and theurgy_native. The registry publishes code as .hnmod.
 const isNative=entry=>entry.name==='horizon-native.json'||entry.name.startsWith('mixins/');
 const nativeFiles=entries.filter(isNative);
 const contentEntries=entries.filter(entry=>!isNative(entry));

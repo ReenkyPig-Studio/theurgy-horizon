@@ -1,4 +1,4 @@
-id = "theurgy_assets"
+id = "theurgy"
 name = "Theurgy (Assets)"
 version = "1.120.1"
 description = "Classical alchemy: replicate and transmute matter. Rust/Horizon port."

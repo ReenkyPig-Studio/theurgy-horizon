@@ -3,8 +3,8 @@
   "packages": {
     "content": {
       "file": "artifacts/theurgy-26.3-1.120.1-content.hmod",
-      "sha256": "e7d65be4dbf5bfe3b6bb28f7ccf91c13fec40a521b791e5c3819f29409eec946",
-      "bytes": 5379586,
+      "sha256": "311045849882abd8b8f86850446bb59d40978ed032943aa59e81687f8805802d",
+      "bytes": 5379582,
       "entries": 3533
     },
     "native": {

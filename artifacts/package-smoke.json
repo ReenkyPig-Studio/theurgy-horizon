@@ -2,39 +2,39 @@
   "status": "PACKAGE_SMOKE_PASS",
   "package": "artifacts/theurgy-26.3-1.120.1-content.hmod + artifacts/theurgy-26.3-1.120.1-native.hnmod",
   "sha256": {
-    "content": "b3a725630e4a38476bf6727cd981aae8297ad4258ada2e9c71898c03f333997f",
-    "native": "31e9460b69162238a85e78301fa2d2b5ca705ac5a783f9e22341cd200feb4663"
+    "content": "311045849882abd8b8f86850446bb59d40978ed032943aa59e81687f8805802d",
+    "native": "c91360aeda5bc1ce20a034528d4781c397e5171db5c429cb062f8bf320e65ee9"
   },
-  "contentFiles": 3448,
-  "nativeFiles": 92,
+  "contentFiles": 3533,
+  "nativeFiles": 106,
   "nativeRoot": ".local\\package-smoke\\native",
   "scenarios": [
     {
       "scenario": "all",
-      "evidence": "runs/game-1794319640984",
+      "evidence": "runs/game-1794416423471",
       "home": ".local/package-smoke/game-all"
     },
     {
       "scenario": "custom:filters",
-      "evidence": "runs/game-1794319773107",
+      "evidence": "runs/game-1794416559420",
       "home": ".local/package-smoke/game-custom-filters"
     },
     {
       "scenario": "flux",
-      "evidence": "runs/game-1794319808149",
+      "evidence": "runs/game-1794416598482",
       "home": ".local/package-smoke/game-flux"
     },
     {
       "scenario": "fluids",
-      "evidence": "runs/game-1794319847049",
+      "evidence": "runs/game-1794416641104",
       "home": ".local/package-smoke/game-fluids"
     },
     {
       "scenario": "persistence",
-      "evidence": "runs/game-1794319965831",
+      "evidence": "runs/game-1794416764614",
       "home": ".local/package-smoke/game-persistence"
     }
   ],
-  "evidence": "runs/game-1794319640984",
-  "log": "runs\\package-smoke-2026-11-10T13-58-10.007Z"
+  "evidence": "runs/game-1794416423471",
+  "log": "runs\\package-smoke-2026-11-11T16-49-30.218Z"
 }
