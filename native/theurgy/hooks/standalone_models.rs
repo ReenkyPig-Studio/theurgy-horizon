@@ -6,4 +6,11 @@ fn hook(models: &mut Vec<String>) {
     ] {
         models.push(format!("theurgy:block/geckolib_atlas/{id}"));
     }
+    // DigestionVatRenderer textures (tools/digestion-vat.mjs).
+    for id in [
+        "digestion_vat_base", "digestion_vat_base_open", "digestion_vat_side",
+        "digestion_vat_side_front", "digestion_vat_side_front_active",
+    ] {
+        models.push(format!("theurgy:block/digestion_vat_atlas/{id}"));
+    }
 }

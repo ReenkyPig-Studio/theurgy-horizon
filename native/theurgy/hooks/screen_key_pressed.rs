@@ -6,5 +6,7 @@ fn hook(
     _modifiers: u32,
     canceled: &mut bool,
 ) {
-    crate::game::theurgy_filter_client::key_pressed(game, screen, key, canceled);
+    if !crate::game::theurgy_filter_client::key_pressed(game, screen, key, canceled) {
+        crate::game::theurgy_client::screen_key(game, screen, key, canceled);
+    }
 }
