@@ -81,7 +81,7 @@ if(cmd==='plan') {
     // Horizon only reserves the mod image atlas slot (native_mod_image,
     // Hermetica pictures) when it lists a mod (mods.rs built_with_native_mods).
     if(base==='build')await fs.writeFile(path.join(target,'fast/native-mods.json'),
-      JSON.stringify({mods:[{id:'theurgy',version:'1.120.1'}]})+'\n');
+      JSON.stringify({mods:[{id:'theurgy_native',version:'1.120.1'}]})+'\n');
   }
   console.log('Isolated stage:',stage);
 }

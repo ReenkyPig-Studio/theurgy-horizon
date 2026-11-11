@@ -18,7 +18,7 @@ Horizon implementation that reuses Theurgy's original assets and data.
 
 ## Installing
 
-The mod is two files with the id `theurgy`; both are required:
+The mod is two files, published as two mods (`theurgy_assets` and `theurgy_native`); both are required:
 
 | File | Contents |
 | --- | --- |

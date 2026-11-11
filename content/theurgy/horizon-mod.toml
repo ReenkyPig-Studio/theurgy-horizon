@@ -1,5 +1,5 @@
-id = "theurgy"
-name = "Theurgy"
+id = "theurgy_assets"
+name = "Theurgy (Assets)"
 version = "1.120.1"
 description = "Classical alchemy: replicate and transmute matter. Rust/Horizon port."
 authors = ["Kli Kli (original)", "Theurgy Horizon contributors"]

@@ -29,8 +29,8 @@ let contentFiles=0,nativeFiles=0;
 for(const [name,bytes] of entries) {
   if(!bytes||name.includes('..')||name.startsWith('/')||name.includes('\\'))throw new Error('unsafe package entry '+name);
   let destination;
-  if(name.startsWith('mixins/theurgy/')) {
-    destination=path.join(work,'native/theurgy',name.slice('mixins/theurgy/'.length));
+  if(name.startsWith('mixins/theurgy_native/')) {
+    destination=path.join(work,'native/theurgy',name.slice('mixins/theurgy_native/'.length));
     nativeFiles++;
   } else if(name==='horizon-native.json'||name.startsWith('mixins/')) {
     continue;

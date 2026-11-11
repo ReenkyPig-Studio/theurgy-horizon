@@ -21,8 +21,8 @@ async function copy(from,to) {
 // Generated resources intentionally replace handwritten duplicates, as the Java build does.
 for(const base of ['main/resources','generated/resources'])for(const dir of ['assets','data'])
   await copy(path.join(source,base,dir),path.join(dest,dir));
-await fs.writeFile(path.join(dest,'horizon-mod.toml'),`id = "theurgy"
-name = "Theurgy"
+await fs.writeFile(path.join(dest,'horizon-mod.toml'),`id = "theurgy_assets"
+name = "Theurgy (Assets)"
 version = "1.120.1"
 description = "Classical alchemy: replicate and transmute matter. Rust/Horizon port."
 authors = ["Kli Kli (original)", "Theurgy Horizon contributors"]

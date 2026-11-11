@@ -30,23 +30,23 @@ for(const kind of ['assets','data'])await walk(path.join(root,'content/theurgy',
   const relative=path.relative(path.join(root,'content/theurgy'),file);
   await addFile(relative,file);
 });
-await add('horizon-native.json',JSON.stringify({schema:1,id:'theurgy',version:'1.120.1',game:'26.3',horizon:HORIZON,mixins:MIXINS,hooks:1},null,2)+'\n');
+await add('horizon-native.json',JSON.stringify({schema:1,id:'theurgy_native',version:'1.120.1',game:'26.3',horizon:HORIZON,mixins:MIXINS,hooks:1},null,2)+'\n');
 await walk(path.join(root,'native/theurgy'),async file=>{
   const relative=path.relative(path.join(root,'native/theurgy'),file).replaceAll('\\','/');
   if(relative==='bootstrap.rs')return;
   if(!/^(?:horizon-mixin\.toml|hooks\/.+\.rs|[^/]+\.rs|engine\/.+|data\/.+)$/.test(relative))return;
-  await addFile('mixins/theurgy/'+relative,file);
+  await addFile('mixins/theurgy_native/'+relative,file);
 });
 {
   const licenses=path.join(root,'upstream/theurgy/LICENSES');
-  for(const name of await fs.readdir(licenses))await addFile('mixins/theurgy/LICENSE-'+name,path.join(licenses,name));
+  for(const name of await fs.readdir(licenses))await addFile('mixins/theurgy_native/LICENSE-'+name,path.join(licenses,name));
 }
-await addFile('mixins/theurgy/REUSE.toml',path.join(root,'upstream/theurgy/REUSE.toml'));
-await addFile('mixins/theurgy/NOTICE.md',path.join(root,'THIRD_PARTY_NOTICES.md'));
+await addFile('mixins/theurgy_native/REUSE.toml',path.join(root,'upstream/theurgy/REUSE.toml'));
+await addFile('mixins/theurgy_native/NOTICE.md',path.join(root,'THIRD_PARTY_NOTICES.md'));
 entries.sort((a,b)=>a.name.localeCompare(b.name));
 // Two mods (docs/api/mod-files.md): a content .hmod (horizon-mod.toml, assets/,
 // data/; nothing compiles) and a native .hnmod (horizon-native.json,
-// mixins/theurgy/), both mod id theurgy. The registry publishes code as .hnmod.
+// mixins/theurgy_native/): mod ids theurgy_assets and theurgy_native. The registry publishes code as .hnmod.
 const isNative=entry=>entry.name==='horizon-native.json'||entry.name.startsWith('mixins/');
 const nativeFiles=entries.filter(isNative);
 const contentEntries=entries.filter(entry=>!isNative(entry));
