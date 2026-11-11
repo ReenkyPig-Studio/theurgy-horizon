@@ -1,0 +1,12 @@
+# Isolated Hermetica preview: compiles native/theurgy/book.rs on its own
+# (no Horizon) and records its draw calls; tools/book-preview.mjs rasterizes.
+[package]
+name = "book-preview"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+serde_json = "1"
+
+[workspace]
