@@ -5,7 +5,12 @@
 - Upstream: `klikli-dev/theurgy`, `release/v26.3-1.120.1`, commit `33b959c9ed0da1de2aff649e9728c1a03470b1bd`.
 - Code and assets retain the upstream `LICENSES/` directory and `REUSE.toml` in the generated content addon.
 - GeckoLib models, animations, book pages, translations and other assets retain their original attribution; CC-BY-4.0 assets are not relicensed.
-- `data/theurgy/hermetica_images/*.bin` are raw RGBA decodes of Theurgy's `assets/theurgy/textures/gui/book/*.png` (CC-BY-4.0, © klikli-dev), unmodified except for format; `data/theurgy/hermetica.json` derives from the Theurgy Hermetica book data under the same terms.
+- `data/theurgy/hermetica.json` derives from the Theurgy Hermetica book data (CC-BY-4.0, © klikli-dev); its page images are Theurgy's own `assets/theurgy/textures/gui/book/*.png`.
+
+## Modonomicon 2.19.0
+
+- `assets/theurgy/textures/gui/modonomicon/**` are the unmodified default theme sprites (`assets/modonomicon/textures/gui/sprites/modonomicon/themes/default/**`) of `com.klikli_dev:modonomicon-26.3-neoforge:2.19.0` (© klikli-dev), licensed **MIT AND CC-BY-4.0** (<https://github.com/klikli-dev/modonomicon#licensing>), copied so the native Hermetica screen looks like the Modonomicon book Theurgy ships with.
+- `native/theurgy/book.rs` reimplements the Modonomicon GUI layout in Rust after Modonomicon's MIT-licensed client code; no Modonomicon code is linked.
 
 ## NeoForge 26.3.0.76
 

@@ -3,18 +3,18 @@
   "packages": {
     "content": {
       "file": "artifacts/theurgy-26.3-1.120.1-content.hmod",
-      "sha256": "b3a725630e4a38476bf6727cd981aae8297ad4258ada2e9c71898c03f333997f",
-      "bytes": 6619542,
-      "entries": 3448
+      "sha256": "d465875673f8080731290651602a191859d3a21e6672b39904da4bac7395b468",
+      "bytes": 5401183,
+      "entries": 3578
     },
     "native": {
       "file": "artifacts/theurgy-26.3-1.120.1-native.hnmod",
-      "sha256": "31e9460b69162238a85e78301fa2d2b5ca705ac5a783f9e22341cd200feb4663",
-      "bytes": 190702,
-      "entries": 93
+      "sha256": "bbc92daa42cf6923d5e692f5cba775c487b1277dad6ae358ec8b784f98b69425",
+      "bytes": 220238,
+      "entries": 104
     }
   },
-  "nativeBytes": 995876,
+  "nativeBytes": 1095857,
   "manifests": {
     "horizon": "294448014fba585f8d5d09dd8886f482493b6417",
     "mixins": "ddd9700b21997c95d95ac6ee5ecafe3830cf622a",

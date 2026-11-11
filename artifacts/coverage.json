@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generatedAt": "2026-11-10T10:35:17.525Z",
+  "generatedAt": "2026-11-11T12:04:50.141Z",
   "source": {
     "revision": "33b959c9ed0da1de2aff649e9728c1a03470b1bd",
     "tag": "release/v26.3-1.120.1",
@@ -16956,7 +16956,7 @@
       {
         "source": "assets/theurgy/blockstates/sal_ammoniac.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/blockstates/sal_ammoniac_accumulator.json",
@@ -18601,7 +18601,7 @@
       {
         "source": "assets/theurgy/items/digestion_vat.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/distiller.json",
@@ -18891,7 +18891,7 @@
       {
         "source": "assets/theurgy/items/sal_ammoniac_bucket.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/items/sal_ammoniac_crystal.json",
@@ -19126,7 +19126,7 @@
       {
         "source": "assets/theurgy/models/block/sal_ammoniac.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/models/block/sal_ammoniac_accumulator.json",
@@ -19231,7 +19231,7 @@
       {
         "source": "assets/theurgy/models/item/digestion_vat.json",
         "present": true,
-        "sameHash": true
+        "sameHash": false
       },
       {
         "source": "assets/theurgy/models/item/distiller.json",
@@ -19891,6 +19891,7 @@
     ],
     "missing": [],
     "changed": [
+      "assets/theurgy/blockstates/sal_ammoniac.json",
       "assets/theurgy/items/alchemical_niter_animals_abundant.json",
       "assets/theurgy/items/alchemical_niter_animals_common.json",
       "assets/theurgy/items/alchemical_niter_animals_rare.json",
@@ -20208,14 +20209,18 @@
       "assets/theurgy/items/alchemical_sulfur_zinc.json",
       "assets/theurgy/items/alchemical_sulfur_zucchini.json",
       "assets/theurgy/items/calcination_oven.json",
+      "assets/theurgy/items/digestion_vat.json",
       "assets/theurgy/items/distiller.json",
       "assets/theurgy/items/incubator_mercury_vessel.json",
       "assets/theurgy/items/incubator_salt_vessel.json",
       "assets/theurgy/items/incubator_sulfur_vessel.json",
       "assets/theurgy/items/logistics_nexus.json",
       "assets/theurgy/items/sal_ammoniac_accumulator.json",
+      "assets/theurgy/items/sal_ammoniac_bucket.json",
       "assets/theurgy/items/sal_ammoniac_tank.json",
+      "assets/theurgy/models/block/sal_ammoniac.json",
       "assets/theurgy/models/item/calcination_oven.json",
+      "assets/theurgy/models/item/digestion_vat.json",
       "assets/theurgy/models/item/distiller.json",
       "assets/theurgy/models/item/incubator_mercury_vessel.json",
       "assets/theurgy/models/item/incubator_salt_vessel.json",
@@ -20234,7 +20239,7 @@
         "status": "VERIFIED",
         "java": "`registry/BlockRegistry.java:255-280` + 30 further `registerBlock` lines",
         "rust": "`native/theurgy/registry.rs (id strings only)`",
-        "evidence": "test=isolated game all + offline content-check + offline audit | run=runs\\game-1794224712378 + runs\\acceptance-2026-11-09T11-37-36.767Z\\content-check.log + runs\\acceptance-2026-11-09T11-37-36.767Z\\audit.log | result=PASS"
+        "evidence": "test=isolated game all + offline content-check + offline audit | run=runs\\game-1794307344272 + runs\\acceptance-2026-11-10T10-33-11.082Z\\content-check.log + runs\\acceptance-2026-11-10T10-33-11.082Z\\audit.log | result=PASS"
       },
       {
         "line": 65,
@@ -20243,7 +20248,7 @@
         "status": "VERIFIED",
         "java": "`registry/BlockEntityRegistry.java:22-151`",
         "rust": "`native/theurgy/registry.rs::is_be`",
-        "evidence": "test=offline modules-registry + offline audit | run=runs\\acceptance-2026-11-09T11-37-36.767Z\\modules-registry.log + runs\\acceptance-2026-11-09T11-37-36.767Z\\audit.log | result=PASS"
+        "evidence": "test=offline modules-registry + offline audit | run=runs\\acceptance-2026-11-10T10-33-11.082Z\\modules-registry.log + runs\\acceptance-2026-11-10T10-33-11.082Z\\audit.log | result=PASS"
       },
       {
         "line": 66,
@@ -20261,7 +20266,7 @@
         "status": "VERIFIED",
         "java": "`content/apparatus/*/[A-Za-z]*BlockItem.java`",
         "rust": "`native/theurgy/items.rs`",
-        "evidence": "test=Java GameTest differential (4 tests) + isolated game interactions + isolated game persistence + isolated game logistics-advanced + offline modules-items | run=artifacts/differential.json + runs\\game-1794224964769 + runs\\game-1794225781505 + runs\\game-1794226331517 + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules-items.log | result=PASS"
+        "evidence": "test=Java GameTest differential (4 tests) + isolated game interactions + isolated game persistence + isolated game logistics-advanced + offline modules-items | run=artifacts/differential.json + runs\\game-1794307582663 + runs\\game-1794308358122 + runs\\game-1794308885206 + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules-items.log | result=PASS"
       },
       {
         "line": 68,
@@ -20270,7 +20275,7 @@
         "status": "VERIFIED",
         "java": "`registry/FluidRegistry.java:16-25`, `registry/FluidTypeRegistry.java`, `content/fluid/SolventFluidType.java`",
         "rust": "`native/theurgy/fluids.rs`",
-        "evidence": "test=isolated game fluids + offline content-check | run=runs\\game-1794226126216 + runs\\acceptance-2026-11-09T11-37-36.767Z\\content-check.log | result=PASS"
+        "evidence": "test=isolated game fluids + offline content-check | run=runs\\game-1794308698239 + runs\\acceptance-2026-11-10T10-33-11.082Z\\content-check.log | result=PASS"
       },
       {
         "line": 74,
@@ -20279,7 +20284,7 @@
         "status": "VERIFIED",
         "java": "`registry/RecipeTypeRegistry.java:16-31`",
         "rust": "`native/theurgy/engine/src/recipes.rs (generic)`",
-        "evidence": "test=isolated game recipes + offline content-check + offline audit | run=runs\\game-1794228009841 + runs\\acceptance-2026-11-09T11-37-36.767Z\\content-check.log + runs\\acceptance-2026-11-09T11-37-36.767Z\\audit.log | result=PASS"
+        "evidence": "test=isolated game recipes + offline content-check + offline audit | run=runs\\game-1794310507553 + runs\\acceptance-2026-11-10T10-33-11.082Z\\content-check.log + runs\\acceptance-2026-11-10T10-33-11.082Z\\audit.log | result=PASS"
       },
       {
         "line": 75,
@@ -20288,7 +20293,7 @@
         "status": "VERIFIED",
         "java": "`registry/RecipeSerializerRegistry.java`, `registry/RecipeDisplayRegistry.java`, `registry/RecipeResultRegistry.java`",
         "rust": "`native/theurgy/engine/src/recipes.rs + native/theurgy/recipe_client.rs + generated data`",
-        "evidence": "test=isolated game recipes + offline content-check + offline audit | run=runs\\game-1794228009841 + runs\\acceptance-2026-11-09T11-37-36.767Z\\content-check.log + runs\\acceptance-2026-11-09T11-37-36.767Z\\audit.log | result=PASS"
+        "evidence": "test=isolated game recipes + offline content-check + offline audit | run=runs\\game-1794310507553 + runs\\acceptance-2026-11-10T10-33-11.082Z\\content-check.log + runs\\acceptance-2026-11-10T10-33-11.082Z\\audit.log | result=PASS"
       },
       {
         "line": 76,
@@ -20297,7 +20302,7 @@
         "status": "VERIFIED",
         "java": "`registry/DataComponentRegistry.java:36-194`",
         "rust": "`native/theurgy/registry.rs::component_types (string list)`",
-        "evidence": "test=isolated game filters + isolated game wand + isolated game divination + isolated game logistics-advanced + offline modules-registry | run=runs\\game-1794225249408 + runs\\game-1794228183851 + runs\\game-1794225168593 + runs\\game-1794226331517 + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules-registry.log | result=PASS"
+        "evidence": "test=isolated game filters + isolated game wand + isolated game divination + isolated game logistics-advanced + offline modules-registry | run=runs\\game-1794307835530 + runs\\game-1794310632283 + runs\\game-1794307767691 + runs\\game-1794308885206 + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules-registry.log | result=PASS"
       },
       {
         "line": 77,
@@ -20306,7 +20311,7 @@
         "status": "VERIFIED",
         "java": "`registry/ItemRegistry.java:39-252`",
         "rust": "`native/theurgy/items.rs`",
-        "evidence": "test=isolated game items + offline content-check + offline audit | run=runs\\game-1794225004582 + runs\\acceptance-2026-11-09T11-37-36.767Z\\content-check.log + runs\\acceptance-2026-11-09T11-37-36.767Z\\audit.log | result=PASS"
+        "evidence": "test=isolated game items + offline content-check + offline audit | run=runs\\game-1794307622619 + runs\\acceptance-2026-11-10T10-33-11.082Z\\content-check.log + runs\\acceptance-2026-11-10T10-33-11.082Z\\audit.log | result=PASS"
       },
       {
         "line": 78,
@@ -20315,7 +20320,7 @@
         "status": "VERIFIED",
         "java": "`registry/SulfurRegistry.java:29-120`, `registry/NiterRegistry.java:23-60`, `registry/SaltRegistry.java:23-55`, `content/item/derivative/AlchemicalDerivativeTier.java`, `content/item/sulfur/AlchemicalSulfurType.java`",
         "rust": "`native/theurgy/items.rs`",
-        "evidence": "test=isolated game client + offline content-check + offline audit | run=runs\\game-1794228048631 + runs\\acceptance-2026-11-09T11-37-36.767Z\\content-check.log + runs\\acceptance-2026-11-09T11-37-36.767Z\\audit.log | result=PASS"
+        "evidence": "test=isolated game client + offline content-check + offline audit | run=runs\\game-1794310541574 + runs\\acceptance-2026-11-10T10-33-11.082Z\\content-check.log + runs\\acceptance-2026-11-10T10-33-11.082Z\\audit.log | result=PASS"
       },
       {
         "line": 79,
@@ -20324,7 +20329,7 @@
         "status": "VERIFIED",
         "java": "`registry/{CreativeModeTabRegistry,SoundRegistry,ParticleRegistry,ShaderRegistry,KeyMappingsRegistry}.java`",
         "rust": "`native/theurgy/render.rs`",
-        "evidence": "test=isolated game client-features + isolated game wand + isolated game divination + offline content-check | run=runs\\game-1794228220578 + runs\\game-1794228183851 + runs\\game-1794225168593 + runs\\acceptance-2026-11-09T11-37-36.767Z\\content-check.log | result=PASS"
+        "evidence": "test=isolated game client-features + isolated game wand + isolated game divination + offline content-check | run=runs\\game-1794310664615 + runs\\game-1794310632283 + runs\\game-1794307767691 + runs\\acceptance-2026-11-10T10-33-11.082Z\\content-check.log | result=PASS"
       },
       {
         "line": 80,
@@ -20333,7 +20338,7 @@
         "status": "VERIFIED",
         "java": "`registry/{BlockTagRegistry,ItemTagRegistry,FluidTagRegistry}.java`, `datagen/tag/*`",
         "rust": "`tools/build-content.mjs`",
-        "evidence": "test=isolated game content-rules + isolated game filter-matching + offline content-check + offline audit | run=runs\\game-1794225295776 + runs\\game-1794226430467 + runs\\acceptance-2026-11-09T11-37-36.767Z\\content-check.log + runs\\acceptance-2026-11-09T11-37-36.767Z\\audit.log | result=PASS"
+        "evidence": "test=isolated game content-rules + isolated game filter-matching + offline content-check + offline audit | run=runs\\game-1794307873039 + runs\\game-1794308980712 + runs\\acceptance-2026-11-10T10-33-11.082Z\\content-check.log + runs\\acceptance-2026-11-10T10-33-11.082Z\\audit.log | result=PASS"
       },
       {
         "line": 81,
@@ -20342,7 +20347,7 @@
         "status": "VERIFIED",
         "java": "`registry/CapabilityRegistry.java`, `content/capability/*.java`",
         "rust": "`native/theurgy/host.rs`",
-        "evidence": "test=Java GameTest differential (2 tests) + isolated game review-fixes + isolated game flux | run=artifacts/differential.json + runs\\game-1794226734819 + runs\\game-1794225037837 | result=PASS"
+        "evidence": "test=Java GameTest differential (2 tests) + isolated game review-fixes + isolated game flux | run=artifacts/differential.json + runs\\game-1794309270549 + runs\\game-1794307651789 | result=PASS"
       },
       {
         "line": 90,
@@ -20351,7 +20356,7 @@
         "status": "VERIFIED",
         "java": "`content/behaviour/crafting/CraftingBehaviour.java:117-137`",
         "rust": "`native/theurgy/engine/src/crafting.rs::Crafting::tick`",
-        "evidence": "test=Java GameTest differential (3 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+        "evidence": "test=Java GameTest differential (3 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
       },
       {
         "line": 91,
@@ -20360,7 +20365,7 @@
         "status": "VERIFIED",
         "java": "`CraftingBehaviour.java:191-200`",
         "rust": "`engine/src/crafting.rs`",
-        "evidence": "test=Java GameTest differential (2 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+        "evidence": "test=Java GameTest differential (2 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
       },
       {
         "line": 92,
@@ -20369,7 +20374,7 @@
         "status": "VERIFIED",
         "java": "`CraftingBehaviour.java:202-210`",
         "rust": "`engine/src/crafting.rs`",
-        "evidence": "test=Java GameTest differential (1 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+        "evidence": "test=Java GameTest differential (1 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
       },
       {
         "line": 93,
@@ -20378,7 +20383,7 @@
         "status": "VERIFIED",
         "java": "`CraftingBehaviour.java:212-223`",
         "rust": "`engine/src/crafting.rs (unit test idle_stop_does_not_clear_could_craft_java_quirk)`",
-        "evidence": "test=Java GameTest differential (1 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+        "evidence": "test=Java GameTest differential (1 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
       },
       {
         "line": 94,
@@ -20387,7 +20392,7 @@
         "status": "VERIFIED",
         "java": "`CraftingBehaviour.java:225-238`",
         "rust": "`engine/src/machines.rs::can_fit / tick_machine`",
-        "evidence": "test=Java GameTest differential (1 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+        "evidence": "test=Java GameTest differential (1 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
       },
       {
         "line": 95,
@@ -20396,7 +20401,7 @@
         "status": "VERIFIED",
         "java": "`CraftingBehaviour.java:240-256`",
         "rust": "`engine/src/machines.rs::tick_machine (claimed atomic)`",
-        "evidence": "test=Java GameTest differential (2 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+        "evidence": "test=Java GameTest differential (2 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
       },
       {
         "line": 96,
@@ -20405,7 +20410,7 @@
         "status": "VERIFIED",
         "java": "`CraftingBehaviour.java:258-267`",
         "rust": "`engine/src/crafting.rs`",
-        "evidence": "test=Java GameTest differential (1 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+        "evidence": "test=Java GameTest differential (1 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
       },
       {
         "line": 97,
@@ -20414,7 +20419,7 @@
         "status": "VERIFIED",
         "java": "`CraftingBehaviour.java:64-70`",
         "rust": "`engine/src/crafting.rs::progress_percent`",
-        "evidence": "test=Java GameTest differential (1 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+        "evidence": "test=Java GameTest differential (1 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
       },
       {
         "line": 98,
@@ -20423,7 +20428,7 @@
         "status": "VERIFIED",
         "java": "`CraftingBehaviour.java:139-142`",
         "rust": "`engine/src/crafting.rs::input_changed`",
-        "evidence": "test=Java GameTest differential (1 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+        "evidence": "test=Java GameTest differential (1 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
       },
       {
         "line": 99,
@@ -20432,7 +20437,7 @@
         "status": "VERIFIED",
         "java": "`CraftingBehaviour.java:148-189`",
         "rust": "`native/theurgy/engine/src/crafting.rs`",
-        "evidence": "test=Java GameTest differential (1 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+        "evidence": "test=Java GameTest differential (1 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
       },
       {
         "line": 100,
@@ -20441,7 +20446,7 @@
         "status": "VERIFIED",
         "java": "`CraftingBehaviour.java:80-100`",
         "rust": "`native/theurgy/host.rs::{crafting,save_crafting}`",
-        "evidence": "test=isolated game persistence + isolated game machines + isolated game incubation-chaos | run=runs\\game-1794225781505 + runs\\game-1794224850210 + runs\\game-1794225335669 | result=PASS"
+        "evidence": "test=isolated game persistence + isolated game machines + isolated game incubation-chaos | run=runs\\game-1794308358122 + runs\\game-1794307477982 + runs\\game-1794307913284 | result=PASS"
       },
       {
         "line": 101,
@@ -20450,7 +20455,7 @@
         "status": "VERIFIED",
         "java": "`CraftingBehaviour.java:72-78`",
         "rust": "`native/theurgy/host.rs`",
-        "evidence": "test=Java GameTest differential (2 tests) + isolated game client-features | run=artifacts/differential.json + runs\\game-1794228220578 | result=PASS"
+        "evidence": "test=Java GameTest differential (2 tests) + isolated game client-features | run=artifacts/differential.json + runs\\game-1794310664615 | result=PASS"
       },
       {
         "line": 102,
@@ -20459,7 +20464,7 @@
         "status": "VERIFIED",
         "java": "`content/behaviour/crafting/LevelAwareCachedCheck.java`, `LevelAwareRecipeCheck.java`",
         "rust": "`native/theurgy/engine/src/recipes.rs`",
-        "evidence": "test=Java GameTest differential (2 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+        "evidence": "test=Java GameTest differential (2 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
       },
       {
         "line": 103,
@@ -20468,7 +20473,7 @@
         "status": "VERIFIED",
         "java": "`content/storage/SettableItemStorage.java`, `content/storage/MonitoredItemStackHandler.java`, `content/behaviour/itemhandler/*.java`",
         "rust": "`native/theurgy/interactions.rs`",
-        "evidence": "test=Java GameTest differential (2 tests) + isolated game review-fixes + offline modules-registry | run=artifacts/differential.json + runs\\game-1794226734819 + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules-registry.log | result=PASS"
+        "evidence": "test=Java GameTest differential (2 tests) + isolated game review-fixes + offline modules-registry | run=artifacts/differential.json + runs\\game-1794309270549 + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules-registry.log | result=PASS"
       },
       {
         "line": 113,
@@ -20486,7 +20491,7 @@
         "status": "VERIFIED",
         "java": "`content/capability/DefaultHeatReceiver.java:15-52`",
         "rust": "`native/theurgy/heat.rs`",
-        "evidence": "test=Java GameTest differential (2 tests) + isolated game flux + isolated game persistence | run=artifacts/differential.json + runs\\game-1794225037837 + runs\\game-1794225781505 | result=PASS"
+        "evidence": "test=Java GameTest differential (2 tests) + isolated game flux + isolated game persistence | run=artifacts/differential.json + runs\\game-1794307651789 + runs\\game-1794308358122 | result=PASS"
       },
       {
         "line": 115,
@@ -20495,7 +20500,7 @@
         "status": "VERIFIED",
         "java": "`content/capability/CraftingHeatReceiver.java:12-25`",
         "rust": "`native/theurgy/heat.rs`",
-        "evidence": "test=Java GameTest differential (2 tests) + isolated game flux | run=artifacts/differential.json + runs\\game-1794225037837 | result=PASS"
+        "evidence": "test=Java GameTest differential (2 tests) + isolated game flux | run=artifacts/differential.json + runs\\game-1794307651789 | result=PASS"
       },
       {
         "line": 116,
@@ -20522,7 +20527,7 @@
         "status": "VERIFIED",
         "java": "`PyromanticBrazierBlockEntity.java:177-191`",
         "rust": "`native/theurgy/heat.rs`",
-        "evidence": "test=Java GameTest differential (1 tests) + isolated game persistence + offline modules-heat | run=artifacts/differential.json + runs\\game-1794225781505 + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules-heat.log | result=PASS"
+        "evidence": "test=Java GameTest differential (1 tests) + isolated game persistence + offline modules-heat | run=artifacts/differential.json + runs\\game-1794308358122 + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules-heat.log | result=PASS"
       },
       {
         "line": 119,
@@ -20531,7 +20536,7 @@
         "status": "VERIFIED",
         "java": "`content/apparatus/caloricfluxemitter/CaloricFluxEmitterBlockEntity.java:32-91`",
         "rust": "`native/theurgy/flux.rs`",
-        "evidence": "test=Java GameTest differential (4 tests) + isolated game flux | run=artifacts/differential.json + runs\\game-1794225037837 | result=PASS"
+        "evidence": "test=Java GameTest differential (4 tests) + isolated game flux | run=artifacts/differential.json + runs\\game-1794307651789 | result=PASS"
       },
       {
         "line": 125,
@@ -20540,7 +20545,7 @@
         "status": "VERIFIED",
         "java": "`content/recipe/CalcinationRecipe.java:28-60`",
         "rust": "`engine/src/recipes.rs (generic)`",
-        "evidence": "test=Java GameTest differential (2 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+        "evidence": "test=Java GameTest differential (2 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
       },
       {
         "line": 126,
@@ -20549,7 +20554,7 @@
         "status": "VERIFIED",
         "java": "`content/apparatus/calcinationoven/CalcinationCraftingBehaviour.java:20-52`",
         "rust": "`native/theurgy/machines.rs`",
-        "evidence": "test=Java GameTest differential (2 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+        "evidence": "test=Java GameTest differential (2 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
       },
       {
         "line": 127,
@@ -20558,7 +20563,7 @@
         "status": "VERIFIED",
         "java": "`CalcinationCraftingBehaviour.java:28-31`, `CalcinationCachedCheck.java`",
         "rust": "`native/theurgy/engine/src/recipes.rs + native/theurgy/machines.rs`",
-        "evidence": "test=Java GameTest differential (2 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+        "evidence": "test=Java GameTest differential (2 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
       },
       {
         "line": 128,
@@ -20567,7 +20572,7 @@
         "status": "VERIFIED",
         "java": "`CalcinationOvenBlock.java`, `CalcinationOvenBlockItem.java`",
         "rust": "`native/theurgy/machines.rs, hooks/place.rs, hooks/destroy.rs`",
-        "evidence": "test=Java GameTest differential (4 tests) + isolated game interactions | run=artifacts/differential.json + runs\\game-1794224964769 | result=PASS"
+        "evidence": "test=Java GameTest differential (4 tests) + isolated game interactions | run=artifacts/differential.json + runs\\game-1794307582663 | result=PASS"
       },
       {
         "line": 129,
@@ -20576,7 +20581,7 @@
         "status": "VERIFIED",
         "java": "`CalcinationStorageBehaviour.java`, `CalcinationOvenBlockEntity.java`",
         "rust": "`registry.rs::container`",
-        "evidence": "test=Java GameTest differential (2 tests) + isolated game review-fixes + offline modules-registry | run=artifacts/differential.json + runs\\game-1794226734819 + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules-registry.log | result=PASS"
+        "evidence": "test=Java GameTest differential (2 tests) + isolated game review-fixes + offline modules-registry | run=artifacts/differential.json + runs\\game-1794309270549 + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules-registry.log | result=PASS"
       },
       {
         "line": 130,
@@ -20603,7 +20608,7 @@
         "status": "VERIFIED",
         "java": "`CalcinationAnimationBehaviour.java`, `render/CalcinationOvenRenderer.java`, `render/CalcinationOvenItemRenderer.java`",
         "rust": "`native/theurgy/render.rs`",
-        "evidence": "test=isolated game render | run=runs\\game-1794228087282 | result=PASS"
+        "evidence": "test=isolated game render | run=runs\\game-1794310569539 | result=PASS"
       },
       {
         "line": 138,
@@ -20612,7 +20617,7 @@
         "status": "VERIFIED",
         "java": "`content/recipe/DistillationRecipe.java:30-90`, `registry/RecipeTypeRegistry.java:21`",
         "rust": "`native/theurgy/machines.rs`",
-        "evidence": "test=Java GameTest differential (3 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+        "evidence": "test=Java GameTest differential (3 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
       },
       {
         "line": 139,
@@ -20621,7 +20626,7 @@
         "status": "VERIFIED",
         "java": "`content/apparatus/distiller/DistillationCraftingBehaviour.java`, `DistillationStorageBehaviour.java`",
         "rust": "`native/theurgy/machines.rs`",
-        "evidence": "test=Java GameTest differential (3 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+        "evidence": "test=Java GameTest differential (3 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
       },
       {
         "line": 140,
@@ -20630,7 +20635,7 @@
         "status": "VERIFIED",
         "java": "`DistillerBlock.java`, `DistillerBlockItem.java`, `DistillerBlockEntity.java`",
         "rust": "`native/theurgy/machines.rs`",
-        "evidence": "test=Java GameTest differential (6 tests) + isolated game interactions | run=artifacts/differential.json + runs\\game-1794224964769 | result=PASS"
+        "evidence": "test=Java GameTest differential (6 tests) + isolated game interactions | run=artifacts/differential.json + runs\\game-1794307582663 | result=PASS"
       },
       {
         "line": 141,
@@ -20639,7 +20644,7 @@
         "status": "VERIFIED",
         "java": "`DistillerAnimationBehaviour.java`, `render/*.java`",
         "rust": "`native/theurgy/render.rs`",
-        "evidence": "test=isolated game render | run=runs\\game-1794228087282 | result=PASS"
+        "evidence": "test=isolated game render | run=runs\\game-1794310569539 | result=PASS"
       },
       {
         "line": 147,
@@ -20648,7 +20653,7 @@
         "status": "VERIFIED",
         "java": "`content/recipe/LiquefactionRecipe.java:36-160`",
         "rust": "`native/theurgy/machines.rs`",
-        "evidence": "test=Java GameTest differential (4 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+        "evidence": "test=Java GameTest differential (4 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
       },
       {
         "line": 148,
@@ -20657,7 +20662,7 @@
         "status": "VERIFIED",
         "java": "`content/apparatus/liquefactioncauldron/LiquefactionCraftingBehaviour.java:20-60`",
         "rust": "`native/theurgy/machines.rs`",
-        "evidence": "test=Java GameTest differential (4 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+        "evidence": "test=Java GameTest differential (4 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
       },
       {
         "line": 149,
@@ -20666,7 +20671,7 @@
         "status": "VERIFIED",
         "java": "`LiquefactionStorageBehaviour.java`, `LiquefactionCauldronBlockEntity.java`",
         "rust": "`registry.rs::{container,fluids} (10000 mB static)`",
-        "evidence": "test=Java GameTest differential (4 tests) + offline modules-registry | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules-registry.log | result=PASS"
+        "evidence": "test=Java GameTest differential (4 tests) + offline modules-registry | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules-registry.log | result=PASS"
       },
       {
         "line": 150,
@@ -20684,7 +20689,7 @@
         "status": "VERIFIED",
         "java": "`render/LiquefactionCauldronRenderer.java`",
         "rust": "`native/theurgy/render.rs`",
-        "evidence": "test=isolated game render | run=runs\\game-1794228087282 | result=PASS"
+        "evidence": "test=isolated game render | run=runs\\game-1794310569539 | result=PASS"
       },
       {
         "line": 157,
@@ -20693,7 +20698,7 @@
         "status": "VERIFIED",
         "java": "`content/recipe/FermentationRecipe.java:32-160`",
         "rust": "`native/theurgy/machines.rs`",
-        "evidence": "test=Java GameTest differential (3 tests) + isolated game all + isolated game content-rules + offline rust-fast | run=artifacts/differential.json + runs\\game-1794224712378 + runs\\game-1794225295776 + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+        "evidence": "test=Java GameTest differential (3 tests) + isolated game all + isolated game content-rules + offline rust-fast | run=artifacts/differential.json + runs\\game-1794307344272 + runs\\game-1794307873039 + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
       },
       {
         "line": 158,
@@ -20702,7 +20707,7 @@
         "status": "VERIFIED",
         "java": "`content/recipe/DigestionRecipe.java:38-160`",
         "rust": "`native/theurgy/machines.rs`",
-        "evidence": "test=Java GameTest differential (3 tests) + isolated game all + offline rust-fast | run=artifacts/differential.json + runs\\game-1794224712378 + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+        "evidence": "test=Java GameTest differential (3 tests) + isolated game all + offline rust-fast | run=artifacts/differential.json + runs\\game-1794307344272 + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
       },
       {
         "line": 159,
@@ -20711,7 +20716,7 @@
         "status": "VERIFIED",
         "java": "`content/apparatus/{fermentationvat,digestionvat}/*StorageBehaviour.java`, `content/behaviour/redstone/Vat*.java`",
         "rust": "`registry.rs::container`",
-        "evidence": "test=Java GameTest differential (6 tests) + offline modules-registry | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules-registry.log | result=PASS"
+        "evidence": "test=Java GameTest differential (6 tests) + offline modules-registry | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules-registry.log | result=PASS"
       },
       {
         "line": 160,
@@ -20720,7 +20725,7 @@
         "status": "VERIFIED",
         "java": "`content/behaviour/interaction/GenericVatInteractionBehaviour.java:21-80`, `{Digestion,Fermentation}VatInteractionBehaviour.java`",
         "rust": "`hooks/use_on.rs`",
-        "evidence": "test=isolated game vat-interactions | run=runs\\game-1794226810288 | result=PASS"
+        "evidence": "test=isolated game vat-interactions | run=runs\\game-1794309348387 | result=PASS"
       },
       {
         "line": 161,
@@ -20738,7 +20743,7 @@
         "status": "VERIFIED",
         "java": "`content/recipe/AccumulationRecipe.java:38-150`",
         "rust": "`native/theurgy/engine/src/recipes.rs`",
-        "evidence": "test=Java GameTest differential (2 tests) + isolated game fluids + offline rust-fast | run=artifacts/differential.json + runs\\game-1794226126216 + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+        "evidence": "test=Java GameTest differential (2 tests) + isolated game fluids + offline rust-fast | run=artifacts/differential.json + runs\\game-1794308698239 + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
       },
       {
         "line": 168,
@@ -20747,7 +20752,7 @@
         "status": "VERIFIED",
         "java": "`content/apparatus/salammoniacaccumulator/SalAmmoniacAccumulatorCraftingBehaviour.java:70-100`",
         "rust": "`native/theurgy/machines.rs`",
-        "evidence": "test=Java GameTest differential (2 tests) + isolated game fluids + offline rust-fast | run=artifacts/differential.json + runs\\game-1794226126216 + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+        "evidence": "test=Java GameTest differential (2 tests) + isolated game fluids + offline rust-fast | run=artifacts/differential.json + runs\\game-1794308698239 + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
       },
       {
         "line": 169,
@@ -20756,7 +20761,7 @@
         "status": "VERIFIED",
         "java": "`SalAmmoniacAccumulatorCraftingBehaviour.java:102-128`",
         "rust": "`native/theurgy/machines.rs`",
-        "evidence": "test=Java GameTest differential (2 tests) + isolated game fluids + offline rust-fast | run=artifacts/differential.json + runs\\game-1794226126216 + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+        "evidence": "test=Java GameTest differential (2 tests) + isolated game fluids + offline rust-fast | run=artifacts/differential.json + runs\\game-1794308698239 + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
       },
       {
         "line": 170,
@@ -20765,7 +20770,7 @@
         "status": "VERIFIED",
         "java": "`SalAmmoniacAccumulatorBlockEntity.java`, `SalAmmoniacAccumulatorCachedCheck.java`",
         "rust": "`registry.rs::{container,fluids}`",
-        "evidence": "test=Java GameTest differential (3 tests) + isolated game fluids + offline modules-registry | run=artifacts/differential.json + runs\\game-1794226126216 + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules-registry.log | result=PASS"
+        "evidence": "test=Java GameTest differential (3 tests) + isolated game fluids + offline modules-registry | run=artifacts/differential.json + runs\\game-1794308698239 + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules-registry.log | result=PASS"
       },
       {
         "line": 171,
@@ -20774,7 +20779,7 @@
         "status": "VERIFIED",
         "java": "`content/apparatus/salammoniactank/SalAmmoniacTankBlockEntity.java`",
         "rust": "`native/theurgy/fluids.rs`",
-        "evidence": "test=Java GameTest differential (4 tests) + isolated game fluids | run=artifacts/differential.json + runs\\game-1794226126216 | result=PASS"
+        "evidence": "test=Java GameTest differential (4 tests) + isolated game fluids | run=artifacts/differential.json + runs\\game-1794308698239 | result=PASS"
       },
       {
         "line": 172,
@@ -20783,7 +20788,7 @@
         "status": "VERIFIED",
         "java": "`content/apparatus/salammoniac{accumulator,tank}/render/*.java`",
         "rust": "`native/theurgy/render.rs`",
-        "evidence": "test=isolated game render | run=runs\\game-1794228087282 | result=PASS"
+        "evidence": "test=isolated game render | run=runs\\game-1794310569539 | result=PASS"
       },
       {
         "line": 178,
@@ -20792,7 +20797,7 @@
         "status": "VERIFIED",
         "java": "`content/apparatus/mercurycatalyst/MercuryCatalystBlockEntity.java`, `content/recipe/CatalysationRecipe.java:33-140`",
         "rust": "`native/theurgy/flux.rs`",
-        "evidence": "test=Java GameTest differential (3 tests) + isolated game flux + offline modules-flux | run=artifacts/differential.json + runs\\game-1794225037837 + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules-flux.log | result=PASS"
+        "evidence": "test=Java GameTest differential (3 tests) + isolated game flux + offline modules-flux | run=artifacts/differential.json + runs\\game-1794307651789 + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules-flux.log | result=PASS"
       },
       {
         "line": 179,
@@ -20801,7 +20806,7 @@
         "status": "VERIFIED",
         "java": "`content/apparatus/mercurycatalyst/MercuryCatalystCraftingBehaviour.java:120-196`",
         "rust": "`native/theurgy/flux.rs`",
-        "evidence": "test=Java GameTest differential (3 tests) + isolated game flux + offline modules-flux | run=artifacts/differential.json + runs\\game-1794225037837 + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules-flux.log | result=PASS"
+        "evidence": "test=Java GameTest differential (3 tests) + isolated game flux + offline modules-flux | run=artifacts/differential.json + runs\\game-1794307651789 + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules-flux.log | result=PASS"
       },
       {
         "line": 180,
@@ -20819,7 +20824,7 @@
         "status": "VERIFIED",
         "java": "`content/apparatus/mercurycapacitor/MercuryCapacitorBlockEntity.java:44-140`, `SideMode.java`",
         "rust": "`native/theurgy/flux.rs`",
-        "evidence": "test=Java GameTest differential (3 tests) + isolated game wand + offline modules-flux | run=artifacts/differential.json + runs\\game-1794228183851 + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules-flux.log | result=PASS"
+        "evidence": "test=Java GameTest differential (3 tests) + isolated game wand + offline modules-flux | run=artifacts/differential.json + runs\\game-1794310632283 + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules-flux.log | result=PASS"
       },
       {
         "line": 182,
@@ -20828,7 +20833,7 @@
         "status": "VERIFIED",
         "java": "`MercuryCapacitorBlockEntity.java:174-241`",
         "rust": "`native/theurgy/flux.rs`",
-        "evidence": "test=Java GameTest differential (4 tests) + offline modules-flux | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules-flux.log | result=PASS"
+        "evidence": "test=Java GameTest differential (4 tests) + offline modules-flux | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules-flux.log | result=PASS"
       },
       {
         "line": 183,
@@ -20837,7 +20842,7 @@
         "status": "VERIFIED",
         "java": "`MercuryCapacitorBlockEntity.java:75-100, 260-330`",
         "rust": "`native/theurgy/flux.rs`",
-        "evidence": "test=Java GameTest differential (4 tests) + offline modules-flux | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules-flux.log | result=PASS"
+        "evidence": "test=Java GameTest differential (4 tests) + offline modules-flux | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules-flux.log | result=PASS"
       },
       {
         "line": 184,
@@ -20846,7 +20851,7 @@
         "status": "VERIFIED",
         "java": "`MercuryCapacitorBlockEntity.java:140-172, 260-330`",
         "rust": "`native/theurgy/flux.rs`",
-        "evidence": "test=Java GameTest differential (2 tests) + isolated game flux + isolated game persistence + offline modules-flux | run=artifacts/differential.json + runs\\game-1794225037837 + runs\\game-1794225781505 + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules-flux.log | result=PASS"
+        "evidence": "test=Java GameTest differential (2 tests) + isolated game flux + isolated game persistence + offline modules-flux | run=artifacts/differential.json + runs\\game-1794307651789 + runs\\game-1794308358122 + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules-flux.log | result=PASS"
       },
       {
         "line": 185,
@@ -20855,7 +20860,7 @@
         "status": "VERIFIED",
         "java": "`content/apparatus/mercuryfluxemitter/MercuryFluxEmitterBlockEntity.java:33-170`, `MercuryFluxEmitterMercuryFluxBehaviour.java`, `MercuryFluxEmitterSelectionBehaviour.java`",
         "rust": "`native/theurgy/flux.rs`",
-        "evidence": "test=Java GameTest differential (4 tests) + isolated game flux + isolated game review-fixes | run=artifacts/differential.json + runs\\game-1794225037837 + runs\\game-1794226734819 | result=PASS"
+        "evidence": "test=Java GameTest differential (4 tests) + isolated game flux + isolated game review-fixes | run=artifacts/differential.json + runs\\game-1794307651789 + runs\\game-1794309270549 | result=PASS"
       },
       {
         "line": 186,
@@ -20864,7 +20869,7 @@
         "status": "VERIFIED",
         "java": "`content/apparatus/logisticsmercuryfluxconnector/*.java`",
         "rust": "`native/theurgy/logistics.rs`",
-        "evidence": "test=Java GameTest differential (5 tests) + isolated game logistics-advanced | run=artifacts/differential.json + runs\\game-1794226331517 | result=PASS"
+        "evidence": "test=Java GameTest differential (5 tests) + isolated game logistics-advanced | run=artifacts/differential.json + runs\\game-1794308885206 | result=PASS"
       },
       {
         "line": 187,
@@ -20873,7 +20878,7 @@
         "status": "VERIFIED",
         "java": "`content/capability/SimpleMercuryFluxHandler.java`, `SimpleTheurgyEnergyHandler.java`",
         "rust": "`native/theurgy/flux.rs`",
-        "evidence": "test=Java GameTest differential (4 tests) + offline modules-flux | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules-flux.log | result=PASS"
+        "evidence": "test=Java GameTest differential (4 tests) + offline modules-flux | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules-flux.log | result=PASS"
       },
       {
         "line": 188,
@@ -20882,7 +20887,7 @@
         "status": "VERIFIED",
         "java": "`network/messages/MessageShow{Caloric,Mercury,Sulfuric}Flux*.java`, `Message*Selection.java`",
         "rust": "`native/theurgy/render.rs`",
-        "evidence": "test=Java GameTest differential (3 tests) + isolated game client-features + isolated game flux | run=artifacts/differential.json + runs\\game-1794228220578 + runs\\game-1794225037837 | result=PASS"
+        "evidence": "test=Java GameTest differential (3 tests) + isolated game client-features + isolated game flux | run=artifacts/differential.json + runs\\game-1794310664615 + runs\\game-1794307651789 | result=PASS"
       },
       {
         "line": 194,
@@ -20891,7 +20896,7 @@
         "status": "VERIFIED",
         "java": "`content/recipe/IncubationRecipe.java:36-170`, `content/recipe/result/{RecipeResult,ItemRecipeResult,TagRecipeResult}.java`",
         "rust": "`native/theurgy/incubation.rs`",
-        "evidence": "test=Java GameTest differential (7 tests) + isolated game incubation-chaos | run=artifacts/differential.json + runs\\game-1794225335669 | result=PASS"
+        "evidence": "test=Java GameTest differential (7 tests) + isolated game incubation-chaos | run=artifacts/differential.json + runs\\game-1794307913284 | result=PASS"
       },
       {
         "line": 195,
@@ -20900,7 +20905,7 @@
         "status": "VERIFIED",
         "java": "`content/recipe/input/IncubatorRecipeInput.java`, `content/apparatus/incubator/IncubatorCraftingBehaviour.java:78-82`",
         "rust": "`native/theurgy/incubation.rs`",
-        "evidence": "test=Java GameTest differential (7 tests) + isolated game incubation-chaos | run=artifacts/differential.json + runs\\game-1794225335669 | result=PASS"
+        "evidence": "test=Java GameTest differential (7 tests) + isolated game incubation-chaos | run=artifacts/differential.json + runs\\game-1794307913284 | result=PASS"
       },
       {
         "line": 196,
@@ -20909,7 +20914,7 @@
         "status": "VERIFIED",
         "java": "`IncubatorCraftingBehaviour.java:42-64`",
         "rust": "`native/theurgy/incubation.rs`",
-        "evidence": "test=Java GameTest differential (7 tests) + isolated game incubation-chaos | run=artifacts/differential.json + runs\\game-1794225335669 | result=PASS"
+        "evidence": "test=Java GameTest differential (7 tests) + isolated game incubation-chaos | run=artifacts/differential.json + runs\\game-1794307913284 | result=PASS"
       },
       {
         "line": 197,
@@ -20918,7 +20923,7 @@
         "status": "VERIFIED",
         "java": "`content/apparatus/incubator/IncubatorBlockEntity.java:195-240`",
         "rust": "`native/theurgy/incubation.rs`",
-        "evidence": "test=Java GameTest differential (7 tests) + isolated game incubation-chaos | run=artifacts/differential.json + runs\\game-1794225335669 | result=PASS"
+        "evidence": "test=Java GameTest differential (7 tests) + isolated game incubation-chaos | run=artifacts/differential.json + runs\\game-1794307913284 | result=PASS"
       },
       {
         "line": 198,
@@ -20927,7 +20932,7 @@
         "status": "VERIFIED",
         "java": "`IncubatorBlockEntity.java:236-250`",
         "rust": "`hooks/destroy.rs`",
-        "evidence": "test=Java GameTest differential (3 tests) + isolated game incubation-chaos | run=artifacts/differential.json + runs\\game-1794225335669 | result=PASS"
+        "evidence": "test=Java GameTest differential (3 tests) + isolated game incubation-chaos | run=artifacts/differential.json + runs\\game-1794307913284 | result=PASS"
       },
       {
         "line": 199,
@@ -20945,7 +20950,7 @@
         "status": "VERIFIED",
         "java": "`content/apparatus/incubator/render/*.java`",
         "rust": "`native/theurgy/render.rs`",
-        "evidence": "test=isolated game render | run=runs\\game-1794228087282 | result=PASS"
+        "evidence": "test=isolated game render | run=runs\\game-1794310569539 | result=PASS"
       },
       {
         "line": 206,
@@ -20954,7 +20959,7 @@
         "status": "VERIFIED",
         "java": "`content/recipe/ReformationRecipe.java:36-160`",
         "rust": "`native/theurgy/reformation.rs`",
-        "evidence": "test=Java GameTest differential (2 tests) + isolated game reformation + offline modules-reformation | run=artifacts/differential.json + runs\\game-1794225834355 + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules-reformation.log | result=PASS"
+        "evidence": "test=Java GameTest differential (2 tests) + isolated game reformation + offline modules-reformation | run=artifacts/differential.json + runs\\game-1794308409358 + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules-reformation.log | result=PASS"
       },
       {
         "line": 207,
@@ -20963,7 +20968,7 @@
         "status": "VERIFIED",
         "java": "`ReformationRecipe.java:92-124`",
         "rust": "`native/theurgy/reformation.rs`",
-        "evidence": "test=Java GameTest differential (2 tests) + isolated game reformation + offline modules-reformation | run=artifacts/differential.json + runs\\game-1794225834355 + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules-reformation.log | result=PASS"
+        "evidence": "test=Java GameTest differential (2 tests) + isolated game reformation + offline modules-reformation | run=artifacts/differential.json + runs\\game-1794308409358 + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules-reformation.log | result=PASS"
       },
       {
         "line": 208,
@@ -20972,7 +20977,7 @@
         "status": "VERIFIED",
         "java": "`ReformationRecipe.java:126-138`",
         "rust": "`native/theurgy/reformation.rs`",
-        "evidence": "test=isolated game reformation + offline modules-reformation | run=runs\\game-1794225834355 + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules-reformation.log | result=PASS"
+        "evidence": "test=isolated game reformation + offline modules-reformation | run=runs\\game-1794308409358 + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules-reformation.log | result=PASS"
       },
       {
         "line": 209,
@@ -20981,7 +20986,7 @@
         "status": "VERIFIED",
         "java": "`content/apparatus/reformationarray/SulfuricFluxEmitterBlockEntity.java:44-200`",
         "rust": "`native/theurgy/reformation.rs`",
-        "evidence": "test=Java GameTest differential (4 tests) + isolated game reformation + isolated game review-fixes | run=artifacts/differential.json + runs\\game-1794225834355 + runs\\game-1794226734819 | result=PASS"
+        "evidence": "test=Java GameTest differential (4 tests) + isolated game reformation + isolated game review-fixes | run=artifacts/differential.json + runs\\game-1794308409358 + runs\\game-1794309270549 | result=PASS"
       },
       {
         "line": 210,
@@ -20990,7 +20995,7 @@
         "status": "VERIFIED",
         "java": "`SulfuricFluxEmitterBlockEntity.java:197-201`",
         "rust": "`native/theurgy/reformation.rs`",
-        "evidence": "test=Java GameTest differential (4 tests) + isolated game reformation + isolated game review-fixes | run=artifacts/differential.json + runs\\game-1794225834355 + runs\\game-1794226734819 | result=PASS"
+        "evidence": "test=Java GameTest differential (4 tests) + isolated game reformation + isolated game review-fixes | run=artifacts/differential.json + runs\\game-1794308409358 + runs\\game-1794309270549 | result=PASS"
       },
       {
         "line": 211,
@@ -20999,7 +21004,7 @@
         "status": "VERIFIED",
         "java": "`ReformationArrayCraftingBehaviour.java`",
         "rust": "`native/theurgy/reformation.rs`",
-        "evidence": "test=Java GameTest differential (1 tests) + isolated game reformation | run=artifacts/differential.json + runs\\game-1794225834355 | result=PASS"
+        "evidence": "test=Java GameTest differential (1 tests) + isolated game reformation | run=artifacts/differential.json + runs\\game-1794308409358 | result=PASS"
       },
       {
         "line": 212,
@@ -21008,7 +21013,7 @@
         "status": "VERIFIED",
         "java": "`SulfuricFluxEmitterSelectionBehaviour.java:22-120`, `content/behaviour/selection/{SelectionBehaviour,SelectedPoint}.java`",
         "rust": "`native/theurgy/reformation.rs, hook*use_item.rs`",
-        "evidence": "test=Java GameTest differential (2 tests) + isolated game review-fixes + isolated game reformation | run=artifacts/differential.json + runs\\game-1794226734819 + runs\\game-1794225834355 | result=PASS"
+        "evidence": "test=Java GameTest differential (2 tests) + isolated game review-fixes + isolated game reformation | run=artifacts/differential.json + runs\\game-1794309270549 + runs\\game-1794308409358 | result=PASS"
       },
       {
         "line": 213,
@@ -21026,7 +21031,7 @@
         "status": "VERIFIED",
         "java": "`SulfuricFluxEmitterBlockEntity.java:352-406`",
         "rust": "`native/theurgy/reformation.rs`",
-        "evidence": "test=isolated game render + offline modules-reformation | run=runs\\game-1794228087282 + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules-reformation.log | result=PASS"
+        "evidence": "test=isolated game render + offline modules-reformation | run=runs\\game-1794310569539 + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules-reformation.log | result=PASS"
       },
       {
         "line": 222,
@@ -21035,7 +21040,7 @@
         "status": "VERIFIED",
         "java": "`logistics/LogisticsNetwork.java:28-90`, `logistics/Logistics.java`",
         "rust": "`native/theurgy/logistics.rs`",
-        "evidence": "test=Java GameTest differential (5 tests) + isolated game logistics + isolated game wire-graph | run=artifacts/differential.json + runs\\game-1794225083517 + runs\\game-1794226265782 | result=PASS"
+        "evidence": "test=Java GameTest differential (5 tests) + isolated game logistics + isolated game wire-graph | run=artifacts/differential.json + runs\\game-1794307692448 + runs\\game-1794308820354 | result=PASS"
       },
       {
         "line": 223,
@@ -21044,7 +21049,7 @@
         "status": "VERIFIED",
         "java": "`content/behaviour/logistics/LeafNodeBehaviour.java:25-160`, `LeafNodeMode.java`",
         "rust": "`native/theurgy/logistics.rs`",
-        "evidence": "test=Java GameTest differential (5 tests) + isolated game logistics + isolated game wire-graph | run=artifacts/differential.json + runs\\game-1794225083517 + runs\\game-1794226265782 | result=PASS"
+        "evidence": "test=Java GameTest differential (5 tests) + isolated game logistics + isolated game wire-graph | run=artifacts/differential.json + runs\\game-1794307692448 + runs\\game-1794308820354 | result=PASS"
       },
       {
         "line": 224,
@@ -21053,7 +21058,7 @@
         "status": "VERIFIED",
         "java": "`content/behaviour/logistics/ExtractorNodeBehaviour.java:26-200`, `content/behaviour/logistics/distribution/{Distributor,RoundRobinDistributor,DistributionMode}.java`",
         "rust": "`native/theurgy/logistics.rs`",
-        "evidence": "test=Java GameTest differential (5 tests) + isolated game logistics + isolated game wire-graph | run=artifacts/differential.json + runs\\game-1794225083517 + runs\\game-1794226265782 | result=PASS"
+        "evidence": "test=Java GameTest differential (5 tests) + isolated game logistics + isolated game wire-graph | run=artifacts/differential.json + runs\\game-1794307692448 + runs\\game-1794308820354 | result=PASS"
       },
       {
         "line": 225,
@@ -21062,7 +21067,7 @@
         "status": "VERIFIED",
         "java": "`content/behaviour/logistics/InserterNodeBehaviour.java:21-90`",
         "rust": "`native/theurgy/logistics.rs`",
-        "evidence": "test=Java GameTest differential (5 tests) + isolated game logistics + isolated game wire-graph | run=artifacts/differential.json + runs\\game-1794225083517 + runs\\game-1794226265782 | result=PASS"
+        "evidence": "test=Java GameTest differential (5 tests) + isolated game logistics + isolated game wire-graph | run=artifacts/differential.json + runs\\game-1794307692448 + runs\\game-1794308820354 | result=PASS"
       },
       {
         "line": 226,
@@ -21080,7 +21085,7 @@
         "status": "VERIFIED",
         "java": "`content/apparatus/logisticsfluidconnector/**`",
         "rust": "`native/theurgy/logistics.rs`",
-        "evidence": "test=Java GameTest differential (2 tests) + isolated game logistics + isolated game logistics-advanced | run=artifacts/differential.json + runs\\game-1794225083517 + runs\\game-1794226331517 | result=PASS"
+        "evidence": "test=Java GameTest differential (2 tests) + isolated game logistics + isolated game logistics-advanced | run=artifacts/differential.json + runs\\game-1794307692448 + runs\\game-1794308885206 | result=PASS"
       },
       {
         "line": 228,
@@ -21098,7 +21103,7 @@
         "status": "VERIFIED",
         "java": "`content/apparatus/logisticsnexus/{LogisticsNexusBlock,LogisticsNexusBlockEntity,LogisticsNexusPairing}.java`, `render/LogisticsNexusRenderer.java`",
         "rust": "`native/theurgy/logistics.rs, native/theurgy/render.rs`",
-        "evidence": "test=Java GameTest differential (2 tests) + isolated game render + isolated game logistics-advanced | run=artifacts/differential.json + runs\\game-1794228087282 + runs\\game-1794226331517 | result=PASS"
+        "evidence": "test=Java GameTest differential (2 tests) + isolated game render + isolated game logistics-advanced | run=artifacts/differential.json + runs\\game-1794310569539 + runs\\game-1794308885206 | result=PASS"
       },
       {
         "line": 230,
@@ -21107,7 +21112,7 @@
         "status": "VERIFIED",
         "java": "`content/apparatus/logisticscapabilityproxy/*.java`, `content/storage/{CombinedItemStorage,SelectItemHandlerWrapper,SelectFluidHandlerWrapper}.java`",
         "rust": "`native/theurgy/logistics.rs`",
-        "evidence": "test=Java GameTest differential (3 tests) + isolated game logistics-advanced | run=artifacts/differential.json + runs\\game-1794226331517 | result=PASS"
+        "evidence": "test=Java GameTest differential (3 tests) + isolated game logistics-advanced | run=artifacts/differential.json + runs\\game-1794308885206 | result=PASS"
       },
       {
         "line": 231,
@@ -21116,7 +21121,7 @@
         "status": "VERIFIED",
         "java": "`content/apparatus/logisticscapabilityprobe/LogisticsCapabilityProbeBlock.java`",
         "rust": "`native/theurgy/logistics.rs`",
-        "evidence": "test=Java GameTest differential (1 tests) + isolated game logistics-advanced | run=artifacts/differential.json + runs\\game-1794226331517 | result=PASS"
+        "evidence": "test=Java GameTest differential (1 tests) + isolated game logistics-advanced | run=artifacts/differential.json + runs\\game-1794308885206 | result=PASS"
       },
       {
         "line": 232,
@@ -21125,7 +21130,7 @@
         "status": "VERIFIED",
         "java": "`content/apparatus/logisticsmercuryfluxconnector/**`",
         "rust": "`native/theurgy/logistics.rs`",
-        "evidence": "test=Java GameTest differential (2 tests) + isolated game logistics-advanced | run=artifacts/differential.json + runs\\game-1794226331517 | result=PASS"
+        "evidence": "test=Java GameTest differential (2 tests) + isolated game logistics-advanced | run=artifacts/differential.json + runs\\game-1794308885206 | result=PASS"
       },
       {
         "line": 233,
@@ -21134,7 +21139,7 @@
         "status": "VERIFIED",
         "java": "`logistics/{Wires,Wire,WireEndPoint,WireSlackHelper,WireSync}.java`, `content/item/wire/WireItem.java`",
         "rust": "`native/theurgy/logistics.rs`",
-        "evidence": "test=isolated game wire-graph + isolated game tools + offline modules | run=runs\\game-1794226265782 + runs\\game-1794225131184 + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules.log | result=PASS"
+        "evidence": "test=isolated game wire-graph + isolated game tools + offline modules | run=runs\\game-1794308820354 + runs\\game-1794307735476 + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules.log | result=PASS"
       },
       {
         "line": 234,
@@ -21143,7 +21148,7 @@
         "status": "VERIFIED",
         "java": "`logistics/WireEndPoint.java:21-60`",
         "rust": "`native/theurgy/items.rs`",
-        "evidence": "test=isolated game wire-graph + isolated game tools + offline modules | run=runs\\game-1794226265782 + runs\\game-1794225131184 + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules.log | result=PASS"
+        "evidence": "test=isolated game wire-graph + isolated game tools + offline modules | run=runs\\game-1794308820354 + runs\\game-1794307735476 + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules.log | result=PASS"
       },
       {
         "line": 235,
@@ -21152,7 +21157,7 @@
         "status": "VERIFIED",
         "java": "`content/behaviour/filter/*.java`, `content/behaviour/filter/attribute/*.java`",
         "rust": "`native/theurgy/{filter.rs,filter_client.rs,filtered_transfer.rs}`",
-        "evidence": "test=isolated game filter-ui + isolated game filter-matching + isolated game attribute-filters + isolated game standard-attributes + isolated game special-attributes + isolated game filters | run=runs\\game-1794227930116 + runs\\game-1794226430467 + runs\\game-1794226505773 + runs\\game-1794226566949 + runs\\game-1794226677460 + runs\\game-1794225249408 | result=PASS"
+        "evidence": "test=isolated game filter-ui + isolated game filter-matching + isolated game attribute-filters + isolated game standard-attributes + isolated game special-attributes + isolated game filters | run=runs\\game-1794310432464 + runs\\game-1794308980712 + runs\\game-1794309054211 + runs\\game-1794309112929 + runs\\game-1794309216789 + runs\\game-1794307835530 | result=PASS"
       },
       {
         "line": 236,
@@ -21161,7 +21166,7 @@
         "status": "VERIFIED",
         "java": "`logistics/WireRenderer.java`",
         "rust": "`native/theurgy/render.rs`",
-        "evidence": "test=isolated game client-features + isolated game wire-graph | run=runs\\game-1794228220578 + runs\\game-1794226265782 | result=PASS"
+        "evidence": "test=isolated game client-features + isolated game wire-graph | run=runs\\game-1794310664615 + runs\\game-1794308820354 | result=PASS"
       },
       {
         "line": 237,
@@ -21170,7 +21175,7 @@
         "status": "VERIFIED",
         "java": "`network/messages/MessageShowLogisticsNodeStatus.java`, `content/item/mercurialwand/mode/SwitchLogisticsEnabledMode.java`, `SetSelectedFrequencyMode.java`, `SelectFrequencyMode.java`",
         "rust": "`native/theurgy/render.rs`",
-        "evidence": "test=isolated game wand + isolated game multiplayer | run=runs\\game-1794228183851 + runs\\multiplayer-1794228295294 | result=PASS"
+        "evidence": "test=isolated game wand + isolated game multiplayer | run=runs\\game-1794310632283 + runs\\multiplayer-1794310739424 | result=PASS"
       },
       {
         "line": 243,
@@ -21179,7 +21184,7 @@
         "status": "VERIFIED",
         "java": "`content/item/divinationrod/DivinationRodItem.java:53-80`, `content/item/renderer/DivinationDistanceProperty.java`",
         "rust": "`native/theurgy/items.rs`",
-        "evidence": "test=Java GameTest differential (1 tests) + isolated game divination + isolated game config-attunement | run=artifacts/differential.json + runs\\game-1794225168593 + runs\\game-1794225215575 | result=PASS"
+        "evidence": "test=Java GameTest differential (1 tests) + isolated game divination + isolated game config-attunement | run=artifacts/differential.json + runs\\game-1794307767691 + runs\\game-1794307805867 | result=PASS"
       },
       {
         "line": 244,
@@ -21188,7 +21193,7 @@
         "status": "VERIFIED",
         "java": "`DivinationRodItem.java:88-166, 195-345, 435-460`",
         "rust": "`native/theurgy/items.rs, config port`",
-        "evidence": "test=Java GameTest differential (1 tests) + isolated game divination + isolated game config-attunement | run=artifacts/differential.json + runs\\game-1794225168593 + runs\\game-1794225215575 | result=PASS"
+        "evidence": "test=Java GameTest differential (1 tests) + isolated game divination + isolated game config-attunement | run=artifacts/differential.json + runs\\game-1794307767691 + runs\\game-1794307805867 | result=PASS"
       },
       {
         "line": 245,
@@ -21197,7 +21202,7 @@
         "status": "VERIFIED",
         "java": "`DivinationRodItem.java:183-372`, `content/recipe/DivinationRodRecipe.java`",
         "rust": "`native/theurgy/items.rs`",
-        "evidence": "test=Java GameTest differential (3 tests) + isolated game divination + isolated game divination-recipes | run=artifacts/differential.json + runs\\game-1794225168593 + runs\\game-1794227834041 | result=PASS"
+        "evidence": "test=Java GameTest differential (3 tests) + isolated game divination + isolated game divination-recipes | run=artifacts/differential.json + runs\\game-1794307767691 + runs\\game-1794310345331 | result=PASS"
       },
       {
         "line": 246,
@@ -21206,7 +21211,7 @@
         "status": "VERIFIED",
         "java": "`content/item/mercurialwand/MercurialWandItem.java:27-100`, `mode/*.java`, `content/item/mode/*.java`",
         "rust": "`native/theurgy/items.rs`",
-        "evidence": "test=isolated game wand | run=runs\\game-1794228183851 | result=PASS"
+        "evidence": "test=isolated game wand | run=runs\\game-1794310632283 | result=PASS"
       },
       {
         "line": 247,
@@ -21215,7 +21220,7 @@
         "status": "VERIFIED",
         "java": "`registry/ItemRegistry.java:154-159`, `registry/FluidRegistry.java`",
         "rust": "`native/theurgy/items.rs, hooks/use_on.rs`",
-        "evidence": "test=Java GameTest differential (2 tests) + isolated game fluids | run=artifacts/differential.json + runs\\game-1794226126216 | result=PASS"
+        "evidence": "test=Java GameTest differential (2 tests) + isolated game fluids | run=artifacts/differential.json + runs\\game-1794308698239 | result=PASS"
       },
       {
         "line": 248,
@@ -21224,7 +21229,7 @@
         "status": "VERIFIED",
         "java": "`content/item/wire/WireItem.java`, `network/messages/Message{Add,Remove}Wires.java`",
         "rust": "`native/theurgy/items.rs`",
-        "evidence": "test=isolated game tools + isolated game wire-graph + offline modules | run=runs\\game-1794225131184 + runs\\game-1794226265782 + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules.log | result=PASS"
+        "evidence": "test=isolated game tools + isolated game wire-graph + offline modules | run=runs\\game-1794307735476 + runs\\game-1794308820354 + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules.log | result=PASS"
       },
       {
         "line": 249,
@@ -21233,7 +21238,7 @@
         "status": "VERIFIED",
         "java": "`registry/ItemRegistry.java:150-151`, `content/item/filter/*.java`",
         "rust": "`native/theurgy/items.rs`",
-        "evidence": "test=isolated game filter-ui + isolated game filter-matching + isolated game attribute-filters + isolated game filters | run=runs\\game-1794227930116 + runs\\game-1794226430467 + runs\\game-1794226505773 + runs\\game-1794225249408 | result=PASS"
+        "evidence": "test=isolated game filter-ui + isolated game filter-matching + isolated game attribute-filters + isolated game filters | run=runs\\game-1794310432464 + runs\\game-1794308980712 + runs\\game-1794309054211 + runs\\game-1794307835530 | result=PASS"
       },
       {
         "line": 250,
@@ -21242,7 +21247,7 @@
         "status": "VERIFIED",
         "java": "`content/item/book/TheHermeticaItem.java`, `integration/modonomicon/**`",
         "rust": "`native/theurgy/client.rs`",
-        "evidence": "test=isolated game book | run=runs\\game-1794227969983 | result=PASS"
+        "evidence": "test=isolated game book | run=runs\\game-1794310471340 | result=PASS"
       },
       {
         "line": 251,
@@ -21251,7 +21256,7 @@
         "status": "VERIFIED",
         "java": "`content/item/{salt,sulfur,niter}/**`, `content/item/derivative/**`",
         "rust": "`native/theurgy/items.rs`",
-        "evidence": "test=isolated game client | run=runs\\game-1794228048631 | result=PASS"
+        "evidence": "test=isolated game client | run=runs\\game-1794310541574 | result=PASS"
       },
       {
         "line": 252,
@@ -21260,7 +21265,7 @@
         "status": "VERIFIED",
         "java": "`content/render/{HeldStackFitProvider,HeldStackFitStatus,HeldStackFitOutline}.java`",
         "rust": "`native/theurgy/render.rs`",
-        "evidence": "test=isolated game client-features | run=runs\\game-1794228220578 | result=PASS"
+        "evidence": "test=isolated game client-features | run=runs\\game-1794310664615 | result=PASS"
       },
       {
         "line": 258,
@@ -21269,7 +21274,7 @@
         "status": "VERIFIED",
         "java": "`content/recipe/result/*.java`, `content/recipe/condition/FluidTagEmptyCondition.java`, `registry/ConditionRegistry.java`",
         "rust": "`native/theurgy/engine/src/recipes.rs`",
-        "evidence": "test=isolated game content-rules + isolated game review-fixes | run=runs\\game-1794225295776 + runs\\game-1794226734819 | result=PASS"
+        "evidence": "test=isolated game content-rules + isolated game review-fixes | run=runs\\game-1794307873039 + runs\\game-1794309270549 | result=PASS"
       },
       {
         "line": 259,
@@ -21278,7 +21283,7 @@
         "status": "VERIFIED",
         "java": "`datagen/recipe/*.java`",
         "rust": "`tools/build-content.mjs, content/theurgy/data`",
-        "evidence": "test=isolated game all + isolated game recipes + offline content-check + offline audit | run=runs\\game-1794224712378 + runs\\game-1794228009841 + runs\\acceptance-2026-11-09T11-37-36.767Z\\content-check.log + runs\\acceptance-2026-11-09T11-37-36.767Z\\audit.log | result=PASS"
+        "evidence": "test=isolated game all + isolated game recipes + offline content-check + offline audit | run=runs\\game-1794307344272 + runs\\game-1794310507553 + runs\\acceptance-2026-11-10T10-33-11.082Z\\content-check.log + runs\\acceptance-2026-11-10T10-33-11.082Z\\audit.log | result=PASS"
       },
       {
         "line": 260,
@@ -21287,7 +21292,7 @@
         "status": "VERIFIED",
         "java": "`datagen/recipe/{ShapedRecipeProvider,ShapelessRecipeProvider,SmeltingRecipeProvider}.java`",
         "rust": "`tools/content-check.mjs`",
-        "evidence": "test=Java GameTest differential (3 tests) + isolated game all + offline content-check + offline audit | run=artifacts/differential.json + runs\\game-1794224712378 + runs\\acceptance-2026-11-09T11-37-36.767Z\\content-check.log + runs\\acceptance-2026-11-09T11-37-36.767Z\\audit.log | result=PASS"
+        "evidence": "test=Java GameTest differential (3 tests) + isolated game all + offline content-check + offline audit | run=artifacts/differential.json + runs\\game-1794307344272 + runs\\acceptance-2026-11-10T10-33-11.082Z\\content-check.log + runs\\acceptance-2026-11-10T10-33-11.082Z\\audit.log | result=PASS"
       },
       {
         "line": 261,
@@ -21296,7 +21301,7 @@
         "status": "VERIFIED",
         "java": "`datagen/worldgen/{ConfiguredFeatures,PlacedFeatures,BiomeModifiers,TheurgyRegistries}.java`",
         "rust": "`content/theurgy/data`",
-        "evidence": "test=isolated game worldgen | run=runs\\game-1794227872201 | result=PASS"
+        "evidence": "test=isolated game worldgen | run=runs\\game-1794310381512 | result=PASS"
       },
       {
         "line": 262,
@@ -21305,7 +21310,7 @@
         "status": "VERIFIED",
         "java": "`datagen/loot/TheurgyBlockLootSubProvider.java`",
         "rust": "`content/theurgy/data/theurgy/loot_table`",
-        "evidence": "test=Java GameTest differential (3 tests) + isolated game interactions + offline content-check + offline audit | run=artifacts/differential.json + runs\\game-1794224964769 + runs\\acceptance-2026-11-09T11-37-36.767Z\\content-check.log + runs\\acceptance-2026-11-09T11-37-36.767Z\\audit.log | result=PASS"
+        "evidence": "test=Java GameTest differential (3 tests) + isolated game interactions + offline content-check + offline audit | run=artifacts/differential.json + runs\\game-1794307582663 + runs\\acceptance-2026-11-10T10-33-11.082Z\\content-check.log + runs\\acceptance-2026-11-10T10-33-11.082Z\\audit.log | result=PASS"
       },
       {
         "line": 263,
@@ -21314,7 +21319,7 @@
         "status": "VERIFIED",
         "java": "`datagen/advancement/TheurgyAdvancementSubProvider.java`, `datagen/book/**`, `integration/modonomicon/page/**`",
         "rust": "`content/theurgy/data`",
-        "evidence": "test=isolated game book + offline content-check + offline audit | run=runs\\game-1794227969983 + runs\\acceptance-2026-11-09T11-37-36.767Z\\content-check.log + runs\\acceptance-2026-11-09T11-37-36.767Z\\audit.log | result=PASS"
+        "evidence": "test=isolated game book + offline content-check + offline audit | run=runs\\game-1794310471340 + runs\\acceptance-2026-11-10T10-33-11.082Z\\content-check.log + runs\\acceptance-2026-11-10T10-33-11.082Z\\audit.log | result=PASS"
       },
       {
         "line": 264,
@@ -21323,7 +21328,7 @@
         "status": "VERIFIED",
         "java": "`datagen/lang/{ENUSProvider,TooltipLanguageProvider}.java`",
         "rust": "`content/theurgy/assets/theurgy/lang`",
-        "evidence": "test=isolated game tooltips + offline content-check + offline audit | run=runs\\game-1794228260776 + runs\\acceptance-2026-11-09T11-37-36.767Z\\content-check.log + runs\\acceptance-2026-11-09T11-37-36.767Z\\audit.log | result=PASS"
+        "evidence": "test=isolated game tooltips + offline content-check + offline audit | run=runs\\game-1794310700370 + runs\\acceptance-2026-11-10T10-33-11.082Z\\content-check.log + runs\\acceptance-2026-11-10T10-33-11.082Z\\audit.log | result=PASS"
       },
       {
         "line": 265,
@@ -21332,7 +21337,7 @@
         "status": "VERIFIED",
         "java": "`datagen/model/*.java`, `registry/TheurgySpecialModelRenderers.java`",
         "rust": "`content/theurgy/assets, native/theurgy/render.rs`",
-        "evidence": "test=isolated game render + offline content-check + offline audit | run=runs\\game-1794228087282 + runs\\acceptance-2026-11-09T11-37-36.767Z\\content-check.log + runs\\acceptance-2026-11-09T11-37-36.767Z\\audit.log | result=PASS"
+        "evidence": "test=isolated game render + offline content-check + offline audit | run=runs\\game-1794310569539 + runs\\acceptance-2026-11-10T10-33-11.082Z\\content-check.log + runs\\acceptance-2026-11-10T10-33-11.082Z\\audit.log | result=PASS"
       },
       {
         "line": 266,
@@ -21341,7 +21346,7 @@
         "status": "VERIFIED",
         "java": "`datagen/multiblock/TheurgyMultiblockProvider.java`",
         "rust": "`content/theurgy/data/theurgy/modonomicon + native/theurgy/client.rs`",
-        "evidence": "test=isolated game book + offline content-check + offline audit | run=runs\\game-1794227969983 + runs\\acceptance-2026-11-09T11-37-36.767Z\\content-check.log + runs\\acceptance-2026-11-09T11-37-36.767Z\\audit.log | result=PASS"
+        "evidence": "test=isolated game book + offline content-check + offline audit | run=runs\\game-1794310471340 + runs\\acceptance-2026-11-10T10-33-11.082Z\\content-check.log + runs\\acceptance-2026-11-10T10-33-11.082Z\\audit.log | result=PASS"
       },
       {
         "line": 272,
@@ -21350,7 +21355,7 @@
         "status": "VERIFIED",
         "java": "`config/ServerConfig.java:15-75`",
         "rust": "`native/theurgy/items.rs`",
-        "evidence": "test=isolated game config-attunement + isolated game tooltips | run=runs\\game-1794225215575 + runs\\game-1794228260776 | result=PASS"
+        "evidence": "test=isolated game config-attunement + isolated game tooltips | run=runs\\game-1794307805867 + runs\\game-1794310700370 | result=PASS"
       },
       {
         "line": 273,
@@ -21359,7 +21364,7 @@
         "status": "VERIFIED",
         "java": "`config/CommonConfig.java:9-60`",
         "rust": "`native/theurgy/config.rs`",
-        "evidence": "test=isolated game config-attunement + offline audit | run=runs\\game-1794225215575 + runs\\acceptance-2026-11-09T11-37-36.767Z\\audit.log | result=PASS"
+        "evidence": "test=isolated game config-attunement + offline audit | run=runs\\game-1794307805867 + runs\\acceptance-2026-11-10T10-33-11.082Z\\audit.log | result=PASS"
       },
       {
         "line": 274,
@@ -21368,7 +21373,7 @@
         "status": "VERIFIED",
         "java": "`config/ClientConfig.java:12-90`",
         "rust": "`native/theurgy/client.rs + render.rs`",
-        "evidence": "test=isolated game client-features | run=runs\\game-1794228220578 | result=PASS"
+        "evidence": "test=isolated game client-features | run=runs\\game-1794310664615 | result=PASS"
       },
       {
         "line": 275,
@@ -21377,7 +21382,7 @@
         "status": "VERIFIED",
         "java": "`network/Networking.java`, `network/MessageHandler.java`, `network/messages/*.java`",
         "rust": "`native/theurgy/*.rs + hooks`",
-        "evidence": "test=isolated game multiplayer | run=runs\\multiplayer-1794228295294 | result=PASS"
+        "evidence": "test=isolated game multiplayer | run=runs\\multiplayer-1794310739424 | result=PASS"
       },
       {
         "line": 276,
@@ -21386,7 +21391,7 @@
         "status": "VERIFIED",
         "java": "`network/messages/Message*Selection.java`, `MessageSetMode.java`",
         "rust": "`native/theurgy/host.rs`",
-        "evidence": "test=isolated game multiplayer | run=runs\\multiplayer-1794228295294 | result=PASS"
+        "evidence": "test=isolated game multiplayer | run=runs\\multiplayer-1794310739424 | result=PASS"
       },
       {
         "line": 277,
@@ -21395,7 +21400,7 @@
         "status": "OUT_OF_SCOPE",
         "java": "`integration/{jei,emi}/**`",
         "rust": "`native/theurgy/recipe_client.rs`",
-        "evidence": "test=isolated game recipes | run=runs\\game-1794228009841 | result=PASS"
+        "evidence": "test=isolated game recipes | run=runs\\game-1794310507553 | result=PASS"
       },
       {
         "line": 278,
@@ -21404,7 +21409,7 @@
         "status": "OUT_OF_SCOPE",
         "java": "`integration/jade/*.java`",
         "rust": "`native/theurgy/client.rs`",
-        "evidence": "test=isolated game client-features | run=runs\\game-1794228220578 | result=PASS"
+        "evidence": "test=isolated game client-features | run=runs\\game-1794310664615 | result=PASS"
       },
       {
         "line": 279,
@@ -21413,7 +21418,7 @@
         "status": "OUT_OF_SCOPE",
         "java": "`integration/{kubejs,almostunified,occultism}/**`",
         "rust": "`native/theurgy/recipe_client.rs + filtered_transfer.rs + generated data`",
-        "evidence": "test=isolated game content-rules + isolated game review-fixes + isolated game recipes + offline audit | run=runs\\game-1794225295776 + runs\\game-1794226734819 + runs\\game-1794228009841 + runs\\acceptance-2026-11-09T11-37-36.767Z\\audit.log | result=PASS"
+        "evidence": "test=isolated game content-rules + isolated game review-fixes + isolated game recipes + offline audit | run=runs\\game-1794307873039 + runs\\game-1794309270549 + runs\\game-1794310507553 + runs\\acceptance-2026-11-10T10-33-11.082Z\\audit.log | result=PASS"
       },
       {
         "line": 280,
@@ -21422,7 +21427,7 @@
         "status": "VERIFIED",
         "java": "`content/render/inworldhud/**`, `content/render/itemhud/**`",
         "rust": "`native/theurgy/render.rs`",
-        "evidence": "test=isolated game client-features | run=runs\\game-1794228220578 | result=PASS"
+        "evidence": "test=isolated game client-features | run=runs\\game-1794310664615 | result=PASS"
       },
       {
         "line": 281,
@@ -21431,7 +21436,7 @@
         "status": "VERIFIED",
         "java": "`content/particle/**`, `content/render/outliner/**`, `content/render/cube/**`",
         "rust": "`native/theurgy/render.rs`",
-        "evidence": "test=isolated game client-features | run=runs\\game-1794228220578 | result=PASS"
+        "evidence": "test=isolated game client-features | run=runs\\game-1794310664615 | result=PASS"
       },
       {
         "line": 282,
@@ -21440,7 +21445,7 @@
         "status": "VERIFIED",
         "java": "`tooltips/*.java`",
         "rust": "`native/theurgy/items.rs`",
-        "evidence": "test=isolated game tooltips | run=runs\\game-1794228260776 | result=PASS"
+        "evidence": "test=isolated game tooltips | run=runs\\game-1794310700370 | result=PASS"
       }
     ],
     "byStatus": {
@@ -21452,7 +21457,7 @@
           "status": "VERIFIED",
           "java": "`registry/BlockRegistry.java:255-280` + 30 further `registerBlock` lines",
           "rust": "`native/theurgy/registry.rs (id strings only)`",
-          "evidence": "test=isolated game all + offline content-check + offline audit | run=runs\\game-1794224712378 + runs\\acceptance-2026-11-09T11-37-36.767Z\\content-check.log + runs\\acceptance-2026-11-09T11-37-36.767Z\\audit.log | result=PASS"
+          "evidence": "test=isolated game all + offline content-check + offline audit | run=runs\\game-1794307344272 + runs\\acceptance-2026-11-10T10-33-11.082Z\\content-check.log + runs\\acceptance-2026-11-10T10-33-11.082Z\\audit.log | result=PASS"
         },
         {
           "line": 65,
@@ -21461,7 +21466,7 @@
           "status": "VERIFIED",
           "java": "`registry/BlockEntityRegistry.java:22-151`",
           "rust": "`native/theurgy/registry.rs::is_be`",
-          "evidence": "test=offline modules-registry + offline audit | run=runs\\acceptance-2026-11-09T11-37-36.767Z\\modules-registry.log + runs\\acceptance-2026-11-09T11-37-36.767Z\\audit.log | result=PASS"
+          "evidence": "test=offline modules-registry + offline audit | run=runs\\acceptance-2026-11-10T10-33-11.082Z\\modules-registry.log + runs\\acceptance-2026-11-10T10-33-11.082Z\\audit.log | result=PASS"
         },
         {
           "line": 66,
@@ -21479,7 +21484,7 @@
           "status": "VERIFIED",
           "java": "`content/apparatus/*/[A-Za-z]*BlockItem.java`",
           "rust": "`native/theurgy/items.rs`",
-          "evidence": "test=Java GameTest differential (4 tests) + isolated game interactions + isolated game persistence + isolated game logistics-advanced + offline modules-items | run=artifacts/differential.json + runs\\game-1794224964769 + runs\\game-1794225781505 + runs\\game-1794226331517 + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules-items.log | result=PASS"
+          "evidence": "test=Java GameTest differential (4 tests) + isolated game interactions + isolated game persistence + isolated game logistics-advanced + offline modules-items | run=artifacts/differential.json + runs\\game-1794307582663 + runs\\game-1794308358122 + runs\\game-1794308885206 + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules-items.log | result=PASS"
         },
         {
           "line": 68,
@@ -21488,7 +21493,7 @@
           "status": "VERIFIED",
           "java": "`registry/FluidRegistry.java:16-25`, `registry/FluidTypeRegistry.java`, `content/fluid/SolventFluidType.java`",
           "rust": "`native/theurgy/fluids.rs`",
-          "evidence": "test=isolated game fluids + offline content-check | run=runs\\game-1794226126216 + runs\\acceptance-2026-11-09T11-37-36.767Z\\content-check.log | result=PASS"
+          "evidence": "test=isolated game fluids + offline content-check | run=runs\\game-1794308698239 + runs\\acceptance-2026-11-10T10-33-11.082Z\\content-check.log | result=PASS"
         },
         {
           "line": 74,
@@ -21497,7 +21502,7 @@
           "status": "VERIFIED",
           "java": "`registry/RecipeTypeRegistry.java:16-31`",
           "rust": "`native/theurgy/engine/src/recipes.rs (generic)`",
-          "evidence": "test=isolated game recipes + offline content-check + offline audit | run=runs\\game-1794228009841 + runs\\acceptance-2026-11-09T11-37-36.767Z\\content-check.log + runs\\acceptance-2026-11-09T11-37-36.767Z\\audit.log | result=PASS"
+          "evidence": "test=isolated game recipes + offline content-check + offline audit | run=runs\\game-1794310507553 + runs\\acceptance-2026-11-10T10-33-11.082Z\\content-check.log + runs\\acceptance-2026-11-10T10-33-11.082Z\\audit.log | result=PASS"
         },
         {
           "line": 75,
@@ -21506,7 +21511,7 @@
           "status": "VERIFIED",
           "java": "`registry/RecipeSerializerRegistry.java`, `registry/RecipeDisplayRegistry.java`, `registry/RecipeResultRegistry.java`",
           "rust": "`native/theurgy/engine/src/recipes.rs + native/theurgy/recipe_client.rs + generated data`",
-          "evidence": "test=isolated game recipes + offline content-check + offline audit | run=runs\\game-1794228009841 + runs\\acceptance-2026-11-09T11-37-36.767Z\\content-check.log + runs\\acceptance-2026-11-09T11-37-36.767Z\\audit.log | result=PASS"
+          "evidence": "test=isolated game recipes + offline content-check + offline audit | run=runs\\game-1794310507553 + runs\\acceptance-2026-11-10T10-33-11.082Z\\content-check.log + runs\\acceptance-2026-11-10T10-33-11.082Z\\audit.log | result=PASS"
         },
         {
           "line": 76,
@@ -21515,7 +21520,7 @@
           "status": "VERIFIED",
           "java": "`registry/DataComponentRegistry.java:36-194`",
           "rust": "`native/theurgy/registry.rs::component_types (string list)`",
-          "evidence": "test=isolated game filters + isolated game wand + isolated game divination + isolated game logistics-advanced + offline modules-registry | run=runs\\game-1794225249408 + runs\\game-1794228183851 + runs\\game-1794225168593 + runs\\game-1794226331517 + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules-registry.log | result=PASS"
+          "evidence": "test=isolated game filters + isolated game wand + isolated game divination + isolated game logistics-advanced + offline modules-registry | run=runs\\game-1794307835530 + runs\\game-1794310632283 + runs\\game-1794307767691 + runs\\game-1794308885206 + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules-registry.log | result=PASS"
         },
         {
           "line": 77,
@@ -21524,7 +21529,7 @@
           "status": "VERIFIED",
           "java": "`registry/ItemRegistry.java:39-252`",
           "rust": "`native/theurgy/items.rs`",
-          "evidence": "test=isolated game items + offline content-check + offline audit | run=runs\\game-1794225004582 + runs\\acceptance-2026-11-09T11-37-36.767Z\\content-check.log + runs\\acceptance-2026-11-09T11-37-36.767Z\\audit.log | result=PASS"
+          "evidence": "test=isolated game items + offline content-check + offline audit | run=runs\\game-1794307622619 + runs\\acceptance-2026-11-10T10-33-11.082Z\\content-check.log + runs\\acceptance-2026-11-10T10-33-11.082Z\\audit.log | result=PASS"
         },
         {
           "line": 78,
@@ -21533,7 +21538,7 @@
           "status": "VERIFIED",
           "java": "`registry/SulfurRegistry.java:29-120`, `registry/NiterRegistry.java:23-60`, `registry/SaltRegistry.java:23-55`, `content/item/derivative/AlchemicalDerivativeTier.java`, `content/item/sulfur/AlchemicalSulfurType.java`",
           "rust": "`native/theurgy/items.rs`",
-          "evidence": "test=isolated game client + offline content-check + offline audit | run=runs\\game-1794228048631 + runs\\acceptance-2026-11-09T11-37-36.767Z\\content-check.log + runs\\acceptance-2026-11-09T11-37-36.767Z\\audit.log | result=PASS"
+          "evidence": "test=isolated game client + offline content-check + offline audit | run=runs\\game-1794310541574 + runs\\acceptance-2026-11-10T10-33-11.082Z\\content-check.log + runs\\acceptance-2026-11-10T10-33-11.082Z\\audit.log | result=PASS"
         },
         {
           "line": 79,
@@ -21542,7 +21547,7 @@
           "status": "VERIFIED",
           "java": "`registry/{CreativeModeTabRegistry,SoundRegistry,ParticleRegistry,ShaderRegistry,KeyMappingsRegistry}.java`",
           "rust": "`native/theurgy/render.rs`",
-          "evidence": "test=isolated game client-features + isolated game wand + isolated game divination + offline content-check | run=runs\\game-1794228220578 + runs\\game-1794228183851 + runs\\game-1794225168593 + runs\\acceptance-2026-11-09T11-37-36.767Z\\content-check.log | result=PASS"
+          "evidence": "test=isolated game client-features + isolated game wand + isolated game divination + offline content-check | run=runs\\game-1794310664615 + runs\\game-1794310632283 + runs\\game-1794307767691 + runs\\acceptance-2026-11-10T10-33-11.082Z\\content-check.log | result=PASS"
         },
         {
           "line": 80,
@@ -21551,7 +21556,7 @@
           "status": "VERIFIED",
           "java": "`registry/{BlockTagRegistry,ItemTagRegistry,FluidTagRegistry}.java`, `datagen/tag/*`",
           "rust": "`tools/build-content.mjs`",
-          "evidence": "test=isolated game content-rules + isolated game filter-matching + offline content-check + offline audit | run=runs\\game-1794225295776 + runs\\game-1794226430467 + runs\\acceptance-2026-11-09T11-37-36.767Z\\content-check.log + runs\\acceptance-2026-11-09T11-37-36.767Z\\audit.log | result=PASS"
+          "evidence": "test=isolated game content-rules + isolated game filter-matching + offline content-check + offline audit | run=runs\\game-1794307873039 + runs\\game-1794308980712 + runs\\acceptance-2026-11-10T10-33-11.082Z\\content-check.log + runs\\acceptance-2026-11-10T10-33-11.082Z\\audit.log | result=PASS"
         },
         {
           "line": 81,
@@ -21560,7 +21565,7 @@
           "status": "VERIFIED",
           "java": "`registry/CapabilityRegistry.java`, `content/capability/*.java`",
           "rust": "`native/theurgy/host.rs`",
-          "evidence": "test=Java GameTest differential (2 tests) + isolated game review-fixes + isolated game flux | run=artifacts/differential.json + runs\\game-1794226734819 + runs\\game-1794225037837 | result=PASS"
+          "evidence": "test=Java GameTest differential (2 tests) + isolated game review-fixes + isolated game flux | run=artifacts/differential.json + runs\\game-1794309270549 + runs\\game-1794307651789 | result=PASS"
         },
         {
           "line": 90,
@@ -21569,7 +21574,7 @@
           "status": "VERIFIED",
           "java": "`content/behaviour/crafting/CraftingBehaviour.java:117-137`",
           "rust": "`native/theurgy/engine/src/crafting.rs::Crafting::tick`",
-          "evidence": "test=Java GameTest differential (3 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+          "evidence": "test=Java GameTest differential (3 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
         },
         {
           "line": 91,
@@ -21578,7 +21583,7 @@
           "status": "VERIFIED",
           "java": "`CraftingBehaviour.java:191-200`",
           "rust": "`engine/src/crafting.rs`",
-          "evidence": "test=Java GameTest differential (2 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+          "evidence": "test=Java GameTest differential (2 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
         },
         {
           "line": 92,
@@ -21587,7 +21592,7 @@
           "status": "VERIFIED",
           "java": "`CraftingBehaviour.java:202-210`",
           "rust": "`engine/src/crafting.rs`",
-          "evidence": "test=Java GameTest differential (1 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+          "evidence": "test=Java GameTest differential (1 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
         },
         {
           "line": 93,
@@ -21596,7 +21601,7 @@
           "status": "VERIFIED",
           "java": "`CraftingBehaviour.java:212-223`",
           "rust": "`engine/src/crafting.rs (unit test idle_stop_does_not_clear_could_craft_java_quirk)`",
-          "evidence": "test=Java GameTest differential (1 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+          "evidence": "test=Java GameTest differential (1 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
         },
         {
           "line": 94,
@@ -21605,7 +21610,7 @@
           "status": "VERIFIED",
           "java": "`CraftingBehaviour.java:225-238`",
           "rust": "`engine/src/machines.rs::can_fit / tick_machine`",
-          "evidence": "test=Java GameTest differential (1 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+          "evidence": "test=Java GameTest differential (1 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
         },
         {
           "line": 95,
@@ -21614,7 +21619,7 @@
           "status": "VERIFIED",
           "java": "`CraftingBehaviour.java:240-256`",
           "rust": "`engine/src/machines.rs::tick_machine (claimed atomic)`",
-          "evidence": "test=Java GameTest differential (2 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+          "evidence": "test=Java GameTest differential (2 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
         },
         {
           "line": 96,
@@ -21623,7 +21628,7 @@
           "status": "VERIFIED",
           "java": "`CraftingBehaviour.java:258-267`",
           "rust": "`engine/src/crafting.rs`",
-          "evidence": "test=Java GameTest differential (1 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+          "evidence": "test=Java GameTest differential (1 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
         },
         {
           "line": 97,
@@ -21632,7 +21637,7 @@
           "status": "VERIFIED",
           "java": "`CraftingBehaviour.java:64-70`",
           "rust": "`engine/src/crafting.rs::progress_percent`",
-          "evidence": "test=Java GameTest differential (1 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+          "evidence": "test=Java GameTest differential (1 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
         },
         {
           "line": 98,
@@ -21641,7 +21646,7 @@
           "status": "VERIFIED",
           "java": "`CraftingBehaviour.java:139-142`",
           "rust": "`engine/src/crafting.rs::input_changed`",
-          "evidence": "test=Java GameTest differential (1 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+          "evidence": "test=Java GameTest differential (1 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
         },
         {
           "line": 99,
@@ -21650,7 +21655,7 @@
           "status": "VERIFIED",
           "java": "`CraftingBehaviour.java:148-189`",
           "rust": "`native/theurgy/engine/src/crafting.rs`",
-          "evidence": "test=Java GameTest differential (1 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+          "evidence": "test=Java GameTest differential (1 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
         },
         {
           "line": 100,
@@ -21659,7 +21664,7 @@
           "status": "VERIFIED",
           "java": "`CraftingBehaviour.java:80-100`",
           "rust": "`native/theurgy/host.rs::{crafting,save_crafting}`",
-          "evidence": "test=isolated game persistence + isolated game machines + isolated game incubation-chaos | run=runs\\game-1794225781505 + runs\\game-1794224850210 + runs\\game-1794225335669 | result=PASS"
+          "evidence": "test=isolated game persistence + isolated game machines + isolated game incubation-chaos | run=runs\\game-1794308358122 + runs\\game-1794307477982 + runs\\game-1794307913284 | result=PASS"
         },
         {
           "line": 101,
@@ -21668,7 +21673,7 @@
           "status": "VERIFIED",
           "java": "`CraftingBehaviour.java:72-78`",
           "rust": "`native/theurgy/host.rs`",
-          "evidence": "test=Java GameTest differential (2 tests) + isolated game client-features | run=artifacts/differential.json + runs\\game-1794228220578 | result=PASS"
+          "evidence": "test=Java GameTest differential (2 tests) + isolated game client-features | run=artifacts/differential.json + runs\\game-1794310664615 | result=PASS"
         },
         {
           "line": 102,
@@ -21677,7 +21682,7 @@
           "status": "VERIFIED",
           "java": "`content/behaviour/crafting/LevelAwareCachedCheck.java`, `LevelAwareRecipeCheck.java`",
           "rust": "`native/theurgy/engine/src/recipes.rs`",
-          "evidence": "test=Java GameTest differential (2 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+          "evidence": "test=Java GameTest differential (2 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
         },
         {
           "line": 103,
@@ -21686,7 +21691,7 @@
           "status": "VERIFIED",
           "java": "`content/storage/SettableItemStorage.java`, `content/storage/MonitoredItemStackHandler.java`, `content/behaviour/itemhandler/*.java`",
           "rust": "`native/theurgy/interactions.rs`",
-          "evidence": "test=Java GameTest differential (2 tests) + isolated game review-fixes + offline modules-registry | run=artifacts/differential.json + runs\\game-1794226734819 + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules-registry.log | result=PASS"
+          "evidence": "test=Java GameTest differential (2 tests) + isolated game review-fixes + offline modules-registry | run=artifacts/differential.json + runs\\game-1794309270549 + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules-registry.log | result=PASS"
         },
         {
           "line": 113,
@@ -21704,7 +21709,7 @@
           "status": "VERIFIED",
           "java": "`content/capability/DefaultHeatReceiver.java:15-52`",
           "rust": "`native/theurgy/heat.rs`",
-          "evidence": "test=Java GameTest differential (2 tests) + isolated game flux + isolated game persistence | run=artifacts/differential.json + runs\\game-1794225037837 + runs\\game-1794225781505 | result=PASS"
+          "evidence": "test=Java GameTest differential (2 tests) + isolated game flux + isolated game persistence | run=artifacts/differential.json + runs\\game-1794307651789 + runs\\game-1794308358122 | result=PASS"
         },
         {
           "line": 115,
@@ -21713,7 +21718,7 @@
           "status": "VERIFIED",
           "java": "`content/capability/CraftingHeatReceiver.java:12-25`",
           "rust": "`native/theurgy/heat.rs`",
-          "evidence": "test=Java GameTest differential (2 tests) + isolated game flux | run=artifacts/differential.json + runs\\game-1794225037837 | result=PASS"
+          "evidence": "test=Java GameTest differential (2 tests) + isolated game flux | run=artifacts/differential.json + runs\\game-1794307651789 | result=PASS"
         },
         {
           "line": 116,
@@ -21740,7 +21745,7 @@
           "status": "VERIFIED",
           "java": "`PyromanticBrazierBlockEntity.java:177-191`",
           "rust": "`native/theurgy/heat.rs`",
-          "evidence": "test=Java GameTest differential (1 tests) + isolated game persistence + offline modules-heat | run=artifacts/differential.json + runs\\game-1794225781505 + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules-heat.log | result=PASS"
+          "evidence": "test=Java GameTest differential (1 tests) + isolated game persistence + offline modules-heat | run=artifacts/differential.json + runs\\game-1794308358122 + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules-heat.log | result=PASS"
         },
         {
           "line": 119,
@@ -21749,7 +21754,7 @@
           "status": "VERIFIED",
           "java": "`content/apparatus/caloricfluxemitter/CaloricFluxEmitterBlockEntity.java:32-91`",
           "rust": "`native/theurgy/flux.rs`",
-          "evidence": "test=Java GameTest differential (4 tests) + isolated game flux | run=artifacts/differential.json + runs\\game-1794225037837 | result=PASS"
+          "evidence": "test=Java GameTest differential (4 tests) + isolated game flux | run=artifacts/differential.json + runs\\game-1794307651789 | result=PASS"
         },
         {
           "line": 125,
@@ -21758,7 +21763,7 @@
           "status": "VERIFIED",
           "java": "`content/recipe/CalcinationRecipe.java:28-60`",
           "rust": "`engine/src/recipes.rs (generic)`",
-          "evidence": "test=Java GameTest differential (2 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+          "evidence": "test=Java GameTest differential (2 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
         },
         {
           "line": 126,
@@ -21767,7 +21772,7 @@
           "status": "VERIFIED",
           "java": "`content/apparatus/calcinationoven/CalcinationCraftingBehaviour.java:20-52`",
           "rust": "`native/theurgy/machines.rs`",
-          "evidence": "test=Java GameTest differential (2 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+          "evidence": "test=Java GameTest differential (2 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
         },
         {
           "line": 127,
@@ -21776,7 +21781,7 @@
           "status": "VERIFIED",
           "java": "`CalcinationCraftingBehaviour.java:28-31`, `CalcinationCachedCheck.java`",
           "rust": "`native/theurgy/engine/src/recipes.rs + native/theurgy/machines.rs`",
-          "evidence": "test=Java GameTest differential (2 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+          "evidence": "test=Java GameTest differential (2 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
         },
         {
           "line": 128,
@@ -21785,7 +21790,7 @@
           "status": "VERIFIED",
           "java": "`CalcinationOvenBlock.java`, `CalcinationOvenBlockItem.java`",
           "rust": "`native/theurgy/machines.rs, hooks/place.rs, hooks/destroy.rs`",
-          "evidence": "test=Java GameTest differential (4 tests) + isolated game interactions | run=artifacts/differential.json + runs\\game-1794224964769 | result=PASS"
+          "evidence": "test=Java GameTest differential (4 tests) + isolated game interactions | run=artifacts/differential.json + runs\\game-1794307582663 | result=PASS"
         },
         {
           "line": 129,
@@ -21794,7 +21799,7 @@
           "status": "VERIFIED",
           "java": "`CalcinationStorageBehaviour.java`, `CalcinationOvenBlockEntity.java`",
           "rust": "`registry.rs::container`",
-          "evidence": "test=Java GameTest differential (2 tests) + isolated game review-fixes + offline modules-registry | run=artifacts/differential.json + runs\\game-1794226734819 + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules-registry.log | result=PASS"
+          "evidence": "test=Java GameTest differential (2 tests) + isolated game review-fixes + offline modules-registry | run=artifacts/differential.json + runs\\game-1794309270549 + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules-registry.log | result=PASS"
         },
         {
           "line": 130,
@@ -21821,7 +21826,7 @@
           "status": "VERIFIED",
           "java": "`CalcinationAnimationBehaviour.java`, `render/CalcinationOvenRenderer.java`, `render/CalcinationOvenItemRenderer.java`",
           "rust": "`native/theurgy/render.rs`",
-          "evidence": "test=isolated game render | run=runs\\game-1794228087282 | result=PASS"
+          "evidence": "test=isolated game render | run=runs\\game-1794310569539 | result=PASS"
         },
         {
           "line": 138,
@@ -21830,7 +21835,7 @@
           "status": "VERIFIED",
           "java": "`content/recipe/DistillationRecipe.java:30-90`, `registry/RecipeTypeRegistry.java:21`",
           "rust": "`native/theurgy/machines.rs`",
-          "evidence": "test=Java GameTest differential (3 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+          "evidence": "test=Java GameTest differential (3 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
         },
         {
           "line": 139,
@@ -21839,7 +21844,7 @@
           "status": "VERIFIED",
           "java": "`content/apparatus/distiller/DistillationCraftingBehaviour.java`, `DistillationStorageBehaviour.java`",
           "rust": "`native/theurgy/machines.rs`",
-          "evidence": "test=Java GameTest differential (3 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+          "evidence": "test=Java GameTest differential (3 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
         },
         {
           "line": 140,
@@ -21848,7 +21853,7 @@
           "status": "VERIFIED",
           "java": "`DistillerBlock.java`, `DistillerBlockItem.java`, `DistillerBlockEntity.java`",
           "rust": "`native/theurgy/machines.rs`",
-          "evidence": "test=Java GameTest differential (6 tests) + isolated game interactions | run=artifacts/differential.json + runs\\game-1794224964769 | result=PASS"
+          "evidence": "test=Java GameTest differential (6 tests) + isolated game interactions | run=artifacts/differential.json + runs\\game-1794307582663 | result=PASS"
         },
         {
           "line": 141,
@@ -21857,7 +21862,7 @@
           "status": "VERIFIED",
           "java": "`DistillerAnimationBehaviour.java`, `render/*.java`",
           "rust": "`native/theurgy/render.rs`",
-          "evidence": "test=isolated game render | run=runs\\game-1794228087282 | result=PASS"
+          "evidence": "test=isolated game render | run=runs\\game-1794310569539 | result=PASS"
         },
         {
           "line": 147,
@@ -21866,7 +21871,7 @@
           "status": "VERIFIED",
           "java": "`content/recipe/LiquefactionRecipe.java:36-160`",
           "rust": "`native/theurgy/machines.rs`",
-          "evidence": "test=Java GameTest differential (4 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+          "evidence": "test=Java GameTest differential (4 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
         },
         {
           "line": 148,
@@ -21875,7 +21880,7 @@
           "status": "VERIFIED",
           "java": "`content/apparatus/liquefactioncauldron/LiquefactionCraftingBehaviour.java:20-60`",
           "rust": "`native/theurgy/machines.rs`",
-          "evidence": "test=Java GameTest differential (4 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+          "evidence": "test=Java GameTest differential (4 tests) + offline rust-fast | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
         },
         {
           "line": 149,
@@ -21884,7 +21889,7 @@
           "status": "VERIFIED",
           "java": "`LiquefactionStorageBehaviour.java`, `LiquefactionCauldronBlockEntity.java`",
           "rust": "`registry.rs::{container,fluids} (10000 mB static)`",
-          "evidence": "test=Java GameTest differential (4 tests) + offline modules-registry | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules-registry.log | result=PASS"
+          "evidence": "test=Java GameTest differential (4 tests) + offline modules-registry | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules-registry.log | result=PASS"
         },
         {
           "line": 150,
@@ -21902,7 +21907,7 @@
           "status": "VERIFIED",
           "java": "`render/LiquefactionCauldronRenderer.java`",
           "rust": "`native/theurgy/render.rs`",
-          "evidence": "test=isolated game render | run=runs\\game-1794228087282 | result=PASS"
+          "evidence": "test=isolated game render | run=runs\\game-1794310569539 | result=PASS"
         },
         {
           "line": 157,
@@ -21911,7 +21916,7 @@
           "status": "VERIFIED",
           "java": "`content/recipe/FermentationRecipe.java:32-160`",
           "rust": "`native/theurgy/machines.rs`",
-          "evidence": "test=Java GameTest differential (3 tests) + isolated game all + isolated game content-rules + offline rust-fast | run=artifacts/differential.json + runs\\game-1794224712378 + runs\\game-1794225295776 + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+          "evidence": "test=Java GameTest differential (3 tests) + isolated game all + isolated game content-rules + offline rust-fast | run=artifacts/differential.json + runs\\game-1794307344272 + runs\\game-1794307873039 + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
         },
         {
           "line": 158,
@@ -21920,7 +21925,7 @@
           "status": "VERIFIED",
           "java": "`content/recipe/DigestionRecipe.java:38-160`",
           "rust": "`native/theurgy/machines.rs`",
-          "evidence": "test=Java GameTest differential (3 tests) + isolated game all + offline rust-fast | run=artifacts/differential.json + runs\\game-1794224712378 + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+          "evidence": "test=Java GameTest differential (3 tests) + isolated game all + offline rust-fast | run=artifacts/differential.json + runs\\game-1794307344272 + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
         },
         {
           "line": 159,
@@ -21929,7 +21934,7 @@
           "status": "VERIFIED",
           "java": "`content/apparatus/{fermentationvat,digestionvat}/*StorageBehaviour.java`, `content/behaviour/redstone/Vat*.java`",
           "rust": "`registry.rs::container`",
-          "evidence": "test=Java GameTest differential (6 tests) + offline modules-registry | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules-registry.log | result=PASS"
+          "evidence": "test=Java GameTest differential (6 tests) + offline modules-registry | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules-registry.log | result=PASS"
         },
         {
           "line": 160,
@@ -21938,7 +21943,7 @@
           "status": "VERIFIED",
           "java": "`content/behaviour/interaction/GenericVatInteractionBehaviour.java:21-80`, `{Digestion,Fermentation}VatInteractionBehaviour.java`",
           "rust": "`hooks/use_on.rs`",
-          "evidence": "test=isolated game vat-interactions | run=runs\\game-1794226810288 | result=PASS"
+          "evidence": "test=isolated game vat-interactions | run=runs\\game-1794309348387 | result=PASS"
         },
         {
           "line": 161,
@@ -21956,7 +21961,7 @@
           "status": "VERIFIED",
           "java": "`content/recipe/AccumulationRecipe.java:38-150`",
           "rust": "`native/theurgy/engine/src/recipes.rs`",
-          "evidence": "test=Java GameTest differential (2 tests) + isolated game fluids + offline rust-fast | run=artifacts/differential.json + runs\\game-1794226126216 + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+          "evidence": "test=Java GameTest differential (2 tests) + isolated game fluids + offline rust-fast | run=artifacts/differential.json + runs\\game-1794308698239 + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
         },
         {
           "line": 168,
@@ -21965,7 +21970,7 @@
           "status": "VERIFIED",
           "java": "`content/apparatus/salammoniacaccumulator/SalAmmoniacAccumulatorCraftingBehaviour.java:70-100`",
           "rust": "`native/theurgy/machines.rs`",
-          "evidence": "test=Java GameTest differential (2 tests) + isolated game fluids + offline rust-fast | run=artifacts/differential.json + runs\\game-1794226126216 + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+          "evidence": "test=Java GameTest differential (2 tests) + isolated game fluids + offline rust-fast | run=artifacts/differential.json + runs\\game-1794308698239 + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
         },
         {
           "line": 169,
@@ -21974,7 +21979,7 @@
           "status": "VERIFIED",
           "java": "`SalAmmoniacAccumulatorCraftingBehaviour.java:102-128`",
           "rust": "`native/theurgy/machines.rs`",
-          "evidence": "test=Java GameTest differential (2 tests) + isolated game fluids + offline rust-fast | run=artifacts/differential.json + runs\\game-1794226126216 + runs\\acceptance-2026-11-09T11-37-36.767Z\\rust-fast.log | result=PASS"
+          "evidence": "test=Java GameTest differential (2 tests) + isolated game fluids + offline rust-fast | run=artifacts/differential.json + runs\\game-1794308698239 + runs\\acceptance-2026-11-10T10-33-11.082Z\\rust-fast.log | result=PASS"
         },
         {
           "line": 170,
@@ -21983,7 +21988,7 @@
           "status": "VERIFIED",
           "java": "`SalAmmoniacAccumulatorBlockEntity.java`, `SalAmmoniacAccumulatorCachedCheck.java`",
           "rust": "`registry.rs::{container,fluids}`",
-          "evidence": "test=Java GameTest differential (3 tests) + isolated game fluids + offline modules-registry | run=artifacts/differential.json + runs\\game-1794226126216 + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules-registry.log | result=PASS"
+          "evidence": "test=Java GameTest differential (3 tests) + isolated game fluids + offline modules-registry | run=artifacts/differential.json + runs\\game-1794308698239 + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules-registry.log | result=PASS"
         },
         {
           "line": 171,
@@ -21992,7 +21997,7 @@
           "status": "VERIFIED",
           "java": "`content/apparatus/salammoniactank/SalAmmoniacTankBlockEntity.java`",
           "rust": "`native/theurgy/fluids.rs`",
-          "evidence": "test=Java GameTest differential (4 tests) + isolated game fluids | run=artifacts/differential.json + runs\\game-1794226126216 | result=PASS"
+          "evidence": "test=Java GameTest differential (4 tests) + isolated game fluids | run=artifacts/differential.json + runs\\game-1794308698239 | result=PASS"
         },
         {
           "line": 172,
@@ -22001,7 +22006,7 @@
           "status": "VERIFIED",
           "java": "`content/apparatus/salammoniac{accumulator,tank}/render/*.java`",
           "rust": "`native/theurgy/render.rs`",
-          "evidence": "test=isolated game render | run=runs\\game-1794228087282 | result=PASS"
+          "evidence": "test=isolated game render | run=runs\\game-1794310569539 | result=PASS"
         },
         {
           "line": 178,
@@ -22010,7 +22015,7 @@
           "status": "VERIFIED",
           "java": "`content/apparatus/mercurycatalyst/MercuryCatalystBlockEntity.java`, `content/recipe/CatalysationRecipe.java:33-140`",
           "rust": "`native/theurgy/flux.rs`",
-          "evidence": "test=Java GameTest differential (3 tests) + isolated game flux + offline modules-flux | run=artifacts/differential.json + runs\\game-1794225037837 + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules-flux.log | result=PASS"
+          "evidence": "test=Java GameTest differential (3 tests) + isolated game flux + offline modules-flux | run=artifacts/differential.json + runs\\game-1794307651789 + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules-flux.log | result=PASS"
         },
         {
           "line": 179,
@@ -22019,7 +22024,7 @@
           "status": "VERIFIED",
           "java": "`content/apparatus/mercurycatalyst/MercuryCatalystCraftingBehaviour.java:120-196`",
           "rust": "`native/theurgy/flux.rs`",
-          "evidence": "test=Java GameTest differential (3 tests) + isolated game flux + offline modules-flux | run=artifacts/differential.json + runs\\game-1794225037837 + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules-flux.log | result=PASS"
+          "evidence": "test=Java GameTest differential (3 tests) + isolated game flux + offline modules-flux | run=artifacts/differential.json + runs\\game-1794307651789 + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules-flux.log | result=PASS"
         },
         {
           "line": 180,
@@ -22037,7 +22042,7 @@
           "status": "VERIFIED",
           "java": "`content/apparatus/mercurycapacitor/MercuryCapacitorBlockEntity.java:44-140`, `SideMode.java`",
           "rust": "`native/theurgy/flux.rs`",
-          "evidence": "test=Java GameTest differential (3 tests) + isolated game wand + offline modules-flux | run=artifacts/differential.json + runs\\game-1794228183851 + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules-flux.log | result=PASS"
+          "evidence": "test=Java GameTest differential (3 tests) + isolated game wand + offline modules-flux | run=artifacts/differential.json + runs\\game-1794310632283 + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules-flux.log | result=PASS"
         },
         {
           "line": 182,
@@ -22046,7 +22051,7 @@
           "status": "VERIFIED",
           "java": "`MercuryCapacitorBlockEntity.java:174-241`",
           "rust": "`native/theurgy/flux.rs`",
-          "evidence": "test=Java GameTest differential (4 tests) + offline modules-flux | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules-flux.log | result=PASS"
+          "evidence": "test=Java GameTest differential (4 tests) + offline modules-flux | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules-flux.log | result=PASS"
         },
         {
           "line": 183,
@@ -22055,7 +22060,7 @@
           "status": "VERIFIED",
           "java": "`MercuryCapacitorBlockEntity.java:75-100, 260-330`",
           "rust": "`native/theurgy/flux.rs`",
-          "evidence": "test=Java GameTest differential (4 tests) + offline modules-flux | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules-flux.log | result=PASS"
+          "evidence": "test=Java GameTest differential (4 tests) + offline modules-flux | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules-flux.log | result=PASS"
         },
         {
           "line": 184,
@@ -22064,7 +22069,7 @@
           "status": "VERIFIED",
           "java": "`MercuryCapacitorBlockEntity.java:140-172, 260-330`",
           "rust": "`native/theurgy/flux.rs`",
-          "evidence": "test=Java GameTest differential (2 tests) + isolated game flux + isolated game persistence + offline modules-flux | run=artifacts/differential.json + runs\\game-1794225037837 + runs\\game-1794225781505 + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules-flux.log | result=PASS"
+          "evidence": "test=Java GameTest differential (2 tests) + isolated game flux + isolated game persistence + offline modules-flux | run=artifacts/differential.json + runs\\game-1794307651789 + runs\\game-1794308358122 + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules-flux.log | result=PASS"
         },
         {
           "line": 185,
@@ -22073,7 +22078,7 @@
           "status": "VERIFIED",
           "java": "`content/apparatus/mercuryfluxemitter/MercuryFluxEmitterBlockEntity.java:33-170`, `MercuryFluxEmitterMercuryFluxBehaviour.java`, `MercuryFluxEmitterSelectionBehaviour.java`",
           "rust": "`native/theurgy/flux.rs`",
-          "evidence": "test=Java GameTest differential (4 tests) + isolated game flux + isolated game review-fixes | run=artifacts/differential.json + runs\\game-1794225037837 + runs\\game-1794226734819 | result=PASS"
+          "evidence": "test=Java GameTest differential (4 tests) + isolated game flux + isolated game review-fixes | run=artifacts/differential.json + runs\\game-1794307651789 + runs\\game-1794309270549 | result=PASS"
         },
         {
           "line": 186,
@@ -22082,7 +22087,7 @@
           "status": "VERIFIED",
           "java": "`content/apparatus/logisticsmercuryfluxconnector/*.java`",
           "rust": "`native/theurgy/logistics.rs`",
-          "evidence": "test=Java GameTest differential (5 tests) + isolated game logistics-advanced | run=artifacts/differential.json + runs\\game-1794226331517 | result=PASS"
+          "evidence": "test=Java GameTest differential (5 tests) + isolated game logistics-advanced | run=artifacts/differential.json + runs\\game-1794308885206 | result=PASS"
         },
         {
           "line": 187,
@@ -22091,7 +22096,7 @@
           "status": "VERIFIED",
           "java": "`content/capability/SimpleMercuryFluxHandler.java`, `SimpleTheurgyEnergyHandler.java`",
           "rust": "`native/theurgy/flux.rs`",
-          "evidence": "test=Java GameTest differential (4 tests) + offline modules-flux | run=artifacts/differential.json + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules-flux.log | result=PASS"
+          "evidence": "test=Java GameTest differential (4 tests) + offline modules-flux | run=artifacts/differential.json + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules-flux.log | result=PASS"
         },
         {
           "line": 188,
@@ -22100,7 +22105,7 @@
           "status": "VERIFIED",
           "java": "`network/messages/MessageShow{Caloric,Mercury,Sulfuric}Flux*.java`, `Message*Selection.java`",
           "rust": "`native/theurgy/render.rs`",
-          "evidence": "test=Java GameTest differential (3 tests) + isolated game client-features + isolated game flux | run=artifacts/differential.json + runs\\game-1794228220578 + runs\\game-1794225037837 | result=PASS"
+          "evidence": "test=Java GameTest differential (3 tests) + isolated game client-features + isolated game flux | run=artifacts/differential.json + runs\\game-1794310664615 + runs\\game-1794307651789 | result=PASS"
         },
         {
           "line": 194,
@@ -22109,7 +22114,7 @@
           "status": "VERIFIED",
           "java": "`content/recipe/IncubationRecipe.java:36-170`, `content/recipe/result/{RecipeResult,ItemRecipeResult,TagRecipeResult}.java`",
           "rust": "`native/theurgy/incubation.rs`",
-          "evidence": "test=Java GameTest differential (7 tests) + isolated game incubation-chaos | run=artifacts/differential.json + runs\\game-1794225335669 | result=PASS"
+          "evidence": "test=Java GameTest differential (7 tests) + isolated game incubation-chaos | run=artifacts/differential.json + runs\\game-1794307913284 | result=PASS"
         },
         {
           "line": 195,
@@ -22118,7 +22123,7 @@
           "status": "VERIFIED",
           "java": "`content/recipe/input/IncubatorRecipeInput.java`, `content/apparatus/incubator/IncubatorCraftingBehaviour.java:78-82`",
           "rust": "`native/theurgy/incubation.rs`",
-          "evidence": "test=Java GameTest differential (7 tests) + isolated game incubation-chaos | run=artifacts/differential.json + runs\\game-1794225335669 | result=PASS"
+          "evidence": "test=Java GameTest differential (7 tests) + isolated game incubation-chaos | run=artifacts/differential.json + runs\\game-1794307913284 | result=PASS"
         },
         {
           "line": 196,
@@ -22127,7 +22132,7 @@
           "status": "VERIFIED",
           "java": "`IncubatorCraftingBehaviour.java:42-64`",
           "rust": "`native/theurgy/incubation.rs`",
-          "evidence": "test=Java GameTest differential (7 tests) + isolated game incubation-chaos | run=artifacts/differential.json + runs\\game-1794225335669 | result=PASS"
+          "evidence": "test=Java GameTest differential (7 tests) + isolated game incubation-chaos | run=artifacts/differential.json + runs\\game-1794307913284 | result=PASS"
         },
         {
           "line": 197,
@@ -22136,7 +22141,7 @@
           "status": "VERIFIED",
           "java": "`content/apparatus/incubator/IncubatorBlockEntity.java:195-240`",
           "rust": "`native/theurgy/incubation.rs`",
-          "evidence": "test=Java GameTest differential (7 tests) + isolated game incubation-chaos | run=artifacts/differential.json + runs\\game-1794225335669 | result=PASS"
+          "evidence": "test=Java GameTest differential (7 tests) + isolated game incubation-chaos | run=artifacts/differential.json + runs\\game-1794307913284 | result=PASS"
         },
         {
           "line": 198,
@@ -22145,7 +22150,7 @@
           "status": "VERIFIED",
           "java": "`IncubatorBlockEntity.java:236-250`",
           "rust": "`hooks/destroy.rs`",
-          "evidence": "test=Java GameTest differential (3 tests) + isolated game incubation-chaos | run=artifacts/differential.json + runs\\game-1794225335669 | result=PASS"
+          "evidence": "test=Java GameTest differential (3 tests) + isolated game incubation-chaos | run=artifacts/differential.json + runs\\game-1794307913284 | result=PASS"
         },
         {
           "line": 199,
@@ -22163,7 +22168,7 @@
           "status": "VERIFIED",
           "java": "`content/apparatus/incubator/render/*.java`",
           "rust": "`native/theurgy/render.rs`",
-          "evidence": "test=isolated game render | run=runs\\game-1794228087282 | result=PASS"
+          "evidence": "test=isolated game render | run=runs\\game-1794310569539 | result=PASS"
         },
         {
           "line": 206,
@@ -22172,7 +22177,7 @@
           "status": "VERIFIED",
           "java": "`content/recipe/ReformationRecipe.java:36-160`",
           "rust": "`native/theurgy/reformation.rs`",
-          "evidence": "test=Java GameTest differential (2 tests) + isolated game reformation + offline modules-reformation | run=artifacts/differential.json + runs\\game-1794225834355 + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules-reformation.log | result=PASS"
+          "evidence": "test=Java GameTest differential (2 tests) + isolated game reformation + offline modules-reformation | run=artifacts/differential.json + runs\\game-1794308409358 + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules-reformation.log | result=PASS"
         },
         {
           "line": 207,
@@ -22181,7 +22186,7 @@
           "status": "VERIFIED",
           "java": "`ReformationRecipe.java:92-124`",
           "rust": "`native/theurgy/reformation.rs`",
-          "evidence": "test=Java GameTest differential (2 tests) + isolated game reformation + offline modules-reformation | run=artifacts/differential.json + runs\\game-1794225834355 + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules-reformation.log | result=PASS"
+          "evidence": "test=Java GameTest differential (2 tests) + isolated game reformation + offline modules-reformation | run=artifacts/differential.json + runs\\game-1794308409358 + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules-reformation.log | result=PASS"
         },
         {
           "line": 208,
@@ -22190,7 +22195,7 @@
           "status": "VERIFIED",
           "java": "`ReformationRecipe.java:126-138`",
           "rust": "`native/theurgy/reformation.rs`",
-          "evidence": "test=isolated game reformation + offline modules-reformation | run=runs\\game-1794225834355 + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules-reformation.log | result=PASS"
+          "evidence": "test=isolated game reformation + offline modules-reformation | run=runs\\game-1794308409358 + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules-reformation.log | result=PASS"
         },
         {
           "line": 209,
@@ -22199,7 +22204,7 @@
           "status": "VERIFIED",
           "java": "`content/apparatus/reformationarray/SulfuricFluxEmitterBlockEntity.java:44-200`",
           "rust": "`native/theurgy/reformation.rs`",
-          "evidence": "test=Java GameTest differential (4 tests) + isolated game reformation + isolated game review-fixes | run=artifacts/differential.json + runs\\game-1794225834355 + runs\\game-1794226734819 | result=PASS"
+          "evidence": "test=Java GameTest differential (4 tests) + isolated game reformation + isolated game review-fixes | run=artifacts/differential.json + runs\\game-1794308409358 + runs\\game-1794309270549 | result=PASS"
         },
         {
           "line": 210,
@@ -22208,7 +22213,7 @@
           "status": "VERIFIED",
           "java": "`SulfuricFluxEmitterBlockEntity.java:197-201`",
           "rust": "`native/theurgy/reformation.rs`",
-          "evidence": "test=Java GameTest differential (4 tests) + isolated game reformation + isolated game review-fixes | run=artifacts/differential.json + runs\\game-1794225834355 + runs\\game-1794226734819 | result=PASS"
+          "evidence": "test=Java GameTest differential (4 tests) + isolated game reformation + isolated game review-fixes | run=artifacts/differential.json + runs\\game-1794308409358 + runs\\game-1794309270549 | result=PASS"
         },
         {
           "line": 211,
@@ -22217,7 +22222,7 @@
           "status": "VERIFIED",
           "java": "`ReformationArrayCraftingBehaviour.java`",
           "rust": "`native/theurgy/reformation.rs`",
-          "evidence": "test=Java GameTest differential (1 tests) + isolated game reformation | run=artifacts/differential.json + runs\\game-1794225834355 | result=PASS"
+          "evidence": "test=Java GameTest differential (1 tests) + isolated game reformation | run=artifacts/differential.json + runs\\game-1794308409358 | result=PASS"
         },
         {
           "line": 212,
@@ -22226,7 +22231,7 @@
           "status": "VERIFIED",
           "java": "`SulfuricFluxEmitterSelectionBehaviour.java:22-120`, `content/behaviour/selection/{SelectionBehaviour,SelectedPoint}.java`",
           "rust": "`native/theurgy/reformation.rs, hook*use_item.rs`",
-          "evidence": "test=Java GameTest differential (2 tests) + isolated game review-fixes + isolated game reformation | run=artifacts/differential.json + runs\\game-1794226734819 + runs\\game-1794225834355 | result=PASS"
+          "evidence": "test=Java GameTest differential (2 tests) + isolated game review-fixes + isolated game reformation | run=artifacts/differential.json + runs\\game-1794309270549 + runs\\game-1794308409358 | result=PASS"
         },
         {
           "line": 213,
@@ -22244,7 +22249,7 @@
           "status": "VERIFIED",
           "java": "`SulfuricFluxEmitterBlockEntity.java:352-406`",
           "rust": "`native/theurgy/reformation.rs`",
-          "evidence": "test=isolated game render + offline modules-reformation | run=runs\\game-1794228087282 + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules-reformation.log | result=PASS"
+          "evidence": "test=isolated game render + offline modules-reformation | run=runs\\game-1794310569539 + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules-reformation.log | result=PASS"
         },
         {
           "line": 222,
@@ -22253,7 +22258,7 @@
           "status": "VERIFIED",
           "java": "`logistics/LogisticsNetwork.java:28-90`, `logistics/Logistics.java`",
           "rust": "`native/theurgy/logistics.rs`",
-          "evidence": "test=Java GameTest differential (5 tests) + isolated game logistics + isolated game wire-graph | run=artifacts/differential.json + runs\\game-1794225083517 + runs\\game-1794226265782 | result=PASS"
+          "evidence": "test=Java GameTest differential (5 tests) + isolated game logistics + isolated game wire-graph | run=artifacts/differential.json + runs\\game-1794307692448 + runs\\game-1794308820354 | result=PASS"
         },
         {
           "line": 223,
@@ -22262,7 +22267,7 @@
           "status": "VERIFIED",
           "java": "`content/behaviour/logistics/LeafNodeBehaviour.java:25-160`, `LeafNodeMode.java`",
           "rust": "`native/theurgy/logistics.rs`",
-          "evidence": "test=Java GameTest differential (5 tests) + isolated game logistics + isolated game wire-graph | run=artifacts/differential.json + runs\\game-1794225083517 + runs\\game-1794226265782 | result=PASS"
+          "evidence": "test=Java GameTest differential (5 tests) + isolated game logistics + isolated game wire-graph | run=artifacts/differential.json + runs\\game-1794307692448 + runs\\game-1794308820354 | result=PASS"
         },
         {
           "line": 224,
@@ -22271,7 +22276,7 @@
           "status": "VERIFIED",
           "java": "`content/behaviour/logistics/ExtractorNodeBehaviour.java:26-200`, `content/behaviour/logistics/distribution/{Distributor,RoundRobinDistributor,DistributionMode}.java`",
           "rust": "`native/theurgy/logistics.rs`",
-          "evidence": "test=Java GameTest differential (5 tests) + isolated game logistics + isolated game wire-graph | run=artifacts/differential.json + runs\\game-1794225083517 + runs\\game-1794226265782 | result=PASS"
+          "evidence": "test=Java GameTest differential (5 tests) + isolated game logistics + isolated game wire-graph | run=artifacts/differential.json + runs\\game-1794307692448 + runs\\game-1794308820354 | result=PASS"
         },
         {
           "line": 225,
@@ -22280,7 +22285,7 @@
           "status": "VERIFIED",
           "java": "`content/behaviour/logistics/InserterNodeBehaviour.java:21-90`",
           "rust": "`native/theurgy/logistics.rs`",
-          "evidence": "test=Java GameTest differential (5 tests) + isolated game logistics + isolated game wire-graph | run=artifacts/differential.json + runs\\game-1794225083517 + runs\\game-1794226265782 | result=PASS"
+          "evidence": "test=Java GameTest differential (5 tests) + isolated game logistics + isolated game wire-graph | run=artifacts/differential.json + runs\\game-1794307692448 + runs\\game-1794308820354 | result=PASS"
         },
         {
           "line": 226,
@@ -22298,7 +22303,7 @@
           "status": "VERIFIED",
           "java": "`content/apparatus/logisticsfluidconnector/**`",
           "rust": "`native/theurgy/logistics.rs`",
-          "evidence": "test=Java GameTest differential (2 tests) + isolated game logistics + isolated game logistics-advanced | run=artifacts/differential.json + runs\\game-1794225083517 + runs\\game-1794226331517 | result=PASS"
+          "evidence": "test=Java GameTest differential (2 tests) + isolated game logistics + isolated game logistics-advanced | run=artifacts/differential.json + runs\\game-1794307692448 + runs\\game-1794308885206 | result=PASS"
         },
         {
           "line": 228,
@@ -22316,7 +22321,7 @@
           "status": "VERIFIED",
           "java": "`content/apparatus/logisticsnexus/{LogisticsNexusBlock,LogisticsNexusBlockEntity,LogisticsNexusPairing}.java`, `render/LogisticsNexusRenderer.java`",
           "rust": "`native/theurgy/logistics.rs, native/theurgy/render.rs`",
-          "evidence": "test=Java GameTest differential (2 tests) + isolated game render + isolated game logistics-advanced | run=artifacts/differential.json + runs\\game-1794228087282 + runs\\game-1794226331517 | result=PASS"
+          "evidence": "test=Java GameTest differential (2 tests) + isolated game render + isolated game logistics-advanced | run=artifacts/differential.json + runs\\game-1794310569539 + runs\\game-1794308885206 | result=PASS"
         },
         {
           "line": 230,
@@ -22325,7 +22330,7 @@
           "status": "VERIFIED",
           "java": "`content/apparatus/logisticscapabilityproxy/*.java`, `content/storage/{CombinedItemStorage,SelectItemHandlerWrapper,SelectFluidHandlerWrapper}.java`",
           "rust": "`native/theurgy/logistics.rs`",
-          "evidence": "test=Java GameTest differential (3 tests) + isolated game logistics-advanced | run=artifacts/differential.json + runs\\game-1794226331517 | result=PASS"
+          "evidence": "test=Java GameTest differential (3 tests) + isolated game logistics-advanced | run=artifacts/differential.json + runs\\game-1794308885206 | result=PASS"
         },
         {
           "line": 231,
@@ -22334,7 +22339,7 @@
           "status": "VERIFIED",
           "java": "`content/apparatus/logisticscapabilityprobe/LogisticsCapabilityProbeBlock.java`",
           "rust": "`native/theurgy/logistics.rs`",
-          "evidence": "test=Java GameTest differential (1 tests) + isolated game logistics-advanced | run=artifacts/differential.json + runs\\game-1794226331517 | result=PASS"
+          "evidence": "test=Java GameTest differential (1 tests) + isolated game logistics-advanced | run=artifacts/differential.json + runs\\game-1794308885206 | result=PASS"
         },
         {
           "line": 232,
@@ -22343,7 +22348,7 @@
           "status": "VERIFIED",
           "java": "`content/apparatus/logisticsmercuryfluxconnector/**`",
           "rust": "`native/theurgy/logistics.rs`",
-          "evidence": "test=Java GameTest differential (2 tests) + isolated game logistics-advanced | run=artifacts/differential.json + runs\\game-1794226331517 | result=PASS"
+          "evidence": "test=Java GameTest differential (2 tests) + isolated game logistics-advanced | run=artifacts/differential.json + runs\\game-1794308885206 | result=PASS"
         },
         {
           "line": 233,
@@ -22352,7 +22357,7 @@
           "status": "VERIFIED",
           "java": "`logistics/{Wires,Wire,WireEndPoint,WireSlackHelper,WireSync}.java`, `content/item/wire/WireItem.java`",
           "rust": "`native/theurgy/logistics.rs`",
-          "evidence": "test=isolated game wire-graph + isolated game tools + offline modules | run=runs\\game-1794226265782 + runs\\game-1794225131184 + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules.log | result=PASS"
+          "evidence": "test=isolated game wire-graph + isolated game tools + offline modules | run=runs\\game-1794308820354 + runs\\game-1794307735476 + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules.log | result=PASS"
         },
         {
           "line": 234,
@@ -22361,7 +22366,7 @@
           "status": "VERIFIED",
           "java": "`logistics/WireEndPoint.java:21-60`",
           "rust": "`native/theurgy/items.rs`",
-          "evidence": "test=isolated game wire-graph + isolated game tools + offline modules | run=runs\\game-1794226265782 + runs\\game-1794225131184 + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules.log | result=PASS"
+          "evidence": "test=isolated game wire-graph + isolated game tools + offline modules | run=runs\\game-1794308820354 + runs\\game-1794307735476 + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules.log | result=PASS"
         },
         {
           "line": 235,
@@ -22370,7 +22375,7 @@
           "status": "VERIFIED",
           "java": "`content/behaviour/filter/*.java`, `content/behaviour/filter/attribute/*.java`",
           "rust": "`native/theurgy/{filter.rs,filter_client.rs,filtered_transfer.rs}`",
-          "evidence": "test=isolated game filter-ui + isolated game filter-matching + isolated game attribute-filters + isolated game standard-attributes + isolated game special-attributes + isolated game filters | run=runs\\game-1794227930116 + runs\\game-1794226430467 + runs\\game-1794226505773 + runs\\game-1794226566949 + runs\\game-1794226677460 + runs\\game-1794225249408 | result=PASS"
+          "evidence": "test=isolated game filter-ui + isolated game filter-matching + isolated game attribute-filters + isolated game standard-attributes + isolated game special-attributes + isolated game filters | run=runs\\game-1794310432464 + runs\\game-1794308980712 + runs\\game-1794309054211 + runs\\game-1794309112929 + runs\\game-1794309216789 + runs\\game-1794307835530 | result=PASS"
         },
         {
           "line": 236,
@@ -22379,7 +22384,7 @@
           "status": "VERIFIED",
           "java": "`logistics/WireRenderer.java`",
           "rust": "`native/theurgy/render.rs`",
-          "evidence": "test=isolated game client-features + isolated game wire-graph | run=runs\\game-1794228220578 + runs\\game-1794226265782 | result=PASS"
+          "evidence": "test=isolated game client-features + isolated game wire-graph | run=runs\\game-1794310664615 + runs\\game-1794308820354 | result=PASS"
         },
         {
           "line": 237,
@@ -22388,7 +22393,7 @@
           "status": "VERIFIED",
           "java": "`network/messages/MessageShowLogisticsNodeStatus.java`, `content/item/mercurialwand/mode/SwitchLogisticsEnabledMode.java`, `SetSelectedFrequencyMode.java`, `SelectFrequencyMode.java`",
           "rust": "`native/theurgy/render.rs`",
-          "evidence": "test=isolated game wand + isolated game multiplayer | run=runs\\game-1794228183851 + runs\\multiplayer-1794228295294 | result=PASS"
+          "evidence": "test=isolated game wand + isolated game multiplayer | run=runs\\game-1794310632283 + runs\\multiplayer-1794310739424 | result=PASS"
         },
         {
           "line": 243,
@@ -22397,7 +22402,7 @@
           "status": "VERIFIED",
           "java": "`content/item/divinationrod/DivinationRodItem.java:53-80`, `content/item/renderer/DivinationDistanceProperty.java`",
           "rust": "`native/theurgy/items.rs`",
-          "evidence": "test=Java GameTest differential (1 tests) + isolated game divination + isolated game config-attunement | run=artifacts/differential.json + runs\\game-1794225168593 + runs\\game-1794225215575 | result=PASS"
+          "evidence": "test=Java GameTest differential (1 tests) + isolated game divination + isolated game config-attunement | run=artifacts/differential.json + runs\\game-1794307767691 + runs\\game-1794307805867 | result=PASS"
         },
         {
           "line": 244,
@@ -22406,7 +22411,7 @@
           "status": "VERIFIED",
           "java": "`DivinationRodItem.java:88-166, 195-345, 435-460`",
           "rust": "`native/theurgy/items.rs, config port`",
-          "evidence": "test=Java GameTest differential (1 tests) + isolated game divination + isolated game config-attunement | run=artifacts/differential.json + runs\\game-1794225168593 + runs\\game-1794225215575 | result=PASS"
+          "evidence": "test=Java GameTest differential (1 tests) + isolated game divination + isolated game config-attunement | run=artifacts/differential.json + runs\\game-1794307767691 + runs\\game-1794307805867 | result=PASS"
         },
         {
           "line": 245,
@@ -22415,7 +22420,7 @@
           "status": "VERIFIED",
           "java": "`DivinationRodItem.java:183-372`, `content/recipe/DivinationRodRecipe.java`",
           "rust": "`native/theurgy/items.rs`",
-          "evidence": "test=Java GameTest differential (3 tests) + isolated game divination + isolated game divination-recipes | run=artifacts/differential.json + runs\\game-1794225168593 + runs\\game-1794227834041 | result=PASS"
+          "evidence": "test=Java GameTest differential (3 tests) + isolated game divination + isolated game divination-recipes | run=artifacts/differential.json + runs\\game-1794307767691 + runs\\game-1794310345331 | result=PASS"
         },
         {
           "line": 246,
@@ -22424,7 +22429,7 @@
           "status": "VERIFIED",
           "java": "`content/item/mercurialwand/MercurialWandItem.java:27-100`, `mode/*.java`, `content/item/mode/*.java`",
           "rust": "`native/theurgy/items.rs`",
-          "evidence": "test=isolated game wand | run=runs\\game-1794228183851 | result=PASS"
+          "evidence": "test=isolated game wand | run=runs\\game-1794310632283 | result=PASS"
         },
         {
           "line": 247,
@@ -22433,7 +22438,7 @@
           "status": "VERIFIED",
           "java": "`registry/ItemRegistry.java:154-159`, `registry/FluidRegistry.java`",
           "rust": "`native/theurgy/items.rs, hooks/use_on.rs`",
-          "evidence": "test=Java GameTest differential (2 tests) + isolated game fluids | run=artifacts/differential.json + runs\\game-1794226126216 | result=PASS"
+          "evidence": "test=Java GameTest differential (2 tests) + isolated game fluids | run=artifacts/differential.json + runs\\game-1794308698239 | result=PASS"
         },
         {
           "line": 248,
@@ -22442,7 +22447,7 @@
           "status": "VERIFIED",
           "java": "`content/item/wire/WireItem.java`, `network/messages/Message{Add,Remove}Wires.java`",
           "rust": "`native/theurgy/items.rs`",
-          "evidence": "test=isolated game tools + isolated game wire-graph + offline modules | run=runs\\game-1794225131184 + runs\\game-1794226265782 + runs\\acceptance-2026-11-09T11-37-36.767Z\\modules.log | result=PASS"
+          "evidence": "test=isolated game tools + isolated game wire-graph + offline modules | run=runs\\game-1794307735476 + runs\\game-1794308820354 + runs\\acceptance-2026-11-10T10-33-11.082Z\\modules.log | result=PASS"
         },
         {
           "line": 249,
@@ -22451,7 +22456,7 @@
           "status": "VERIFIED",
           "java": "`registry/ItemRegistry.java:150-151`, `content/item/filter/*.java`",
           "rust": "`native/theurgy/items.rs`",
-          "evidence": "test=isolated game filter-ui + isolated game filter-matching + isolated game attribute-filters + isolated game filters | run=runs\\game-1794227930116 + runs\\game-1794226430467 + runs\\game-1794226505773 + runs\\game-1794225249408 | result=PASS"
+          "evidence": "test=isolated game filter-ui + isolated game filter-matching + isolated game attribute-filters + isolated game filters | run=runs\\game-1794310432464 + runs\\game-1794308980712 + runs\\game-1794309054211 + runs\\game-1794307835530 | result=PASS"
         },
         {
           "line": 250,
@@ -22460,7 +22465,7 @@
           "status": "VERIFIED",
           "java": "`content/item/book/TheHermeticaItem.java`, `integration/modonomicon/**`",
           "rust": "`native/theurgy/client.rs`",
-          "evidence": "test=isolated game book | run=runs\\game-1794227969983 | result=PASS"
+          "evidence": "test=isolated game book | run=runs\\game-1794310471340 | result=PASS"
         },
         {
           "line": 251,
@@ -22469,7 +22474,7 @@
           "status": "VERIFIED",
           "java": "`content/item/{salt,sulfur,niter}/**`, `content/item/derivative/**`",
           "rust": "`native/theurgy/items.rs`",
-          "evidence": "test=isolated game client | run=runs\\game-1794228048631 | result=PASS"
+          "evidence": "test=isolated game client | run=runs\\game-1794310541574 | result=PASS"
         },
         {
           "line": 252,
@@ -22478,7 +22483,7 @@
           "status": "VERIFIED",
           "java": "`content/render/{HeldStackFitProvider,HeldStackFitStatus,HeldStackFitOutline}.java`",
           "rust": "`native/theurgy/render.rs`",
-          "evidence": "test=isolated game client-features | run=runs\\game-1794228220578 | result=PASS"
+          "evidence": "test=isolated game client-features | run=runs\\game-1794310664615 | result=PASS"
         },
         {
           "line": 258,
@@ -22487,7 +22492,7 @@
           "status": "VERIFIED",
           "java": "`content/recipe/result/*.java`, `content/recipe/condition/FluidTagEmptyCondition.java`, `registry/ConditionRegistry.java`",
           "rust": "`native/theurgy/engine/src/recipes.rs`",
-          "evidence": "test=isolated game content-rules + isolated game review-fixes | run=runs\\game-1794225295776 + runs\\game-1794226734819 | result=PASS"
+          "evidence": "test=isolated game content-rules + isolated game review-fixes | run=runs\\game-1794307873039 + runs\\game-1794309270549 | result=PASS"
         },
         {
           "line": 259,
@@ -22496,7 +22501,7 @@
           "status": "VERIFIED",
           "java": "`datagen/recipe/*.java`",
           "rust": "`tools/build-content.mjs, content/theurgy/data`",
-          "evidence": "test=isolated game all + isolated game recipes + offline content-check + offline audit | run=runs\\game-1794224712378 + runs\\game-1794228009841 + runs\\acceptance-2026-11-09T11-37-36.767Z\\content-check.log + runs\\acceptance-2026-11-09T11-37-36.767Z\\audit.log | result=PASS"
+          "evidence": "test=isolated game all + isolated game recipes + offline content-check + offline audit | run=runs\\game-1794307344272 + runs\\game-1794310507553 + runs\\acceptance-2026-11-10T10-33-11.082Z\\content-check.log + runs\\acceptance-2026-11-10T10-33-11.082Z\\audit.log | result=PASS"
         },
         {
           "line": 260,
@@ -22505,7 +22510,7 @@
           "status": "VERIFIED",
           "java": "`datagen/recipe/{ShapedRecipeProvider,ShapelessRecipeProvider,SmeltingRecipeProvider}.java`",
           "rust": "`tools/content-check.mjs`",
-          "evidence": "test=Java GameTest differential (3 tests) + isolated game all + offline content-check + offline audit | run=artifacts/differential.json + runs\\game-1794224712378 + runs\\acceptance-2026-11-09T11-37-36.767Z\\content-check.log + runs\\acceptance-2026-11-09T11-37-36.767Z\\audit.log | result=PASS"
+          "evidence": "test=Java GameTest differential (3 tests) + isolated game all + offline content-check + offline audit | run=artifacts/differential.json + runs\\game-1794307344272 + runs\\acceptance-2026-11-10T10-33-11.082Z\\content-check.log + runs\\acceptance-2026-11-10T10-33-11.082Z\\audit.log | result=PASS"
         },
         {
           "line": 261,
@@ -22514,7 +22519,7 @@
           "status": "VERIFIED",
           "java": "`datagen/worldgen/{ConfiguredFeatures,PlacedFeatures,BiomeModifiers,TheurgyRegistries}.java`",
           "rust": "`content/theurgy/data`",
-          "evidence": "test=isolated game worldgen | run=runs\\game-1794227872201 | result=PASS"
+          "evidence": "test=isolated game worldgen | run=runs\\game-1794310381512 | result=PASS"
         },
         {
           "line": 262,
@@ -22523,7 +22528,7 @@
           "status": "VERIFIED",
           "java": "`datagen/loot/TheurgyBlockLootSubProvider.java`",
           "rust": "`content/theurgy/data/theurgy/loot_table`",
-          "evidence": "test=Java GameTest differential (3 tests) + isolated game interactions + offline content-check + offline audit | run=artifacts/differential.json + runs\\game-1794224964769 + runs\\acceptance-2026-11-09T11-37-36.767Z\\content-check.log + runs\\acceptance-2026-11-09T11-37-36.767Z\\audit.log | result=PASS"
+          "evidence": "test=Java GameTest differential (3 tests) + isolated game interactions + offline content-check + offline audit | run=artifacts/differential.json + runs\\game-1794307582663 + runs\\acceptance-2026-11-10T10-33-11.082Z\\content-check.log + runs\\acceptance-2026-11-10T10-33-11.082Z\\audit.log | result=PASS"
         },
         {
           "line": 263,
@@ -22532,7 +22537,7 @@
           "status": "VERIFIED",
           "java": "`datagen/advancement/TheurgyAdvancementSubProvider.java`, `datagen/book/**`, `integration/modonomicon/page/**`",
           "rust": "`content/theurgy/data`",
-          "evidence": "test=isolated game book + offline content-check + offline audit | run=runs\\game-1794227969983 + runs\\acceptance-2026-11-09T11-37-36.767Z\\content-check.log + runs\\acceptance-2026-11-09T11-37-36.767Z\\audit.log | result=PASS"
+          "evidence": "test=isolated game book + offline content-check + offline audit | run=runs\\game-1794310471340 + runs\\acceptance-2026-11-10T10-33-11.082Z\\content-check.log + runs\\acceptance-2026-11-10T10-33-11.082Z\\audit.log | result=PASS"
         },
         {
           "line": 264,
@@ -22541,7 +22546,7 @@
           "status": "VERIFIED",
           "java": "`datagen/lang/{ENUSProvider,TooltipLanguageProvider}.java`",
           "rust": "`content/theurgy/assets/theurgy/lang`",
-          "evidence": "test=isolated game tooltips + offline content-check + offline audit | run=runs\\game-1794228260776 + runs\\acceptance-2026-11-09T11-37-36.767Z\\content-check.log + runs\\acceptance-2026-11-09T11-37-36.767Z\\audit.log | result=PASS"
+          "evidence": "test=isolated game tooltips + offline content-check + offline audit | run=runs\\game-1794310700370 + runs\\acceptance-2026-11-10T10-33-11.082Z\\content-check.log + runs\\acceptance-2026-11-10T10-33-11.082Z\\audit.log | result=PASS"
         },
         {
           "line": 265,
@@ -22550,7 +22555,7 @@
           "status": "VERIFIED",
           "java": "`datagen/model/*.java`, `registry/TheurgySpecialModelRenderers.java`",
           "rust": "`content/theurgy/assets, native/theurgy/render.rs`",
-          "evidence": "test=isolated game render + offline content-check + offline audit | run=runs\\game-1794228087282 + runs\\acceptance-2026-11-09T11-37-36.767Z\\content-check.log + runs\\acceptance-2026-11-09T11-37-36.767Z\\audit.log | result=PASS"
+          "evidence": "test=isolated game render + offline content-check + offline audit | run=runs\\game-1794310569539 + runs\\acceptance-2026-11-10T10-33-11.082Z\\content-check.log + runs\\acceptance-2026-11-10T10-33-11.082Z\\audit.log | result=PASS"
         },
         {
           "line": 266,
@@ -22559,7 +22564,7 @@
           "status": "VERIFIED",
           "java": "`datagen/multiblock/TheurgyMultiblockProvider.java`",
           "rust": "`content/theurgy/data/theurgy/modonomicon + native/theurgy/client.rs`",
-          "evidence": "test=isolated game book + offline content-check + offline audit | run=runs\\game-1794227969983 + runs\\acceptance-2026-11-09T11-37-36.767Z\\content-check.log + runs\\acceptance-2026-11-09T11-37-36.767Z\\audit.log | result=PASS"
+          "evidence": "test=isolated game book + offline content-check + offline audit | run=runs\\game-1794310471340 + runs\\acceptance-2026-11-10T10-33-11.082Z\\content-check.log + runs\\acceptance-2026-11-10T10-33-11.082Z\\audit.log | result=PASS"
         },
         {
           "line": 272,
@@ -22568,7 +22573,7 @@
           "status": "VERIFIED",
           "java": "`config/ServerConfig.java:15-75`",
           "rust": "`native/theurgy/items.rs`",
-          "evidence": "test=isolated game config-attunement + isolated game tooltips | run=runs\\game-1794225215575 + runs\\game-1794228260776 | result=PASS"
+          "evidence": "test=isolated game config-attunement + isolated game tooltips | run=runs\\game-1794307805867 + runs\\game-1794310700370 | result=PASS"
         },
         {
           "line": 273,
@@ -22577,7 +22582,7 @@
           "status": "VERIFIED",
           "java": "`config/CommonConfig.java:9-60`",
           "rust": "`native/theurgy/config.rs`",
-          "evidence": "test=isolated game config-attunement + offline audit | run=runs\\game-1794225215575 + runs\\acceptance-2026-11-09T11-37-36.767Z\\audit.log | result=PASS"
+          "evidence": "test=isolated game config-attunement + offline audit | run=runs\\game-1794307805867 + runs\\acceptance-2026-11-10T10-33-11.082Z\\audit.log | result=PASS"
         },
         {
           "line": 274,
@@ -22586,7 +22591,7 @@
           "status": "VERIFIED",
           "java": "`config/ClientConfig.java:12-90`",
           "rust": "`native/theurgy/client.rs + render.rs`",
-          "evidence": "test=isolated game client-features | run=runs\\game-1794228220578 | result=PASS"
+          "evidence": "test=isolated game client-features | run=runs\\game-1794310664615 | result=PASS"
         },
         {
           "line": 275,
@@ -22595,7 +22600,7 @@
           "status": "VERIFIED",
           "java": "`network/Networking.java`, `network/MessageHandler.java`, `network/messages/*.java`",
           "rust": "`native/theurgy/*.rs + hooks`",
-          "evidence": "test=isolated game multiplayer | run=runs\\multiplayer-1794228295294 | result=PASS"
+          "evidence": "test=isolated game multiplayer | run=runs\\multiplayer-1794310739424 | result=PASS"
         },
         {
           "line": 276,
@@ -22604,7 +22609,7 @@
           "status": "VERIFIED",
           "java": "`network/messages/Message*Selection.java`, `MessageSetMode.java`",
           "rust": "`native/theurgy/host.rs`",
-          "evidence": "test=isolated game multiplayer | run=runs\\multiplayer-1794228295294 | result=PASS"
+          "evidence": "test=isolated game multiplayer | run=runs\\multiplayer-1794310739424 | result=PASS"
         },
         {
           "line": 280,
@@ -22613,7 +22618,7 @@
           "status": "VERIFIED",
           "java": "`content/render/inworldhud/**`, `content/render/itemhud/**`",
           "rust": "`native/theurgy/render.rs`",
-          "evidence": "test=isolated game client-features | run=runs\\game-1794228220578 | result=PASS"
+          "evidence": "test=isolated game client-features | run=runs\\game-1794310664615 | result=PASS"
         },
         {
           "line": 281,
@@ -22622,7 +22627,7 @@
           "status": "VERIFIED",
           "java": "`content/particle/**`, `content/render/outliner/**`, `content/render/cube/**`",
           "rust": "`native/theurgy/render.rs`",
-          "evidence": "test=isolated game client-features | run=runs\\game-1794228220578 | result=PASS"
+          "evidence": "test=isolated game client-features | run=runs\\game-1794310664615 | result=PASS"
         },
         {
           "line": 282,
@@ -22631,7 +22636,7 @@
           "status": "VERIFIED",
           "java": "`tooltips/*.java`",
           "rust": "`native/theurgy/items.rs`",
-          "evidence": "test=isolated game tooltips | run=runs\\game-1794228260776 | result=PASS"
+          "evidence": "test=isolated game tooltips | run=runs\\game-1794310700370 | result=PASS"
         }
       ],
       "OUT_OF_SCOPE": [
@@ -22642,7 +22647,7 @@
           "status": "OUT_OF_SCOPE",
           "java": "`integration/{jei,emi}/**`",
           "rust": "`native/theurgy/recipe_client.rs`",
-          "evidence": "test=isolated game recipes | run=runs\\game-1794228009841 | result=PASS"
+          "evidence": "test=isolated game recipes | run=runs\\game-1794310507553 | result=PASS"
         },
         {
           "line": 278,
@@ -22651,7 +22656,7 @@
           "status": "OUT_OF_SCOPE",
           "java": "`integration/jade/*.java`",
           "rust": "`native/theurgy/client.rs`",
-          "evidence": "test=isolated game client-features | run=runs\\game-1794228220578 | result=PASS"
+          "evidence": "test=isolated game client-features | run=runs\\game-1794310664615 | result=PASS"
         },
         {
           "line": 279,
@@ -22660,7 +22665,7 @@
           "status": "OUT_OF_SCOPE",
           "java": "`integration/{kubejs,almostunified,occultism}/**`",
           "rust": "`native/theurgy/recipe_client.rs + filtered_transfer.rs + generated data`",
-          "evidence": "test=isolated game content-rules + isolated game review-fixes + isolated game recipes + offline audit | run=runs\\game-1794225295776 + runs\\game-1794226734819 + runs\\game-1794228009841 + runs\\acceptance-2026-11-09T11-37-36.767Z\\audit.log | result=PASS"
+          "evidence": "test=isolated game content-rules + isolated game review-fixes + isolated game recipes + offline audit | run=runs\\game-1794307873039 + runs\\game-1794309270549 + runs\\game-1794310507553 + runs\\acceptance-2026-11-10T10-33-11.082Z\\audit.log | result=PASS"
         }
       ]
     }
@@ -22672,6 +22677,8 @@
       "matched": 152,
       "missing": 0,
       "mismatched": 0,
+      "waived": 0,
+      "strict": false,
       "complete": true
     },
     "matched": [
@@ -23013,6 +23020,13 @@
       "passed": 153,
       "total": 152,
       "sha256": "4aeb636a6c1fff61c81ba6ca4c2ec0c56e2847fda894c71a1f2153680291c3f6"
+    },
+    {
+      "file": "runs/java-oracle-2026-11-10T11-16-36.813Z/result.json",
+      "status": "JAVA_STATE_ORACLE_PASS",
+      "passed": 153,
+      "total": 152,
+      "sha256": "4ebbcdc7fb9e82cb5e7141027d66060d24d23db2b3474e2b7fe142ebf2a3b446"
     }
   ],
   "placeholders": [],

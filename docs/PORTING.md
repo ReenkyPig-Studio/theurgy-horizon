@@ -14,6 +14,16 @@ Pristine Horizon для native stage и game: `294448014fba585f8d5d09dd8886f4824
 Mixins: ddd9700b21997c95d95ac6ee5ecafe3830cf622a, CLI schema 6.
 config.json — локальные пути, без секретов.
 
+## Перенос на другую ревизию Horizon
+`npm run port -- <каталог исходников Horizon> [--mixins <exe>] [--apply]` (tools/horizon-port.mjs).
+Копирует native/ в target/port/<rev> с переписанным pin, сверяет хуки с native-hooks.json цели,
+запускает настоящие mixins plan/apply и cargo check, пишет runs/port-<rev>/report.json с ошибками,
+привязанными к файлам native/theurgy. Оригинальные native/, pinned source и launcher не меняются.
+Почти весь мод сидит на версионированных хуках и переносится без правок; ломается только код,
+привязанный к внутренностям Horizon (`target =` и модули вне game.rs) — отчёт перечисляет их в `internals`.
+`--apply` при чистой проверке переписывает pin в horizon-mixin.toml (package.mjs читает его оттуда);
+config.json переключается вручную, после чего нужен новый acceptance: PORT_OK — это только "компилируется".
+
 ## Архитектура
 56 ролей = 24 builders + 24 независимых chaos-testers (один на builder) + 8 reviewers.
 Максимум 32 API-сессии одновременно. Первая волна — 24 builders,

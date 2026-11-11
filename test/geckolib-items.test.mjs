@@ -20,7 +20,8 @@ function bake(element) {
   for(const [direction,face] of Object.entries(element.faces)) {
     const positions=vanillaCorners(element.from,element.to,direction).map(p=>{
       if(!m)return p.map(v=>v/16);
-      return [0,1,2].map(i=>(m[i][0]*p[0]+m[i][1]*p[1]+m[i][2]*p[2])/16);
+      const o=element.rotation.origin??[0,0,0],q=p.map((v,i)=>v-o[i]);
+      return [0,1,2].map(i=>(m[i][0]*q[0]+m[i][1]*q[1]+m[i][2]*q[2]+o[i])/16);
     });
     const [u0,v0,u1,v1]=face.uv;
     const template=[[u0,v0],[u0,v1],[u1,v1],[u1,v0]];
@@ -87,3 +88,30 @@ for(const [item,spec] of Object.entries(GECKOLIB_ITEMS)) {
     }
   });
 }
+
+// DigestionVatRenderer (vanilla ModelPart, not GeckoLib): baked item elements
+// must reproduce ModelPart.translateAndRotate(PartPose) over Cube/Polygon.
+test('digestion vat item elements reproduce DigestionVatRenderer layers', async () => {
+  const {DIGESTION_PARTS,vanillaCubeFaces,digestionVatElements}=await import('../tools/digestion-vat.mjs');
+  const elements=digestionVatElements();
+  const R=(axis,a)=>{const c=Math.cos(a),s=Math.sin(a);
+    return axis==='x'?[[1,0,0],[0,c,-s],[0,s,c]]:axis==='y'?[[c,0,s],[0,1,0],[-s,0,c]]:[[c,-s,0],[s,c,0],[0,0,1]];};
+  const mv=(m,p)=>m.map(r=>r[0]*p[0]+r[1]*p[1]+r[2]*p[2]);
+  const reference=[];
+  for(const part of DIGESTION_PARTS)for(const cube of part.cubes)for(const face of vanillaCubeFaces(cube,part.texSize).filter(f=>f.direction!==part.hidden)) {
+    const [u0,v0,u1,v1]=face.uv;const uvs=[[u0,v0],[u0,v1],[u1,v1],[u1,v0]];
+    reference.push(face.corners.map((c,i)=>{
+      const q=mv(R('z',part.rotation[2]),mv(R('y',part.rotation[1]),mv(R('x',part.rotation[0]),c)));
+      return {p:q.map((v,k)=>v+part.offset[k]/16),uv:uvs[i]};
+    }));
+  }
+  for(const e of elements)assert.ok([...e.from,...e.to].every(v=>v>=-16&&v<=32),'element outside model bounds: '+JSON.stringify(e));
+  const baked=elements.flatMap(bake);
+  assert.equal(baked.length,reference.length);
+  for(const quad of reference) {
+    for(const vertex of quad)assert.ok(vertex.p.every(v=>v>=-0.01&&v<=21.5/16),'outside the vat: '+JSON.stringify(vertex));
+    const match=baked.some(candidate=>quad.every(vertex=>candidate.points.some(point=>
+      point.p.every((v,i)=>close(v,vertex.p[i]))&&point.uv.every((v,i)=>close(v,vertex.uv[i])))));
+    assert.ok(match,'no baked quad reproduces '+JSON.stringify(quad));
+  }
+});
