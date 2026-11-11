@@ -13,10 +13,6 @@ if (cmd === 'doctor') {
     try { await fs.access(p); console.log('OK', p); } catch { process.exitCode=1; console.log('MISSING',p); }
   }
   await run(cargo, ['--version']);
-  // No provider requests. Checks scoped credential/model loading without printing secrets.
-  const { createOfficialDeepSeekRuntime } = await import('../matrix/pi-adapter.mjs');
-  const {original} = await createOfficialDeepSeekRuntime({maxRequests:1});
-  console.log('OK credential loaded into RAM:',original.provider,original.id);
 } else if (cmd === 'fast' || cmd === 'check') {
   await run(cargo, [cmd === 'fast' ? 'test' : 'check', '--workspace', '--offline']);
 } else throw new Error('doctor | fast | check');

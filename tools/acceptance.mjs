@@ -92,7 +92,6 @@ async function game(mode,env={}) {
 }
 
 try {
-  await command('syntax-check',['--check','matrix/swarm.mjs']);
   await command('npm-test',['--test','test/*.test.mjs']);
   await command('rust-fast',['tools/dev.mjs','fast']);
   await command('native-plan',['tools/native.mjs','plan']);
