@@ -104,6 +104,10 @@ pub fn state_for_placement(
             | "theurgy:logistics_fluid_extractor"
             | "theurgy:logistics_mercury_flux_connector"
             | "theurgy:logistics_capability_proxy"
+            // LogisticsCapabilityProbeBlock / LogisticsConnectionNodeBlock
+            // .getStateForPlacement: the same clicked-face rule.
+            | "theurgy:logistics_capability_probe"
+            | "theurgy:logistics_connector_node"
             | "theurgy:caloric_flux_emitter"
             | "theurgy:mercury_flux_emitter"
             | "theurgy:sulfuric_flux_emitter"
@@ -1277,12 +1281,18 @@ pub fn use_animation(
     }
 }
 
-/// Client tooltip parity for linked rods and their last result.
+/// Client tooltip parity: the item's own `appendHoverText` lines (nexus id,
+/// stored flux, divination rod link), then `TooltipHandler.onItemTooltipEvent`
+/// (Java `tooltips/TooltipHandler.java`): `<descriptionId>.tooltip`, and the
+/// Shift `.tooltip.extended` / Ctrl `.tooltip.usage` sections with their hints.
 pub fn tooltip(
     game: &crate::game::Game<'_>,
     stack: &ItemStack,
     lines: &mut Vec<(horizon_client::text::Text, u32)>,
 ) {
+    if !stack.item.starts_with("theurgy:") {
+        return;
+    }
     if let Some(id) = uuid_text(game, stack) {
         lines.push((horizon_client::text::Text::literal(format!("Nexus ID: {id}")), u32::MAX));
     }
@@ -1294,42 +1304,179 @@ pub fn tooltip(
         };
         lines.push((horizon_client::text::Text::literal(format!("Mercury Flux: {stored} / {capacity}")), u32::MAX));
     }
+    if stack.item.contains("divination_rod") {
+        divination_rod_tooltip(game, stack, lines);
+    }
+    let data = tooltip_data(game, stack);
+    let description = description_id(&stack.item);
+    let has = |key: &str| horizon_client::lang::has(key);
+    let parts = TooltipParts {
+        tooltip: has(&format!("{description}.tooltip")),
+        extended: has(&format!("{description}.tooltip.extended")),
+        usage: has(&format!("{description}.tooltip.usage")),
+    };
+    for line in tooltip_handler_lines(&description, parts, game.has_shift_down(), game.has_control_down()) {
+        match line {
+            HandlerLine::Blank => lines.push((horizon_client::text::Text::literal(" "), u32::MAX)),
+            HandlerLine::Heading(key) => {
+                lines.push((horizon_client::text::Text::translate(&key, &data), u32::MAX));
+            }
+            HandlerLine::Body(key) => {
+                let text = horizon_client::text::Text::translate(&key, &data);
+                for part in split_text_lines(text) {
+                    lines.push((part, TOOLTIP_GRAY));
+                }
+            }
+        }
+    }
+}
+
+/// ChatFormatting.GRAY as the packed ARGB a tooltip line takes.
+const TOOLTIP_GRAY: u32 = 0xFFAA_AAAA;
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+struct TooltipParts {
+    tooltip: bool,
+    extended: bool,
+    usage: bool,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+enum HandlerLine {
+    /// `Component.literal(" ")`.
+    Blank,
+    /// An unstyled translatable (headings and "show ..." hints).
+    Heading(String),
+    /// A gray translatable body.
+    Body(String),
+}
+
+/// `Item.getDescriptionId()`: block items are `block.<ns>.<path>`.
+fn description_id(item: &str) -> String {
+    let (namespace, path) = item.split_once(':').unwrap_or(("minecraft", item));
+    let block = format!("block.{namespace}.{path}");
+    if horizon_client::lang::has(&block) {
+        block
+    } else {
+        format!("item.{namespace}.{path}")
+    }
+}
+
+/// The exact line sequence of `TooltipHandler.onItemTooltipEvent`.
+fn tooltip_handler_lines(description: &str, parts: TooltipParts, shift: bool, control: bool) -> Vec<HandlerLine> {
+    let mut out = Vec::new();
+    if parts.tooltip {
+        out.push(HandlerLine::Body(format!("{description}.tooltip")));
+    }
+    if parts.extended {
+        out.push(HandlerLine::Blank);
+        if shift {
+            out.push(HandlerLine::Heading("tooltip.theurgy.extended_heading".into()));
+            out.push(HandlerLine::Body(format!("{description}.tooltip.extended")));
+        } else {
+            out.push(HandlerLine::Heading("tooltip.theurgy.show_extended".into()));
+        }
+    }
+    if parts.usage {
+        if !parts.extended || shift {
+            out.push(HandlerLine::Blank);
+        }
+        if control {
+            out.push(HandlerLine::Heading("tooltip.theurgy.usage_heading".into()));
+            out.push(HandlerLine::Body(format!("{description}.tooltip.usage")));
+        } else {
+            out.push(HandlerLine::Heading("tooltip.theurgy.show_usage".into()));
+        }
+    }
+    out
+}
+
+/// `StringSplitter.splitLines`: a translated body with `\n` becomes several
+/// tooltip lines (a trailing newline leaves no empty line).
+fn split_text_lines(text: horizon_client::text::Text) -> Vec<horizon_client::text::Text> {
+    let mut out = vec![horizon_client::text::Text::default()];
+    for span in text.spans {
+        let mut pieces = span.text.split('\n').peekable();
+        while let Some(piece) = pieces.next() {
+            if !piece.is_empty() {
+                let last = out.last_mut().expect("one line");
+                *last = std::mem::take(last)
+                    .append(horizon_client::text::Text::styled(piece, span.style.clone()));
+            }
+            if pieces.peek().is_some() {
+                out.push(horizon_client::text::Text::default());
+            }
+        }
+    }
+    while out.len() > 1 && out.last().is_some_and(|line| line.is_empty()) {
+        out.pop();
+    }
+    out
+}
+
+fn wrap_in_square_brackets(text: horizon_client::text::Text) -> horizon_client::text::Text {
+    horizon_client::text::Text::literal("[").append(text).append("]")
+}
+
+/// `TooltipHandler.getAdditionalTooltipData`: the translation arguments of the
+/// registered providers (`AlchemicalDerivativeItem.getTooltipData`,
+/// `AlchemicalSulfurItem.getTooltipData`, `AlchemicalSaltItem.getTooltipData`).
+fn tooltip_data(game: &crate::game::Game<'_>, stack: &ItemStack) -> Vec<horizon_client::text::Text> {
+    use horizon_client::text::{Style, Text};
     let sulfur = stack.item.starts_with("theurgy:alchemical_sulfur_");
     let niter = stack.item.starts_with("theurgy:alchemical_niter_");
     let salt = stack.item.starts_with("theurgy:alchemical_salt_");
-    if sulfur || niter || salt {
-        // AlchemicalDerivativeItem.getTooltipData and AlchemicalSaltItem:
-        // source name, [tier], then sulfur/niter type. The pinned lang has a
-        // `.source` entry for every generated derivative, including tag-based
-        // and direct-item sources.
-        let source_key = format!("item.{}.source", stack.item.replace(':', "."));
-        lines.push((horizon_client::text::Text::translate(&source_key, &[]), 0xFF55_FF55));
-        let tier = if niter {
-            ["abundant", "common", "commond", "rare", "precious"].into_iter()
-                .find(|tier| stack.item.ends_with(&format!("_{tier}")))
-                .map(|tier| if tier == "commond" { "common" } else { tier })
-        } else if sulfur {
-            ["abundant", "common", "rare", "precious"].into_iter().find(|tier| {
-                game.res.items().item_in_tag(&format!("theurgy:alchemical_sulfurs/{tier}"), &stack.item)
-            })
-        } else {
-            None
-        };
-        if let Some(tier) = tier {
-            lines.push((horizon_client::text::Text::translate(&format!("theurgytheurgy.alchemical_tier.{tier}"), &[]), 0xFFAA_AA00));
-        }
-        if niter {
-            lines.push((horizon_client::text::Text::translate("item.theurgy.alchemical_derivative.type.niter", &[]), 0xFF55_5555));
-        } else if sulfur {
-            let kind = ["animals", "crops", "earthen_matters", "gems", "logs", "metals", "mobs", "other_minerals"]
-                .into_iter().find(|kind| game.res.items().item_in_tag(&format!("theurgy:alchemical_sulfurs/{kind}"), &stack.item))
-                .unwrap_or("misc");
-            lines.push((horizon_client::text::Text::translate(&format!("theurgytheurgy.sulfur_type.{kind}"), &[]), 0xFF55_5555));
-        }
+    let italic = |color: u32| Style { color: Some(color), italic: Some(true), ..Style::default() };
+    // The pinned lang has a `.source` entry for every generated derivative.
+    let source_key = format!("item.{}.source", stack.item.replace(':', "."));
+    if salt {
+        return vec![Text::translate(&source_key, &[]).with_style(&italic(horizon_client::text::GREEN))];
     }
-    if !stack.item.contains("divination_rod") {
-        return;
+    if !sulfur && !niter {
+        return Vec::new();
     }
+    let tier = if niter {
+        ["abundant", "common", "commond", "rare", "precious"].into_iter()
+            .find(|tier| stack.item.ends_with(&format!("_{tier}")))
+            .map(|tier| if tier == "commond" { "common" } else { tier })
+    } else {
+        ["abundant", "common", "rare", "precious"].into_iter().find(|tier| {
+            game.res.items().item_in_tag(&format!("theurgy:alchemical_sulfurs/{tier}"), &stack.item)
+        })
+    }
+    .unwrap_or("abundant");
+    // AlchemicalDerivativeTier colors.
+    let color = match tier {
+        "common" => 0x41b335,
+        "rare" => 0x413fa3,
+        "precious" => 0xd20dd4,
+        _ => 0xcfcfcf,
+    };
+    let mut out = vec![
+        Text::translate(&source_key, &[]).with_style(&italic(color)),
+        wrap_in_square_brackets(
+            Text::translate(&format!("theurgytheurgy.alchemical_tier.{tier}"), &[]).with_style(&italic(color)),
+        ),
+    ];
+    if sulfur {
+        let kind = ["animals", "crops", "earthen_matters", "gems", "logs", "metals", "mobs", "other_minerals"]
+            .into_iter()
+            .find(|kind| game.res.items().item_in_tag(&format!("theurgy:alchemical_sulfurs/{kind}"), &stack.item))
+            .unwrap_or("misc");
+        out.push(wrap_in_square_brackets(
+            Text::translate(&format!("theurgytheurgy.sulfur_type.{kind}"), &[])
+                .with_style(&italic(horizon_client::text::DARK_GRAY)),
+        ));
+    }
+    out
+}
+
+/// `DivinationRodItem.appendHoverText`.
+fn divination_rod_tooltip(
+    game: &crate::game::Game<'_>,
+    stack: &ItemStack,
+    lines: &mut Vec<(horizon_client::text::Text, u32)>,
+) {
     let linked = component_string(game, stack, DIVINATION_LINKED_BLOCK)
         .or_else(|| component_string(game, stack, DIVINATION_LINKED_TAG));
     let Some(linked) = linked else {
@@ -1465,6 +1612,19 @@ pub fn update_shape(
     new: &mut Option<horizon_world::registry::BlockStateId>,
 ) {
     let Some(descriptor) = level.registry.state(state) else { return; };
+    // LogisticsNexusBlock.updateShape: one connection flag per side, set
+    // while the neighbour there is not air.
+    if descriptor.name == "theurgy:logistics_nexus" {
+        let present = level.registry.state(neighbour).is_some_and(|other| !is_air_name(&other.name));
+        let mut updated = descriptor.clone();
+        updated.properties.insert(facing_name(direction).into(), present.to_string());
+        if let Ok(resolved) = level.registry.resolve(&updated) {
+            if resolved != state {
+                *new = Some(resolved);
+            }
+        }
+        return;
+    }
     if descriptor.properties.get("facing").map(String::as_str) != Some(facing_name(direction.opposite())) {
         return;
     }
