@@ -243,6 +243,110 @@ pub fn tick(game: &mut crate::game::Game<'_>, pos: [i32; 3], entity: &mut ModBlo
         i32::from(state.is_processing), i32::from(state.could_craft_last_tick), item_type, 1]);
 }
 
+// --- Sal ammoniac in the world --------------------------------------------
+// Java: FluidRegistry.SAL_AMMONIAC(_FLOWING) are BaseFlowingFluid.Source/
+// Flowing with default properties (water's spread rules) and
+// BlockRegistry.SAL_AMMONIAC_FLUID is a LiquidBlock. Horizon simulates only
+// water and lava, so `theurgy:sal_ammoniac` is a water-template block (same
+// `level` states) and the engine's water spread writes `minecraft:water`.
+// Mirror BaseFlowingFluid: every water state the engine writes from a sal
+// ammoniac block (a spread out of one, or a level change of one) becomes the
+// sal ammoniac state with the same `level`, at the end of that level's tick.
+
+const SAL_AMMONIAC: &str = "theurgy:sal_ammoniac";
+
+type LevelDim = horizon_world::level::Dimension;
+
+/// Spreads out of a sal ammoniac block during the current level tick.
+static SAL_SPREADS: std::sync::Mutex<Vec<(LevelDim, [i32; 3])>> = std::sync::Mutex::new(Vec::new());
+/// Water written from sal ammoniac: (level, position, water `level`).
+static SAL_CONVERSIONS: std::sync::Mutex<Vec<(LevelDim, [i32; 3], String)>> = std::sync::Mutex::new(Vec::new());
+
+/// Pure decision: should the water state written at a position become sal
+/// ammoniac? `old` is the replaced block's name, `spread_from_sal` whether a
+/// sal ammoniac block spread into it this tick.
+pub(crate) fn water_becomes_sal(old: &str, new: &str, spread_from_sal: bool) -> bool {
+    new == "minecraft:water" && (old == SAL_AMMONIAC || spread_from_sal)
+}
+
+fn level_dim(id: &str) -> LevelDim {
+    if id.ends_with("the_nether") {
+        LevelDim::Nether
+    } else if id.ends_with("the_end") {
+        LevelDim::End
+    } else {
+        LevelDim::Overworld
+    }
+}
+
+/// `native_block_spread`: remember fluid spreads out of sal ammoniac.
+pub fn block_spread(
+    level: &crate::game::GameLevel<'_>,
+    dimension: LevelDim,
+    kind: &str,
+    from: horizon_core::position::BlockPos,
+    to: horizon_core::position::BlockPos,
+) {
+    if kind != "fluid" { return; }
+    let state = level.world.block(from.x, from.y, from.z);
+    if level.registry.state(state).is_some_and(|s| s.name == SAL_AMMONIAC) {
+        if let Ok(mut spreads) = SAL_SPREADS.lock() {
+            spreads.push((dimension, [to.x, to.y, to.z]));
+        }
+    }
+}
+
+/// `native_block_changed`: queue water written from sal ammoniac.
+pub fn block_changed(
+    level: &crate::game::GameLevel<'_>,
+    dimension: LevelDim,
+    pos: horizon_core::position::BlockPos,
+    old: horizon_world::registry::BlockStateId,
+    new: horizon_world::registry::BlockStateId,
+) {
+    let at = [pos.x, pos.y, pos.z];
+    let Some(new_state) = level.registry.state(new) else { return; };
+    if new_state.name != "minecraft:water" { return; }
+    let old_name = level.registry.state(old).map_or("", |s| s.name.as_str());
+    let spread = SAL_SPREADS.lock().is_ok_and(|spreads| spreads.contains(&(dimension, at)));
+    if !water_becomes_sal(old_name, &new_state.name, spread) { return; }
+    let water_level = new_state.properties.get("level").map_or_else(|| "0".to_owned(), |v| v.to_string());
+    if let Ok(mut conversions) = SAL_CONVERSIONS.lock() {
+        conversions.push((dimension, at, water_level));
+    }
+}
+
+/// `native_level_tick_post`: turn the queued water into sal ammoniac.
+pub fn level_tick_post(game: &mut crate::game::Game<'_>, dimension: &str) {
+    let dim = level_dim(dimension);
+    if let Ok(mut spreads) = SAL_SPREADS.lock() {
+        spreads.retain(|(d, _)| *d != dim);
+    }
+    let pending: Vec<_> = match SAL_CONVERSIONS.lock() {
+        Ok(mut conversions) => {
+            let (mine, rest): (Vec<_>, Vec<_>) = conversions.drain(..).partition(|(d, _, _)| *d == dim);
+            *conversions = rest;
+            mine
+        }
+        Err(_) => return,
+    };
+    let registry = game.pack.assets.registry;
+    let Some(sal_default) = registry.default_state(SAL_AMMONIAC).and_then(|id| registry.state(id)).cloned() else { return; };
+    for (_, pos, water_level) in pending {
+        let current = game.world.block(pos[0], pos[1], pos[2]);
+        // Only the very water that was queued: anything else changed it since.
+        let still_water = registry.state(current).is_some_and(|s| {
+            s.name == "minecraft:water" && s.properties.get("level").map(|v| v.to_string()) == Some(water_level.clone())
+        });
+        if !still_water { continue; }
+        let mut descriptor = sal_default.clone();
+        descriptor.properties.insert("level".into(), water_level.as_str().into());
+        if let Ok(target) = registry.resolve(&descriptor) {
+            game.native_set_block(dimension, pos, target, 3);
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -255,6 +359,19 @@ mod tests {
         let water = Tank { fluid: Some("minecraft:water".into()), amount: 1_000, capacity: 2_000 };
         assert!(fits(&water, "minecraft:water", 1_000));
         assert!(!fits(&water, "theurgy:sal_ammoniac", 1_000));
+    }
+
+    #[test]
+    fn water_from_sal_ammoniac_becomes_sal_ammoniac() {
+        // Level change of a sal ammoniac block (FlowingFluid.spread on itself).
+        assert!(water_becomes_sal("theurgy:sal_ammoniac", "minecraft:water", false));
+        // Spread out of a sal ammoniac block into air.
+        assert!(water_becomes_sal("minecraft:air", "minecraft:water", true));
+        // Real water stays water; sal ammoniac drying out to air stays air.
+        assert!(!water_becomes_sal("minecraft:air", "minecraft:water", false));
+        assert!(!water_becomes_sal("theurgy:sal_ammoniac", "minecraft:air", true));
+        assert_eq!(level_dim("minecraft:the_nether"), LevelDim::Nether);
+        assert_eq!(level_dim("minecraft:overworld"), LevelDim::Overworld);
     }
 
     #[test]
