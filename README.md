@@ -10,6 +10,11 @@ Horizon implementation that reuses Theurgy's original assets and data.
 - Target: Horizon nightly-2026-11-03 (`2944480`), pinned in `native/theurgy/horizon-mixin.toml`.
 - Not affiliated with or endorsed by klikli-dev. Please do not report issues with this port upstream.
 
+
+> **Maintainer wanted:** We are currently looking for a maintainer. Even vibe coders are fine, as long as you actually know how to get things done. A rich GitHub profile is preferred.
+[Apply here](https://forms.gle/pHh7KLmTmEDntg3X9).
+
+
 ## Installing
 
 The mod is two files with the id `theurgy`; both are required:
