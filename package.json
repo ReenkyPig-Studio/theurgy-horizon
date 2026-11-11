@@ -1,17 +1,15 @@
 {
-  "name": "theurgy-horizon-matrix",
+  "name": "theurgy-horizon",
   "private": true,
   "type": "module",
   "scripts": {
     "book:preview": "node tools/book-preview.mjs",
-    "test": "node --check matrix/swarm.mjs && node --test test/*.test.mjs",
+    "test": "node --test test/*.test.mjs",
     "doctor": "node tools/dev.mjs doctor",
     "inventory": "node tools/inventory.mjs",
     "fast": "node tools/dev.mjs fast",
     "test:modules": "node tools/module-tests.mjs logistics && node tools/module-tests.mjs worldgen && node tools/module-tests.mjs selection && node tools/module-tests.mjs interactions && node tools/module-tests.mjs items && node tools/module-tests.mjs registry && node tools/module-tests.mjs fluids",
     "check": "node tools/dev.mjs check",
-    "plan": "node matrix/swarm.mjs",
-    "swarm": "node matrix/swarm.mjs",
     "game": "node tools/game.mjs smoke",
     "game:theurgy": "node tools/game.mjs theurgy",
     "watch": "node tools/watch.mjs",
@@ -29,13 +27,10 @@
     "game:headless:cached": "node tools/headless.mjs all --no-build",
     "game:chaos": "node tools/game.mjs chaos",
     "game:content": "node tools/game.mjs content",
-    "coding:swarm": "node matrix/coding-swarm.mjs",
-    "secure:auto": "node matrix/secure.mjs auto --live --run runs/secure-auto",
-    "fleet": "node matrix/fleet.mjs",
     "content": "node tools/build-content.mjs && node tools/content-check.mjs",
     "package": "node tools/package.mjs",
     "acceptance": "node tools/acceptance.mjs",
-    "providers:probe": "node matrix/provider-probe.mjs",
     "package:smoke": "node tools/package-smoke.mjs"
-  }
+  },
+  "license": "MIT"
 }
