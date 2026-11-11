@@ -4,7 +4,8 @@ import zlib from 'node:zlib';
 import {createHash} from 'node:crypto';
 import {root,run} from './common.mjs';
 
-const HORIZON='294448014fba585f8d5d09dd8886f482493b6417';
+// The manifest pin is the single source of truth (tools/horizon-port.mjs --apply rewrites it).
+const HORIZON=(await fs.readFile(path.join(root,'native/theurgy/horizon-mixin.toml'),'utf8')).match(/horizon_revision\s*=\s*"([0-9a-f]{40})"/)[1];
 const MIXINS='ddd9700b21997c95d95ac6ee5ecafe3830cf622a';
 const skipBuild=process.argv.includes('--no-build');
 if(!skipBuild) {

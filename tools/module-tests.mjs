@@ -24,11 +24,12 @@ const specs={
  'replace_held','fluid_use_on','state_for_placement','update_shape','can_survive','use_duration',
  'component_string_with_defaults',
  'translated_source_block','translated_source_tag','prepare_item_craft',
- 'release_using','finish_using','tooltip',
+ 'release_using','finish_using','tooltip','tooltip_data','divination_rod_tooltip',
  ],
  registry:['tick'],
  heat:['stack_burn_time','consume_fuel','tick','heated','hot_until_for','mirror_lit'],
  flux:['find_catalysation_recipe','sync_enabled_from_redstone','tick_catalyst','push_flux','tick_capacitor','tick_mercury_emitter','selected_target','tick_caloric_emitter','tick'],
+ fluids:['output_tank','fill_below','recipes','solute_matches','tick','block_spread','block_changed','level_tick_post'],
  reformation:['pedestal_item','pedestal_exists','match_ingredient','tick'],
  logistics:[
  'sync_filter_state','filter_use_on','facing_of','tick','sync_nexus_connections','wire_sneaking',
@@ -93,7 +94,7 @@ for(const dir of await fs.readdir(path.join(cargoRoot,'fast/build'))) {
  for(const m of text.matchAll(/^cargo:rustc-link-search=native=(.+)$/gm))args.push('-L','native='+m[1].trim());
 }
 for(const crate of ['horizon_client_lib','horizon_core','horizon_world','winit','theurgy_engine'])args.push('--extern',crate+'='+await extern(crate));
-if(name==='reformation'||name==='flux')args.push('--extern','serde_json='+await extern('serde_json'));
+if(['reformation','flux','fluids'].includes(name))args.push('--extern','serde_json='+await extern('serde_json'));
 args.push('-A','dead_code','-o',path.join(out,name+'.exe'));
 async function execute(file,args){await new Promise((resolve,reject)=>{const p=spawn(file,args,{cwd:root,stdio:'inherit'});p.on('error',reject);p.on('exit',code=>code===0?resolve():reject(new Error(path.basename(file)+' exited '+code)));});}
 await execute(path.join(config.rust,'bin/rustc.exe'),args);
